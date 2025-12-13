@@ -1,5 +1,6 @@
 import sys
 from login_panel import LoginPanel
+from forgot_password_panel import ForgotPasswordPanel
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -29,6 +30,12 @@ class MainWindow(QMainWindow):
 
     def showLoginPage(self):
         self.login_panel = self.loadPage(LoginPanel)
+        self.login_panel.forgot_clicked.connect(self.showForgotPasswordPage)
+
+
+    def showForgotPasswordPage(self):
+        self.forgot_pass_panel = self.loadPage(ForgotPasswordPanel)
+        self.forgot_pass_panel.back_to_login_clicked.connect(self.showLoginPage)
 
 
     def loadPage(self, ClassWidget):

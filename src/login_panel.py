@@ -97,11 +97,14 @@ class LoginPanel(QFrame):
         layout.addWidget(signup_label)
         layout.addStretch(LoginPanel.STRETCH_SIZE)
 
+
     def onForgotClicked(self):
         self.forgot_clicked.emit()
 
+
     def onSignupClicked(self):
         self.signup_clicked.emit()
+
 
     def onCntClicked(self):
         self.continue_clicked.emit()

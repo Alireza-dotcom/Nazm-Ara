@@ -82,9 +82,10 @@ class ForgotPasswordPanel(QFrame):
         layout.addWidget(back_to_login_btn)
         layout.addStretch(ForgotPasswordPanel.STRETCH_SIZE)
 
+
     def onBackToLoginClicked(self):
         self.back_to_login_clicked.emit()
 
+
     def onCreateNewAccClicked(self):
         self.create_new_acc_clicked.emit()
-

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal, QSize, QMargins
 from PySide6.QtGui import QPixmap
 
+
 class PushButton(QPushButton):
     def __init__(self, text="" , parent=None):
         super().__init__(text, parent)
@@ -44,6 +45,7 @@ class PasswordField(QWidget):
         layout.setContentsMargins(PasswordField.CONTENTS_MARGINS_SIZE)
         self.setLayout(layout)
 
+
     def toggle_password_visibility(self):
         if self.toggle_button.isChecked():
             self.line_edit.setEchoMode(QLineEdit.Normal)
@@ -60,10 +62,12 @@ class ClickableLabel(QLabel):
         super().__init__(text, parent)
         self.setCursor(Qt.PointingHandCursor)
 
+
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self._mouse_pressed = True
         super().mousePressEvent(event)
+
 
     def mouseReleaseEvent(self, event):
         if self._mouse_pressed and event.button() == Qt.LeftButton:

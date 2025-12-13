@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
 )
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -33,7 +34,6 @@ class MainWindow(QMainWindow):
         self.login_panel = self.loadPage(LoginPanel)
         self.login_panel.forgot_clicked.connect(self.showForgotPasswordPage)
         self.login_panel.signup_clicked.connect(self.showSignupPage)
-
 
 
     def showForgotPasswordPage(self):

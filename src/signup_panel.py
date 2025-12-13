@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
 )
 
+
 class SignupPanel(QFrame):
     already_have_account_clicked = Signal()
 
@@ -100,6 +101,7 @@ class SignupPanel(QFrame):
         already_have_acc_label.clicked.connect(self.onBackToLoginClicked)
         already_have_acc_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(already_have_acc_label)
+
 
     def onBackToLoginClicked(self):
         self.already_have_account_clicked.emit()

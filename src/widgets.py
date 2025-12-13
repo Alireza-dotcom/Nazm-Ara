@@ -36,7 +36,7 @@ class PasswordField(QWidget):
         self.toggle_button.setIcon(self.eye_open_icon)
         self.toggle_button.setCheckable(True)
         self.toggle_button.setFixedSize(PasswordField.PASS_VISIBILITY_BTN_SIZE)
-        self.toggle_button.clicked.connect(self.toggle_password_visibility)
+        self.toggle_button.clicked.connect(self.togglePasswordVisibility)
 
         # Layout
         layout = QHBoxLayout(self)
@@ -46,7 +46,7 @@ class PasswordField(QWidget):
         self.setLayout(layout)
 
 
-    def toggle_password_visibility(self):
+    def togglePasswordVisibility(self):
         if self.toggle_button.isChecked():
             self.line_edit.setEchoMode(QLineEdit.Normal)
             self.toggle_button.setIcon(self.eye_close_icon)

@@ -1,6 +1,7 @@
 import sys
 from login_panel import LoginPanel
 from forgot_password_panel import ForgotPasswordPanel
+from signup_panel import SignupPanel
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -31,11 +32,19 @@ class MainWindow(QMainWindow):
     def showLoginPage(self):
         self.login_panel = self.loadPage(LoginPanel)
         self.login_panel.forgot_clicked.connect(self.showForgotPasswordPage)
+        self.login_panel.signup_clicked.connect(self.showSignupPage)
+
 
 
     def showForgotPasswordPage(self):
         self.forgot_pass_panel = self.loadPage(ForgotPasswordPanel)
         self.forgot_pass_panel.back_to_login_clicked.connect(self.showLoginPage)
+        self.forgot_pass_panel.create_new_acc_clicked.connect(self.showSignupPage)
+
+
+    def showSignupPage(self):
+        self.signup_panel = self.loadPage(SignupPanel)
+        self.signup_panel.already_have_account_clicked.connect(self.showLoginPage)
 
 
     def loadPage(self, ClassWidget):

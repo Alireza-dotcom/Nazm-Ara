@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import (
     QWidget,
     QHBoxLayout,
+    QVBoxLayout,
     QPushButton,
     QLineEdit,
     QLabel,
@@ -70,3 +71,19 @@ class ClickableLabel(QLabel):
                 self.clicked.emit()
         self._mouse_pressed = False
         super().mouseReleaseEvent(event)
+
+
+class FormRow(QWidget):
+    CONTENTS_MARGINS_SIZE = QMargins(0, 0, 0, 0)
+
+    def __init__(self, label_text, object_name, parent=None):
+        super().__init__(parent)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(FormRow.CONTENTS_MARGINS_SIZE)
+
+        self.label = QLabel(label_text, self)
+        self.input = QLineEdit(self)
+        self.setObjectName(object_name)
+
+        layout.addWidget(self.label)
+        layout.addWidget(self.input)

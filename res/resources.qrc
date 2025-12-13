@@ -1,0 +1,9 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource prefix="/">
+    <file>logos/logo.png</file>
+    <file>icons/eye_close.svg</file>
+    <file>icons/eye_open.svg</file>
+    <file>styles/login.qss</file>
+</qresource>
+</RCC>

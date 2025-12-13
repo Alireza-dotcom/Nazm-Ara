@@ -25,8 +25,8 @@ class PasswordField(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.eye_close_icon = QPixmap("../res/icons/eye_close.svg")
-        self.eye_open_icon  = QPixmap("../res/icons/eye_open.svg")
+        self.eye_close_icon = QPixmap(":icons/eye_close.svg")
+        self.eye_open_icon  = QPixmap(":icons/eye_open.svg")
 
         self.line_edit = QLineEdit(self)
         self.line_edit.setEchoMode(QLineEdit.Password)

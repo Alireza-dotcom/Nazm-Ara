@@ -36,7 +36,7 @@ class SignupPanel(QFrame):
 
         # Logo placeholder
         logo = QLabel(self)
-        logo_file = QPixmap("../res/logos/logo.png")
+        logo_file = QPixmap(":logos/logo.png")
         logo_file = logo_file.scaled(SignupPanel.LOGO_SIZE)
         logo.setPixmap(QPixmap(logo_file))
         logo.setAlignment(Qt.AlignCenter)

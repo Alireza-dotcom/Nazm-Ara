@@ -2,6 +2,7 @@ import sys
 from login_panel import LoginPanel
 from forgot_password_panel import ForgotPasswordPanel
 from signup_panel import SignupPanel
+from utils import loadStylesheet
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -16,6 +17,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setObjectName("MainWindow")
+        loadStylesheet(self, "../res/styles/login.qss")
 
         self.setMinimumSize(1024, 768)
         self.resize(1280, 720)

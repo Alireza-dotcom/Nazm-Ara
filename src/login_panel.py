@@ -5,6 +5,7 @@ from PySide6.QtCore import (
     Qt,
     Signal,
     QMargins,
+    QSize
 )
 from PySide6.QtWidgets import (
     QLabel,
@@ -21,6 +22,7 @@ class LoginPanel(QFrame):
 
     STRETCH_SIZE = 1
     SPACING_SIZE = 10
+    LOGO_SIZE = QSize(250, 250)
     CONTENTS_MARGIN_SIZE = QMargins(50, 40, 50, 40)
 
     def __init__(self, parent):
@@ -36,7 +38,7 @@ class LoginPanel(QFrame):
         # Logo placeholder
         logo = QLabel(self)
         logo_file = QPixmap("../res/logos/logo.png")
-        logo_file = logo_file.scaled(250,250)
+        logo_file = logo_file.scaled(LoginPanel.LOGO_SIZE)
         logo.setPixmap(QPixmap(logo_file))
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo, alignment=Qt.AlignCenter)

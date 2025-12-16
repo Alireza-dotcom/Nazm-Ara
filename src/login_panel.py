@@ -71,7 +71,6 @@ class LoginPanel(QFrame):
         # Forgot password link
         forgot_label = ClickableLabel("Forgot your password?", self)
         forgot_label.clicked.connect(self.onForgotClicked)
-        forgot_label.setObjectName("FieldLabel")
         forgot_label.setAlignment(Qt.AlignRight)
         layout.addWidget(forgot_label)
 

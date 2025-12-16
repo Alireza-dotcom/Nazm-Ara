@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 )
 
 from PySide6.QtCore import Qt, Signal, QSize, QMargins
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QIcon
 
 
 class PushButton(QPushButton):
@@ -19,7 +19,7 @@ class PushButton(QPushButton):
 
 
 class PasswordField(QWidget):
-    PASS_VISIBILITY_BTN_SIZE = QSize(35, 35)
+    PASS_VISIBILITY_BTN_SIZE = QSize(40, 40)
     CONTENTS_MARGINS_SIZE = QMargins(0, 0, 0, 0)
 
     def __init__(self, parent=None):

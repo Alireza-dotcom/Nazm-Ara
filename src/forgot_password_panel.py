@@ -38,7 +38,7 @@ class ForgotPasswordPanel(QFrame):
         logo = QLabel(self)
         logo_file = QPixmap(":logos/logo.png")
         logo_file = logo_file.scaled(ForgotPasswordPanel.LOGO_SIZE)
-        logo.setPixmap(QPixmap(logo_file))
+        logo.setPixmap(logo_file)
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo, alignment=Qt.AlignCenter)
         layout.addStretch(ForgotPasswordPanel.STRETCH_SIZE)

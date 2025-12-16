@@ -39,7 +39,7 @@ class LoginPanel(QFrame):
         logo = QLabel(self)
         logo_file = QPixmap(":logos/logo.png")
         logo_file = logo_file.scaled(LoginPanel.LOGO_SIZE)
-        logo.setPixmap(QPixmap(logo_file))
+        logo.setPixmap(logo_file)
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo, alignment=Qt.AlignCenter)
         layout.addStretch(LoginPanel.STRETCH_SIZE)

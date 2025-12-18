@@ -5,5 +5,7 @@
     <file>icons/eye_close.svg</file>
     <file>icons/eye_open.svg</file>
     <file>styles/login.qss</file>
+    <file>fonts/Vazirmatn.ttf</file>
+    <file>fonts/Nunito.ttf</file>
 </qresource>
 </RCC>

@@ -2,7 +2,7 @@ import sys
 from login_panel import LoginPanel
 from forgot_password_panel import ForgotPasswordPanel
 from signup_panel import SignupPanel
-from utils import loadStylesheet
+from utils import loadStylesheet, loadFont
 import resources_rc
 
 from PySide6.QtWidgets import (
@@ -32,6 +32,8 @@ class MainWindow(QMainWindow):
         self.layout = QHBoxLayout(self.central_widget)
         self.layout.addWidget(self.stack)
 
+        self.latin_font_family = loadFont(":fonts/Nunito.ttf")
+        self.persian_font_family = loadFont(":fonts/Vazirmatn.ttf")
 
     def showLoginPage(self):
         self.login_panel = self.loadPage(LoginPanel)

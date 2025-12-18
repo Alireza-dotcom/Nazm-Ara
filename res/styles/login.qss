@@ -1,3 +1,7 @@
+* {
+    font-family: "Nunito", "Vazirmatn";
+}
+
 QMainWindow#MainWindow {
     background-color: #1c1c1c;
     /* background-color: QLinearGradient( x1: 1, y1: 1, x2: 0, y2: 0, stop: 0 #2C35B0, stop: 1 #2c2d32); */

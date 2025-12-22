@@ -3,6 +3,7 @@ from login_panel import LoginPanel
 from forgot_password_panel import ForgotPasswordPanel
 from signup_panel import SignupPanel
 from utils import loadStylesheet, loadFont
+from font_scaler import DynamicFontScaler
 import resources_rc
 
 from PySide6.QtWidgets import (
@@ -34,6 +35,9 @@ class MainWindow(QMainWindow):
 
         self.latin_font_family = loadFont(":fonts/Nunito.ttf")
         self.persian_font_family = loadFont(":fonts/Vazirmatn.ttf")
+
+        self.dynamic_font_scaler = DynamicFontScaler(self, ":/styles/login.qss")
+
 
     def showLoginPage(self):
         self.login_panel = self.loadPage(LoginPanel)
@@ -73,6 +77,8 @@ class MainWindow(QMainWindow):
         window_width = self.width()
         target_width = max(MIN_PANEL_WIDTH, int(window_width * PANEL_WIDTH_RATIO)) # 32% of width, min 430px
         self.stack.setFixedWidth(target_width)
+
+        self.dynamic_font_scaler.updateStylesheet()
 
         super().resizeEvent(event)
 

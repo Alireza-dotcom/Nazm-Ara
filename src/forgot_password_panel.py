@@ -21,7 +21,6 @@ class ForgotPasswordPanel(QFrame):
 
     STRETCH_SIZE = 1
     SPACING_SIZE = 13
-    LOGO_SIZE = QSize(250, 250)
     CONTENTS_MARGINS_SIZE = QMargins(50, 40, 50, 40)
 
     def __init__(self, parent):
@@ -36,8 +35,7 @@ class ForgotPasswordPanel(QFrame):
 
         # Logo placeholder
         logo = QLabel(self)
-        logo_file = QPixmap(":logos/logo.png")
-        logo_file = logo_file.scaled(ForgotPasswordPanel.LOGO_SIZE)
+        logo_file = QPixmap(":logos/logo.svg")
         logo.setPixmap(logo_file)
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo, alignment=Qt.AlignCenter)

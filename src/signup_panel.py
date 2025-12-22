@@ -21,7 +21,6 @@ class SignupPanel(QFrame):
 
     STRETCH_SIZE = 1
     SPACING_SIZE = 10
-    LOGO_SIZE = QSize(200, 200)
     CONTENTS_MARGINS_SIZE = QMargins(50, 40, 50, 40)
 
     def __init__(self, parent=None):
@@ -36,8 +35,7 @@ class SignupPanel(QFrame):
 
         # Logo placeholder
         logo = QLabel(self)
-        logo_file = QPixmap(":logos/logo.png")
-        logo_file = logo_file.scaled(SignupPanel.LOGO_SIZE)
+        logo_file = QPixmap(":logos/logo.svg")
         logo.setPixmap(logo_file)
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo, alignment=Qt.AlignCenter)

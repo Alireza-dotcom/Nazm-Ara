@@ -35,8 +35,6 @@ class DynamicFontScaler(QObject):
         for line in lines:
             if 'font-size:' in line:
                 line = self.scaleFontSizeInLine(line, scale_factor)
-            elif 'border-radius:' in line:
-                line = self.scaleBorderRadiusInLine(line, scale_factor)
             elif 'font-family:' in line:
                 line = f'font-family: "{self.parent_window.latin_font_family}", "{self.parent_window.persian_font_family}";'
             merged_lines.append(line)
@@ -53,18 +51,6 @@ class DynamicFontScaler(QObject):
             original_size = int(match.group(1))
             new_size = int(original_size * scale_factor)
             line = line.replace(f"{original_size}px", f"{new_size}px")
-
-        return line
-
-
-    def scaleBorderRadiusInLine(self, line, scale_factor):
-        import re
-
-        match = re.search(r'border-radius:\s*(\d+)px', line)
-        if match:
-            original_radius = int(match.group(1))
-            new_radius = int(original_radius * scale_factor)
-            line = line.replace(f"{original_radius}px", f"{new_radius}px")
 
         return line
 

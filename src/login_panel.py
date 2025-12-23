@@ -19,6 +19,7 @@ class LoginPanel(QFrame):
     forgot_clicked = Signal()
     signup_clicked = Signal()
     continue_clicked = Signal()
+    select_account_clicked = Signal()
 
     STRETCH_SIZE = 1
     SPACING_SIZE = 10
@@ -94,6 +95,13 @@ class LoginPanel(QFrame):
         layout.addWidget(signup_label)
         layout.addStretch(LoginPanel.STRETCH_SIZE)
 
+        # select account text
+        select_account_label = ClickableLabel("Choose an Account", self)
+        select_account_label.clicked.connect(self.onSelectAccountClicked)
+        select_account_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(select_account_label)
+        layout.addStretch(LoginPanel.STRETCH_SIZE)
+
 
     def onForgotClicked(self):
         self.forgot_clicked.emit()
@@ -105,3 +113,7 @@ class LoginPanel(QFrame):
 
     def onCntClicked(self):
         self.continue_clicked.emit()
+
+
+    def onSelectAccountClicked(self):
+        self.select_account_clicked.emit()

@@ -91,3 +91,58 @@ class FormRow(QWidget):
 
         layout.addWidget(self.label)
         layout.addWidget(self.input)
+
+
+class AccountListItemWidget(QWidget):
+    def __init__(self, account_row: dict, parent=None):
+        super().__init__(parent)
+
+        layout = QHBoxLayout(self)
+        text_layout = QVBoxLayout()
+
+        title_text = self.formatTitle(account_row)
+        subtitle_text = self.formatSubtitle(account_row)
+
+        self.title_label = QLabel(title_text, self)
+        self.title_label.setObjectName("ItemTitle")
+
+        self.sub_label = QLabel(subtitle_text, self)
+        self.sub_label.setObjectName("ItemSub")
+
+        text_layout.addWidget(self.title_label)
+        text_layout.addWidget(self.sub_label)
+
+        layout.addLayout(text_layout)
+
+        acc_type_label_txt = "Online" if self.isOnlineAccount(account_row) else "Offline"
+        acc_type_label_obj_name = "onlineLabel" if self.isOnlineAccount(account_row) else "offlineLabel"
+
+        self.acc_type_lbl = QLabel(acc_type_label_txt, self)
+        self.acc_type_lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.acc_type_lbl.setObjectName(acc_type_label_obj_name)
+        self.acc_type_lbl.setFixedSize(50, 30)
+        self.acc_type_lbl.setMargin(5)
+        layout.addWidget(self.acc_type_lbl)
+
+
+    def formatTitle(self, account_row: dict) -> str:
+        nickname = account_row.get("nickname")
+        if nickname:
+            return nickname
+        return f"Account #{account_row.get('id', '?')}"
+
+
+    def formatSubtitle(self, account_row: dict) -> str:
+        email = account_row.get("email")
+        f_name = account_row.get("f_name")
+        l_name = account_row.get("l_name")
+        if email:
+            return email
+        name_parts = [p for p in [f_name, l_name] if p]
+        if name_parts:
+            return " ".join(name_parts)
+        return f"ID: {account_row.get('id', '?')}"
+
+
+    def isOnlineAccount(self, account_row: dict) -> bool:
+        return account_row.get("user_id") is not None

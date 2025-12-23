@@ -4,6 +4,8 @@ from forgot_password_panel import ForgotPasswordPanel
 from signup_panel import SignupPanel
 from utils import loadStylesheet, loadFont
 from font_scaler import DynamicFontScaler
+from select_acc_panel import SelectAccountPanel
+from database_manager import DatabaseManager
 import resources_rc
 
 from PySide6.QtWidgets import (
@@ -28,7 +30,12 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.stack = QStackedWidget()
 
-        self.showLoginPage()
+        self.database = DatabaseManager()
+
+        if self.database.getListOfUsers():
+            self.showSelectAccountPage()
+        else:
+            self.showLoginPage()
 
         self.layout = QHBoxLayout(self.central_widget)
         self.layout.addWidget(self.stack)
@@ -43,6 +50,19 @@ class MainWindow(QMainWindow):
         self.login_panel = self.loadPage(LoginPanel)
         self.login_panel.forgot_clicked.connect(self.showForgotPasswordPage)
         self.login_panel.signup_clicked.connect(self.showSignupPage)
+        self.login_panel.select_account_clicked.connect(self.showSelectAccountPage)
+
+
+    def showSelectAccountPage(self):
+        self.select_account_panel = self.loadPage(SelectAccountPanel)
+        self.select_account_panel.add_account_clicked.connect(self.showLoginPage)
+        self.select_account_panel.account_selected.connect(self.onAccountSelected)
+
+
+    def onAccountSelected(self, account_row: dict):
+        print(f"Selected account: {account_row}")
+        # TODO: main app
+        self.showLoginPage()
 
 
     def showForgotPasswordPage(self):

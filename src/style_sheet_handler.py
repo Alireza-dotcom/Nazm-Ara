@@ -15,6 +15,7 @@ class StyleSheetHandler(QObject):
     def setResourceQssPath(self, resource_qss_path):
         self.resource_qss_path = resource_qss_path
         self.original_qss = self.loadResourceQss()
+        self.updateStylesheet()
 
 
     def loadResourceQss(self):
@@ -70,5 +71,8 @@ class StyleSheetHandler(QObject):
 
 
     def updateStylesheet(self):
-        merged_qss = self.getMergedStylesheet()
-        self.parent_window.setStyleSheet(merged_qss)
+        if hasattr(self, "original_qss"):
+            merged_qss = self.getMergedStylesheet()
+            self.parent_window.setStyleSheet(merged_qss)
+        else:
+            print("No QSS resource path set.")

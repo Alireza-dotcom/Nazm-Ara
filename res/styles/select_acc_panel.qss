@@ -4,13 +4,9 @@
 
 QMainWindow#MainWindow {
     background-color: #1c1c1c;
-    /* background-color: QLinearGradient( x1: 1, y1: 1, x2: 0, y2: 0, stop: 0 #2C35B0, stop: 1 #2c2d32); */
 }
 
-QFrame#SelectAccountPanel,
-QFrame#ForgotPanel,
-QFrame#SignupPanel,
-QFrame#LoginPanel {
+QFrame#SelectAccountPanel {
     background-color: #323339;
     border-radius: 20px;
 }
@@ -88,21 +84,6 @@ QScrollBar::sub-line:vertical {
     height: 0px;
 }
 
-#PasswordInput > QPushButton{
-    background-color: #2e2f35;
-    border: 1px solid #58595d;
-    border-radius: 10;
-}
-
-#PasswordInput > QPushButton:checked {
-    background-color: #5865f2;
-}
-
-FormRow > QLabel,
-QLabel#FieldLabel {
-    font-size: 13px;
-    color: #ffffff;
-}
 
 ClickableLabel {
     font-size: 13px;
@@ -111,35 +92,4 @@ ClickableLabel {
 
 ClickableLabel:hover {
     color: #6E89D2;
-}
-
-QLabel#DividerLabel {
-    font-size: 13px;
-    color: #93959c;
-}
-
-QLineEdit {
-    background-color: #2e2f35;
-    border-radius: 8px;
-    border: 1px solid #58595d;
-    padding: 8px;
-    font-size: 13px;
-    color: #dfe0e2;
-}
-
-QLineEdit:focus {
-    border: 1px solid #7bb0f5;
-}
-
-QFrame > PushButton {
-    background-color: #5865f2;
-    color: white;
-    border-radius: 6px;
-    padding: 10px;
-    font-size: 16px;
-    font-weight: 500;
-}
-
-QFrame > PushButton:hover {
-    background-color: #4452bb;
 }

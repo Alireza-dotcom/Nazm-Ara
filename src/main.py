@@ -21,8 +21,12 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setObjectName("MainWindow")
+
+        self.latin_font_family = loadFont(":fonts/Nunito.ttf")
+        self.persian_font_family = loadFont(":fonts/Vazirmatn.ttf")
+
+        self.database = DatabaseManager()
         self.style_sheet_handler = StyleSheetHandler(self)
-        self.style_sheet_handler.setResourceQssPath(":/styles/login.qss")
 
         self.setMinimumSize(1024, 768)
         self.resize(1280, 720)
@@ -31,7 +35,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.stack = QStackedWidget()
 
-        self.database = DatabaseManager()
 
         if self.database.getListOfUsers():
             self.showSelectAccountPage()
@@ -41,11 +44,9 @@ class MainWindow(QMainWindow):
         self.layout = QHBoxLayout(self.central_widget)
         self.layout.addWidget(self.stack)
 
-        self.latin_font_family = loadFont(":fonts/Nunito.ttf")
-        self.persian_font_family = loadFont(":fonts/Vazirmatn.ttf")
-
 
     def showLoginPage(self):
+        self.style_sheet_handler.setResourceQssPath(":/styles/login_panel.qss")
         self.login_panel = self.loadPage(LoginPanel)
         self.login_panel.forgot_clicked.connect(self.showForgotPasswordPage)
         self.login_panel.signup_clicked.connect(self.showSignupPage)
@@ -53,6 +54,7 @@ class MainWindow(QMainWindow):
 
 
     def showSelectAccountPage(self):
+        self.style_sheet_handler.setResourceQssPath(":/styles/select_acc_panel.qss")
         self.select_account_panel = self.loadPage(SelectAccountPanel)
         self.select_account_panel.add_account_clicked.connect(self.showLoginPage)
         self.select_account_panel.account_selected.connect(self.onAccountSelected)
@@ -65,12 +67,14 @@ class MainWindow(QMainWindow):
 
 
     def showForgotPasswordPage(self):
+        self.style_sheet_handler.setResourceQssPath(":/styles/forgot_pass_panel.qss")
         self.forgot_pass_panel = self.loadPage(ForgotPasswordPanel)
         self.forgot_pass_panel.back_to_login_clicked.connect(self.showLoginPage)
         self.forgot_pass_panel.create_new_acc_clicked.connect(self.showSignupPage)
 
 
     def showSignupPage(self):
+        self.style_sheet_handler.setResourceQssPath(":/styles/signup_panel.qss")
         self.signup_panel = self.loadPage(SignupPanel)
         self.signup_panel.already_have_account_clicked.connect(self.showLoginPage)
 

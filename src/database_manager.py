@@ -124,14 +124,14 @@ class DatabaseManager:
 
     # ==================== USERS ====================
 
-    def addOfflineUser(self, nickname: str) -> bool:
+    def addOfflineUser(self, nickname: str, f_name: str, l_name: str) -> bool:
         try:
             with self.getConnection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    INSERT INTO users (nickname)
-                    VALUES (?)
-                """, (nickname,))
+                    INSERT INTO users (nickname, f_name, l_name)
+                    VALUES (?, ?, ?)
+                """, (nickname, f_name, l_name))
                 return True
         except sqlite3.Error as e:
             print(f"Error adding offline user: {e}")

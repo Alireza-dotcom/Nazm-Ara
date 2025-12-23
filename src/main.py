@@ -2,8 +2,8 @@ import sys
 from login_panel import LoginPanel
 from forgot_password_panel import ForgotPasswordPanel
 from signup_panel import SignupPanel
-from utils import loadStylesheet, loadFont
-from font_scaler import DynamicFontScaler
+from utils import loadFont
+from style_sheet_handler import StyleSheetHandler
 from select_acc_panel import SelectAccountPanel
 from database_manager import DatabaseManager
 import resources_rc
@@ -21,7 +21,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setObjectName("MainWindow")
-        loadStylesheet(self, ":styles/login.qss")
+        self.style_sheet_handler = StyleSheetHandler(self)
+        self.style_sheet_handler.setResourceQssPath(":/styles/login.qss")
 
         self.setMinimumSize(1024, 768)
         self.resize(1280, 720)
@@ -42,8 +43,6 @@ class MainWindow(QMainWindow):
 
         self.latin_font_family = loadFont(":fonts/Nunito.ttf")
         self.persian_font_family = loadFont(":fonts/Vazirmatn.ttf")
-
-        self.dynamic_font_scaler = DynamicFontScaler(self, ":/styles/login.qss")
 
 
     def showLoginPage(self):
@@ -98,7 +97,7 @@ class MainWindow(QMainWindow):
         target_width = max(MIN_PANEL_WIDTH, int(window_width * PANEL_WIDTH_RATIO)) # 32% of width, min 430px
         self.stack.setFixedWidth(target_width)
 
-        self.dynamic_font_scaler.updateStylesheet()
+        self.style_sheet_handler.updateStylesheet()
 
         super().resizeEvent(event)
 

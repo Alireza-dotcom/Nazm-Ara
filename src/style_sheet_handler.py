@@ -6,10 +6,13 @@ from PySide6.QtCore import (
 )
 
 
-class DynamicFontScaler(QObject):
-    def __init__(self, parent_window, resource_qss_path):
+class StyleSheetHandler(QObject):
+    def __init__(self, parent_window):
         super().__init__(parent_window)
         self.parent_window = parent_window
+
+
+    def setResourceQssPath(self, resource_qss_path):
         self.resource_qss_path = resource_qss_path
         self.original_qss = self.loadResourceQss()
 
@@ -22,6 +25,7 @@ class DynamicFontScaler(QObject):
             content = stream.readAll()
             file.close()
             return content
+        print("Resource file doesn't exist")
         return ""
 
 

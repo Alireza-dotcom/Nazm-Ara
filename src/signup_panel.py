@@ -161,7 +161,7 @@ class SignupPanel(QFrame):
 
     def updateEmptyFieldStyle(self, fields):
         for field in fields["empty"]:
-            field.setStyleSheet("border: 1px solid red;")
+            field.setStyleSheet("QLineEdit { border: 1px solid red; }")
 
         for field in fields["filled"]:
             field.setStyleSheet("")
@@ -170,6 +170,6 @@ class SignupPanel(QFrame):
     def updateInvalidFieldStyle(self, invalid_fields, all_fields):
         for field in all_fields:
             if field in invalid_fields:
-                field.setStyleSheet("border: 1px solid red;")
+                field.setStyleSheet("QLineEdit { border: 1px solid red; }")
             else:
                 field.setStyleSheet("")

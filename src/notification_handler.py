@@ -1,5 +1,6 @@
 from pyqttoast import Toast, ToastPreset, ToastPosition
 from PySide6.QtWidgets import QWidget
+from PySide6.QtGui import QFont
 
 
 class NotificationHandler(QWidget):
@@ -7,14 +8,28 @@ class NotificationHandler(QWidget):
         super().__init__(parent)
 
 
-    def show_toast(self, position, title, text, type, duration=3000):
-        toast = Toast(self)
-        toast.applyPreset(self.notificationType(type))
-        toast.setPosition(self.notificationPosition(position))
-        toast.setDuration(duration)
-        toast.setTitle(title)
-        toast.setText(text)
-        toast.show()
+    def showToast(self, position, title, text, type, duration=3000, source_widget=None):
+        self.active_toast = Toast(self)
+        self.active_toast.setTitleFont(QFont("Nunito", 15))
+        self.active_toast.setTextFont(QFont("Nunito", 12))
+        self.active_toast.applyPreset(self.notificationType(type))
+        self.active_toast.setPosition(self.notificationPosition(position))
+        self.active_toast.setDuration(duration)
+        self.active_toast.setTitle(title)
+        self.active_toast.setText(text)
+        self.disableWidget(source_widget)
+        self.active_toast.closed.connect(lambda: self.enableWidget(source_widget) if source_widget else None)
+        self.active_toast.show()
+
+
+    def enableWidget(self, widget):
+        if widget:
+            widget.setEnabled(True)
+
+
+    def disableWidget(self, widget):
+        if widget:
+            widget.setEnabled(False)
 
 
     def notificationType(self, type):

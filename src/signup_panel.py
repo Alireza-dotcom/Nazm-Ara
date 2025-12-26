@@ -95,7 +95,7 @@ class SignupPanel(QFrame):
         layout.addWidget(password_label)
 
         self.password_input = PasswordField(self)
-        self.password_input.line_edit.setMaxLength(50)
+        self.password_input.input.setMaxLength(50)
         self.password_input.setObjectName("PasswordInput")
         layout.addWidget(self.password_input)
 
@@ -123,7 +123,7 @@ class SignupPanel(QFrame):
             "last_name": self.last_name.input,
             "nickname": self.display_name_input,
             "email": self.email_input,
-            "password": self.password_input.line_edit,
+            "password": self.password_input.input,
         }
         form_fields = list(field_map.values())
 

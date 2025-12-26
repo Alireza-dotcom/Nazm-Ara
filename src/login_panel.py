@@ -70,7 +70,7 @@ class LoginPanel(QFrame):
 
         self.password_input = PasswordField(self)
         self.password_input.setObjectName("PasswordInput")
-        self.password_input.line_edit.setMaxLength(50)
+        self.password_input.input.setMaxLength(50)
         layout.addWidget(self.password_input)
 
         # Forgot password link
@@ -130,7 +130,7 @@ class LoginPanel(QFrame):
         button_ref = self.sender()
         field_map = {
             "email": self.email_input,
-            "password": self.password_input.line_edit
+            "password": self.password_input.input
         }
         form_fields = list(field_map.values())
 

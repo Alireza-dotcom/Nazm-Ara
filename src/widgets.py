@@ -28,8 +28,8 @@ class PasswordField(QWidget):
         self.eye_close_icon = QIcon(":icons/eye_close.svg")
         self.eye_open_icon  = QIcon(":icons/eye_open.svg")
 
-        self.line_edit = QLineEdit(self)
-        self.line_edit.setEchoMode(QLineEdit.Password)
+        self.input = QLineEdit(self)
+        self.input.setEchoMode(QLineEdit.Password)
 
         # Create the toggle button
         self.toggle_button = QPushButton(self)
@@ -40,7 +40,7 @@ class PasswordField(QWidget):
 
         # Layout
         layout = QHBoxLayout(self)
-        layout.addWidget(self.line_edit)
+        layout.addWidget(self.input)
         layout.addWidget(self.toggle_button)
         layout.setContentsMargins(PasswordField.CONTENTS_MARGINS_SIZE)
         self.setLayout(layout)
@@ -48,10 +48,10 @@ class PasswordField(QWidget):
 
     def togglePasswordVisibility(self):
         if self.toggle_button.isChecked():
-            self.line_edit.setEchoMode(QLineEdit.Normal)
+            self.input.setEchoMode(QLineEdit.Normal)
             self.toggle_button.setIcon(self.eye_close_icon)
         else:
-            self.line_edit.setEchoMode(QLineEdit.Password)
+            self.input.setEchoMode(QLineEdit.Password)
             self.toggle_button.setIcon(self.eye_open_icon)
 
 

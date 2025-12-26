@@ -1,11 +1,12 @@
 from widgets import PasswordField, ClickableLabel, PushButton
+from login_form_processor import LoginFormProcessor
+from notification_handler import NotificationHandler
 
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import (
     Qt,
     Signal,
-    QMargins,
-    QSize
+    QMargins
 )
 from PySide6.QtWidgets import (
     QLabel,
@@ -20,6 +21,7 @@ class LoginPanel(QFrame):
     signup_clicked = Signal()
     continue_clicked = Signal()
     select_account_clicked = Signal()
+    login_clicked = Signal(dict)
 
     STRETCH_SIZE = 1
     SPACING_SIZE = 10
@@ -28,6 +30,8 @@ class LoginPanel(QFrame):
     def __init__(self, parent):
         super().__init__(parent)
         self.setObjectName("LoginPanel")
+        self.form_processor = LoginFormProcessor()
+        self.notification_handler = NotificationHandler(self)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(LoginPanel.CONTENTS_MARGIN_SIZE)
@@ -55,6 +59,7 @@ class LoginPanel(QFrame):
         layout.addWidget(email_label)
 
         self.email_input = QLineEdit(self)
+        self.email_input.setMaxLength(254)
         self.email_input.setObjectName("FieldLabel")
         layout.addWidget(self.email_input)
 
@@ -65,6 +70,7 @@ class LoginPanel(QFrame):
 
         self.password_input = PasswordField(self)
         self.password_input.setObjectName("PasswordInput")
+        self.password_input.line_edit.setMaxLength(50)
         layout.addWidget(self.password_input)
 
         # Forgot password link
@@ -75,6 +81,7 @@ class LoginPanel(QFrame):
 
         # Login button
         login_btn = PushButton("Login", self)
+        login_btn.clicked.connect(self.onLoginClicked)
         layout.addWidget(login_btn)
 
         # Divider
@@ -117,3 +124,61 @@ class LoginPanel(QFrame):
 
     def onSelectAccountClicked(self):
         self.select_account_clicked.emit()
+
+
+    def onLoginClicked(self):
+        button_ref = self.sender()
+        field_map = {
+            "email": self.email_input,
+            "password": self.password_input.line_edit
+        }
+        form_fields = list(field_map.values())
+
+        field_status = self.form_processor.findEmptyAndFilledFields(form_fields)
+        self.updateEmptyFieldStyle(field_status)
+        if field_status["empty"]:
+            self.notification_handler.showToast(
+            "bottom_right",
+            "Empty fields",
+            "Please fill in all required fields.",
+            "error",
+            duration=5000,
+            source_widget=button_ref
+            )
+
+            return
+
+
+        is_valid, result = self.form_processor.validateFields(field_map)
+        if not is_valid:
+            self.updateInvalidFieldStyle(result["invalid_widgets"], form_fields)
+            errors = "\n".join(result["errors"])
+
+            calculate_duration = max(4000, len(errors) * 50)  # 50 ms per character
+            self.notification_handler.showToast(
+            "bottom_right",
+            "Validation erros",
+            errors, "error",
+            duration=calculate_duration,
+            source_widget=button_ref
+            )
+
+            return
+
+        self.login_clicked.emit(result)
+
+
+    def updateEmptyFieldStyle(self, fields):
+        for field in fields["empty"]:
+            field.setStyleSheet("QLineEdit { border: 1px solid red; }")
+        
+        for field in fields["filled"]:
+            field.setStyleSheet("")
+
+
+    def updateInvalidFieldStyle(self, invalid_fields, all_fields):
+        for field in all_fields:
+            if field in invalid_fields:
+                field.setStyleSheet("QLineEdit { border: 1px solid red; }")
+            else:
+                field.setStyleSheet("")

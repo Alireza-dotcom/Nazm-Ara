@@ -1,0 +1,50 @@
+* {
+    font-family: "Nunito", "Vazirmatn";
+}
+
+QMainWindow#MainWindow {
+    background-color: #1c1c1c;
+}
+
+QFrame#OfflineUserPanel {
+    background-color: #323339;
+    border-radius: 20px;
+}
+
+QLabel#TitleLabel {
+    font-size: 25px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+FormRow > QLabel,
+QLabel#FieldLabel {
+    font-size: 13px;
+    color: #ffffff;
+}
+
+QLineEdit {
+    background-color: #2e2f35;
+    border-radius: 8px;
+    border: 1px solid #58595d;
+    padding: 8px;
+    font-size: 13px;
+    color: #dfe0e2;
+}
+
+QLineEdit:focus {
+    border: 1px solid #7bb0f5;
+}
+
+QFrame > PushButton {
+    background-color: #5865f2;
+    color: white;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+QFrame > PushButton:hover {
+    background-color: #4452bb;
+}

@@ -10,5 +10,6 @@
     <file>styles/login_panel.qss</file>
     <file>styles/forgot_pass_panel.qss</file>
     <file>styles/signup_panel.qss</file>
+    <file>styles/offline_acc_panel.qss</file>
 </qresource>
 </RCC>

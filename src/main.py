@@ -2,6 +2,7 @@ import sys
 from login_panel import LoginPanel
 from forgot_password_panel import ForgotPasswordPanel
 from signup_panel import SignupPanel
+from offline_user_panel import OfflineUserPanel
 from utils import loadFont
 from style_sheet_handler import StyleSheetHandler
 from select_acc_panel import SelectAccountPanel
@@ -51,6 +52,7 @@ class MainWindow(QMainWindow):
         self.login_panel.forgot_clicked.connect(self.showForgotPasswordPage)
         self.login_panel.signup_clicked.connect(self.showSignupPage)
         self.login_panel.select_account_clicked.connect(self.showSelectAccountPage)
+        self.login_panel.continue_clicked.connect(self.showOfflineAccountPanel)
 
 
     def showSelectAccountPage(self):
@@ -58,6 +60,13 @@ class MainWindow(QMainWindow):
         self.select_account_panel = self.loadPage(SelectAccountPanel)
         self.select_account_panel.add_account_clicked.connect(self.showLoginPage)
         self.select_account_panel.account_selected.connect(self.onAccountSelected)
+
+
+    def showOfflineAccountPanel(self):
+        self.style_sheet_handler.setResourceQssPath(":/styles/offline_acc_panel.qss")
+        self.offline_account_panel = self.loadPage(OfflineUserPanel)
+        self.offline_account_panel.back_to_login_clicked.connect(self.showLoginPage)
+        self.offline_account_panel.continue_clicked.connect(self.onAccountSelected)
 
 
     def onAccountSelected(self, account_row: dict):

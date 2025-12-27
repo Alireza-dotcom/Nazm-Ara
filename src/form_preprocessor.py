@@ -205,3 +205,54 @@ class FormProcessor:
                 }
 
         return True, validated
+
+
+    def validateOffilneUserFields(self, field_map):
+        errors = []
+        invalid_widgets = []
+
+        # Content validations
+        if "first_name" in field_map and not self.checkLength(field_map["first_name"], min_len=3, max_len=30):
+            errors.append("first name must be at least 3 characters")
+            invalid_widgets.append(field_map["first_name"])
+        elif "first_name" in field_map and not self.validateName(field_map["first_name"]):
+            errors.append("first name format is invalid")
+            invalid_widgets.append(field_map["first_name"])
+
+        if "last_name" in field_map and not self.checkLength(field_map["last_name"], min_len=3, max_len=30):
+            errors.append("last name must be at least 3 characters")
+            invalid_widgets.append(field_map["last_name"])
+        elif "last_name" in field_map and not self.validateName(field_map["last_name"]):
+            errors.append("last name format is invalid")
+            invalid_widgets.append(field_map["last_name"])
+
+        if "nickname" in field_map and not self.checkLength(field_map["nickname"], min_len=3, max_len=25):
+            errors.append("nickname must be at least 2 characters")
+            invalid_widgets.append(field_map["nickname"])
+        elif "nickname" in field_map and not self.validateNickname(field_map["nickname"]):
+            errors.append("nickname format is invalid")
+            invalid_widgets.append(field_map["nickname"])
+
+        if errors:
+            return False, {
+                "errors": errors,
+                "invalid_widgets": invalid_widgets
+            }
+
+        # Build validated fields dict
+        validated = {}
+        for name, widget in field_map.items():
+            if name == "first_name":
+                validated[name] = self.validateName(widget)
+            elif name == "last_name":
+                validated[name] = self.validateName(widget)
+            elif name == "nickname":
+                validated[name] = self.validateName(widget)
+            else:
+                print("Unknown field:", name)
+                return False, {
+                    "errors": [f"Unknown field: {name}"],
+                    "invalid_widgets": [widget]
+                }
+
+        return True, validated

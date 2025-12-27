@@ -3,7 +3,7 @@ from zxcvbn import zxcvbn
 import re
 
 
-class SignupFormProcessor:
+class FormProcessor:
     def findEmptyAndFilledFields(self, fields: list):
         empty = []
         for field in fields:
@@ -68,7 +68,7 @@ class SignupFormProcessor:
         return min_len <= field_length <= max_len
 
 
-    def validateFields(self, field_map):
+    def validateSignupFields(self, field_map):
         errors = []
         invalid_widgets = []
 
@@ -127,6 +127,76 @@ class SignupFormProcessor:
                 validated[name] = self.validateName(widget)
             elif name == "password":
                 validated[name] = self.getFieldText(widget)
+            else:
+                print("Unknown field:", name)
+                return False, {
+                    "errors": [f"Unknown field: {name}"],
+                    "invalid_widgets": [widget]
+                }
+
+        return True, validated
+
+
+    def validateLoginFields(self, field_map):
+        errors = []
+        invalid_widgets = []
+
+        # Content validations
+        if "email" in field_map:
+            normalized_email = self.validateEmailField(field_map["email"])
+        if normalized_email is False:
+            errors.append("email format is invalid")
+            invalid_widgets.append(field_map["email"])
+
+        if "password" in field_map and not self.checkLength(field_map["password"], min_len=8, max_len=50):
+            errors.append("password must be at least 8 characters")
+            invalid_widgets.append(field_map["password"])
+
+        if errors:
+            return False, {
+                "errors": errors,
+                "invalid_widgets": invalid_widgets
+            }
+
+        # Build validated fields dict
+        validated = {}
+        for name, widget in field_map.items():
+            if name == "email":
+                validated[name] = self.validateEmailField(widget)
+            elif name == "password":
+                validated[name] = self.getFieldText(widget)
+            else:
+                print("Unknown field:", name)
+                return False, {
+                    "errors": [f"Unknown field: {name}"],
+                    "invalid_widgets": [widget]
+                }
+
+        return True, validated
+
+
+    def validateForgotPassFields(self, field_map):
+        errors = []
+        invalid_widgets = []
+
+        # Content validations
+        if "email" in field_map:
+            normalized_email = self.validateEmailField(field_map["email"])
+        if normalized_email is False:
+            errors.append("email format is invalid")
+            invalid_widgets.append(field_map["email"])
+
+        if errors:
+            return False, {
+                "errors": errors,
+                "invalid_widgets": invalid_widgets
+            }
+
+        # Build validated fields dict
+        validated = {}
+        for name, widget in field_map.items():
+            if name == "email":
+                validated[name] = self.validateEmailField(widget)
             else:
                 print("Unknown field:", name)
                 return False, {

@@ -1,5 +1,5 @@
 from widgets import PasswordField, ClickableLabel, PushButton, FormRow
-from signup_form_processor import SignupFormProcessor
+from form_preprocessor import FormProcessor
 from notification_handler import NotificationHandler
 
 from PySide6.QtGui import QPixmap
@@ -29,7 +29,7 @@ class SignupPanel(QFrame):
         super().__init__(parent)
         self.setObjectName("SignupPanel")
 
-        self.form_processor = SignupFormProcessor()
+        self.form_processor = FormProcessor()
         self.notification_handler = NotificationHandler(self)
 
         layout = QVBoxLayout(self)
@@ -141,7 +141,7 @@ class SignupPanel(QFrame):
 
             return
 
-        is_valid, result = self.form_processor.validateFields(field_map)
+        is_valid, result = self.form_processor.validateSignupFields(field_map)
         if not is_valid:
             self.updateInvalidFieldStyle(result["invalid_widgets"], form_fields)
             errors = "\n".join(result["errors"])

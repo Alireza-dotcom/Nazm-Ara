@@ -1,5 +1,5 @@
 from widgets import PasswordField, ClickableLabel, PushButton
-from login_form_processor import LoginFormProcessor
+from form_preprocessor import FormProcessor
 from notification_handler import NotificationHandler
 
 from PySide6.QtGui import QPixmap
@@ -30,7 +30,7 @@ class LoginPanel(QFrame):
     def __init__(self, parent):
         super().__init__(parent)
         self.setObjectName("LoginPanel")
-        self.form_processor = LoginFormProcessor()
+        self.form_processor = FormProcessor()
         self.notification_handler = NotificationHandler(self)
 
         layout = QVBoxLayout(self)
@@ -149,7 +149,7 @@ class LoginPanel(QFrame):
             return
 
 
-        is_valid, result = self.form_processor.validateFields(field_map)
+        is_valid, result = self.form_processor.validateLoginFields(field_map)
         if not is_valid:
             self.updateInvalidFieldStyle(result["invalid_widgets"], form_fields)
             errors = "\n".join(result["errors"])
@@ -164,7 +164,6 @@ class LoginPanel(QFrame):
             )
 
             return
-
         self.login_clicked.emit(result)
 
 

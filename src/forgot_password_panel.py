@@ -27,7 +27,7 @@ class ForgotPasswordPanel(QFrame):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.setObjectName("ForgotPanel")
+        self.setObjectName("ForgotPasswordPanel")
         self.form_processor = FormProcessor()
         self.notification_handler = NotificationHandler(self)
 

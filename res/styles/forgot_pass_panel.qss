@@ -6,7 +6,7 @@ QMainWindow#MainWindow {
     background-color: #1c1c1c;
 }
 
-QFrame#ForgotPanel {
+QFrame#ForgotPasswordPanel {
     background-color: #323339;
     border-radius: 20px;
 }

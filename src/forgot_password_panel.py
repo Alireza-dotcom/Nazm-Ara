@@ -96,7 +96,6 @@ class ForgotPasswordPanel(QFrame):
 
 
     def onResetPasswordClicked(self):
-        button_ref = self.sender()
         field_map = {
             "email": self.email_input,
         }
@@ -111,7 +110,6 @@ class ForgotPasswordPanel(QFrame):
             "Please fill in email field.",
             "error",
             duration=5000,
-            source_widget=button_ref
             )
 
             return
@@ -127,7 +125,6 @@ class ForgotPasswordPanel(QFrame):
             "Validation erros",
             errors, "error",
             duration=calculate_duration,
-            source_widget=button_ref
             )
 
             return

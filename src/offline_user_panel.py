@@ -99,7 +99,6 @@ class OfflineUserPanel(QFrame):
 
 
     def onContinueClicked(self):
-        button_ref = self.sender()
         field_map = {
             "first_name": self.first_name.input,
             "last_name": self.last_name.input,
@@ -116,7 +115,6 @@ class OfflineUserPanel(QFrame):
             "Please fill in all required fields.",
             "error",
             duration=5000,
-            source_widget=button_ref
             )
 
             return
@@ -132,7 +130,6 @@ class OfflineUserPanel(QFrame):
             "Validation erros",
             errors, "error",
             duration=calculate_duration,
-            source_widget=button_ref
             )
 
             return

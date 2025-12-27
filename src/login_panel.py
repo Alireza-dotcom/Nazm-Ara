@@ -127,7 +127,6 @@ class LoginPanel(QFrame):
 
 
     def onLoginClicked(self):
-        button_ref = self.sender()
         field_map = {
             "email": self.email_input,
             "password": self.password_input.input
@@ -143,7 +142,6 @@ class LoginPanel(QFrame):
             "Please fill in all required fields.",
             "error",
             duration=5000,
-            source_widget=button_ref
             )
 
             return
@@ -160,7 +158,6 @@ class LoginPanel(QFrame):
             "Validation erros",
             errors, "error",
             duration=calculate_duration,
-            source_widget=button_ref
             )
 
             return

@@ -6,31 +6,19 @@ from PySide6.QtGui import QFont
 class NotificationHandler(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.parent_widget = self.window()
 
 
-    def showToast(self, position, title, text, type, duration=3000, source_widget=None):
-        self.active_toast = Toast(self)
-        self.active_toast.setTitleFont(QFont("Nunito", 15))
-        self.active_toast.setTextFont(QFont("Nunito", 12))
-        self.active_toast.applyPreset(self.notificationType(type))
-        self.active_toast.setPosition(self.notificationPosition(position))
-        self.active_toast.setDuration(duration)
-        self.active_toast.setTitle(title)
-        self.active_toast.setText(text)
-        self.disableWidget(source_widget)
-        self.active_toast.closed.connect(lambda: self.enableWidget(source_widget) if source_widget else None)
-        self.active_toast.show()
-
-
-    def enableWidget(self, widget):
-        if widget:
-            widget.setEnabled(True)
-
-
-    def disableWidget(self, widget):
-        if widget:
-            widget.setEnabled(False)
-
+    def showToast(self, position, title, text, type, duration=3000):
+        active_toast = Toast(self.parent_widget)
+        active_toast.setTitleFont(QFont("Nunito", 15))
+        active_toast.setTextFont(QFont("Nunito", 12))
+        active_toast.applyPreset(self.notificationType(type))
+        active_toast.setPosition(self.notificationPosition(position))
+        active_toast.setDuration(duration)
+        active_toast.setTitle(title)
+        active_toast.setText(text)
+        active_toast.show()
 
     def notificationType(self, type):
         if type == "success":

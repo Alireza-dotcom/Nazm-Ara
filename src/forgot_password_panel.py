@@ -1,6 +1,6 @@
 from widgets import ClickableLabel, PushButton
 from notification_handler import NotificationHandler
-from form_preprocessor import FormProcessor
+from form_processor import FormProcessor
 
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import (

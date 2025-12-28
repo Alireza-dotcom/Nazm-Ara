@@ -1,5 +1,5 @@
 from widgets import PasswordField, ClickableLabel, PushButton
-from form_preprocessor import FormProcessor
+from form_processor import FormProcessor
 from notification_handler import NotificationHandler
 
 from PySide6.QtGui import QPixmap

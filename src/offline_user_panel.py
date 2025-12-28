@@ -1,6 +1,6 @@
 from widgets import PushButton
 from notification_handler import NotificationHandler
-from form_preprocessor import FormProcessor
+from form_processor import FormProcessor
 from widgets import FormRow
 
 from PySide6.QtGui import QPixmap

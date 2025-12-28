@@ -247,7 +247,7 @@ class FormProcessor:
             elif name == "last_name":
                 validated[name] = self.validateName(widget)
             elif name == "nickname":
-                validated[name] = self.validateName(widget)
+                validated[name] = self.validateNickname(widget)
             else:
                 print("Unknown field:", name)
                 return False, {

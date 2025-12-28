@@ -1,6 +1,6 @@
 from pyqttoast import Toast, ToastPreset, ToastPosition
 from PySide6.QtWidgets import QWidget
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QColor
 
 
 class NotificationHandler(QWidget):
@@ -11,14 +11,14 @@ class NotificationHandler(QWidget):
 
     def showToast(self, position, title, text, type, duration=3000):
         active_toast = Toast(self.parent_widget)
-        active_toast.setTitleFont(QFont("Nunito", 15))
-        active_toast.setTextFont(QFont("Nunito", 12))
         active_toast.applyPreset(self.notificationType(type))
         active_toast.setPosition(self.notificationPosition(position))
         active_toast.setDuration(duration)
         active_toast.setTitle(title)
         active_toast.setText(text)
+        self.setStyle(active_toast)
         active_toast.show()
+
 
     def notificationType(self, type):
         if type == "success":
@@ -50,3 +50,13 @@ class NotificationHandler(QWidget):
             return ToastPosition.CENTER
         else:
             return ToastPosition.BOTTOM_RIGHT
+
+
+    def setStyle(self, toast:Toast):
+        toast.setBorderRadius(5)
+        toast.setBackgroundColor(QColor("#323339"))
+        toast.setTitleColor(QColor("#ffffff"))
+        toast.setTextColor(QColor("#ffffff"))
+        toast.setCloseButtonIconColor(QColor("#ffffff"))
+        toast.setTitleFont(QFont("Nunito", 15))
+        toast.setTextFont(QFont("Nunito", 12))

@@ -114,7 +114,7 @@ class ForgotPasswordPanel(QFrame):
 
             return
 
-        is_valid, result = self.form_processor.validateFields(field_map)
+        is_valid, result = self.form_processor.validateForgotPassFields(field_map)
         if not is_valid:
             self.updateInvalidFieldStyle(result["invalid_widgets"], form_fields)
             errors = "\n".join(result["errors"])

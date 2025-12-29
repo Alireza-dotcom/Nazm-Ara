@@ -8,6 +8,7 @@ from style_sheet_handler import StyleSheetHandler
 from select_acc_panel import SelectAccountPanel
 from database_manager import DatabaseManager
 from nazm_ara_panel import TEMP
+from notification_handler import NotificationHandler
 import resources_rc
 
 from PySide6.QtWidgets import (
@@ -29,6 +30,7 @@ class MainWindow(QMainWindow):
 
         self.database = DatabaseManager()
         self.style_sheet_handler = StyleSheetHandler(self)
+        self.notification_handler = NotificationHandler(self)
 
         self.setMinimumSize(1024, 768)
         self.resize(1280, 720)
@@ -121,9 +123,19 @@ class MainWindow(QMainWindow):
 
 
     def createOfflineUser(self, data):
-        self.database.addOfflineUser(data['nickname'], data['first_name'], data['last_name'])
-        user_info = self.database.getListOfUsers()[-1]
-        self.openMainApp(user_info)
+        if self.database.addOfflineUser(data['nickname'], data['first_name'], data['last_name']):
+            self.notification_handler.showToast(
+                "bottom_right", "Welcome!",
+                "Your account has been successfully created.", "success", duration=4000
+            )
+            user_info = self.database.getListOfUsers()[-1]
+            self.openMainApp(user_info)
+        else:
+            self.notification_handler.showToast(
+                "bottom_right", "Couldn’t Create Account",
+                "A temporary error occurred. Please try again.", "error", duration=4000
+            )
+
 
 
     def logIntoOnlineAccount(self):

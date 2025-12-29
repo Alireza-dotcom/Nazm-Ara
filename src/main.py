@@ -39,14 +39,14 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.stack = QStackedWidget()
 
+        self.layout = QHBoxLayout(self.central_widget)
+        self.layout.addWidget(self.stack)
+
 
         if self.database.getListOfUsers():
             self.showSelectAccountPage()
         else:
             self.showLoginPage()
-
-        self.layout = QHBoxLayout(self.central_widget)
-        self.layout.addWidget(self.stack)
 
 
     def showLoginPage(self):
@@ -57,6 +57,8 @@ class MainWindow(QMainWindow):
         self.login_panel.select_account_clicked.connect(self.showSelectAccountPage)
         self.login_panel.continue_clicked.connect(self.showOfflineAccountPanel)
         self.login_panel.login_clicked.connect(self.logIntoOnlineAccount)
+        self.shrinkPage()
+        self.addSpacing()
 
 
     def showSelectAccountPage(self):
@@ -64,6 +66,8 @@ class MainWindow(QMainWindow):
         self.select_account_panel = self.loadPage(SelectAccountPanel)
         self.select_account_panel.add_account_clicked.connect(self.showLoginPage)
         self.select_account_panel.account_selected.connect(self.openMainApp)
+        self.shrinkPage()
+        self.addSpacing()
 
 
     def showOfflineAccountPanel(self):
@@ -78,6 +82,8 @@ class MainWindow(QMainWindow):
         print(f"Selected account: {account_row}")
         self.style_sheet_handler.setResourceQssPath(":/styles/signup_panel.qss")
         main = self.loadPage(TEMP, account_row)
+        self.resetShrinkPage()
+        self.removeSpacing()
 
 
     def showForgotPasswordPage(self):
@@ -110,16 +116,34 @@ class MainWindow(QMainWindow):
 
 
     def resizeEvent(self, event):
-        MIN_PANEL_WIDTH = 430
-        PANEL_WIDTH_RATIO = 0.32
-
-        window_width = self.width()
-        target_width = max(MIN_PANEL_WIDTH, int(window_width * PANEL_WIDTH_RATIO)) # 32% of width, min 430px
-        self.stack.setFixedWidth(target_width)
-
+        self.shrinkPage()
         self.style_sheet_handler.updateStylesheet()
 
         super().resizeEvent(event)
+
+    def shrinkPage(self):
+        if not self.stack.currentWidget().objectName() == "NazmAra":
+            MIN_PANEL_WIDTH = 430
+            PANEL_WIDTH_RATIO = 0.32
+
+            window_width = self.width()
+            target_width = max(MIN_PANEL_WIDTH, int(window_width * PANEL_WIDTH_RATIO)) # 32% of width, min 430px
+            self.stack.setFixedWidth(target_width)
+
+
+    def resetShrinkPage(self):
+        self.stack.setMinimumWidth(0)
+        self.stack.setMaximumWidth(16777215)
+
+
+    def addSpacing(self):
+        self.layout.setSpacing(6)
+        self.layout.setContentsMargins(9, 9, 9, 9)
+
+
+    def removeSpacing(self):
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
 
     def createOfflineUser(self, data):

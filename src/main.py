@@ -7,6 +7,7 @@ from utils import loadFont
 from style_sheet_handler import StyleSheetHandler
 from select_acc_panel import SelectAccountPanel
 from database_manager import DatabaseManager
+from nazm_ara_panel import TEMP
 import resources_rc
 
 from PySide6.QtWidgets import (
@@ -53,26 +54,28 @@ class MainWindow(QMainWindow):
         self.login_panel.signup_clicked.connect(self.showSignupPage)
         self.login_panel.select_account_clicked.connect(self.showSelectAccountPage)
         self.login_panel.continue_clicked.connect(self.showOfflineAccountPanel)
+        self.login_panel.login_clicked.connect(self.logIntoOnlineAccount)
 
 
     def showSelectAccountPage(self):
         self.style_sheet_handler.setResourceQssPath(":/styles/select_acc_panel.qss")
         self.select_account_panel = self.loadPage(SelectAccountPanel)
         self.select_account_panel.add_account_clicked.connect(self.showLoginPage)
-        self.select_account_panel.account_selected.connect(self.onAccountSelected)
+        self.select_account_panel.account_selected.connect(self.openMainApp)
 
 
     def showOfflineAccountPanel(self):
         self.style_sheet_handler.setResourceQssPath(":/styles/offline_acc_panel.qss")
         self.offline_account_panel = self.loadPage(OfflineUserPanel)
         self.offline_account_panel.back_to_login_clicked.connect(self.showLoginPage)
-        self.offline_account_panel.continue_clicked.connect(self.onAccountSelected)
+        self.offline_account_panel.continue_clicked.connect(self.createOfflineUser)
 
 
-    def onAccountSelected(self, account_row: dict):
-        print(f"Selected account: {account_row}")
+    def openMainApp(self, account_row: dict):
         # TODO: main app
-        self.showLoginPage()
+        print(f"Selected account: {account_row}")
+        self.style_sheet_handler.setResourceQssPath(":/styles/signup_panel.qss")
+        main = self.loadPage(TEMP, account_row)
 
 
     def showForgotPasswordPage(self):
@@ -80,18 +83,20 @@ class MainWindow(QMainWindow):
         self.forgot_pass_panel = self.loadPage(ForgotPasswordPanel)
         self.forgot_pass_panel.back_to_login_clicked.connect(self.showLoginPage)
         self.forgot_pass_panel.create_new_acc_clicked.connect(self.showSignupPage)
+        self.forgot_pass_panel.reset_password_clicked.connect(self.sendResetPassEmail)
 
 
     def showSignupPage(self):
         self.style_sheet_handler.setResourceQssPath(":/styles/signup_panel.qss")
         self.signup_panel = self.loadPage(SignupPanel)
         self.signup_panel.already_have_account_clicked.connect(self.showLoginPage)
+        self.signup_panel.signup_clicked.connect(self.createOnlineUser)
 
 
-    def loadPage(self, ClassWidget):
+    def loadPage(self, ClassWidget, *args, **kwargs):
         previous_widget = self.stack.currentWidget()
 
-        new_widget = ClassWidget(self)
+        new_widget = ClassWidget(self, *args, **kwargs)
         index = self.stack.addWidget(new_widget)
 
         self.stack.setCurrentIndex(index)
@@ -113,6 +118,27 @@ class MainWindow(QMainWindow):
         self.style_sheet_handler.updateStylesheet()
 
         super().resizeEvent(event)
+
+
+    def createOfflineUser(self, data):
+        self.database.addOfflineUser(data['nickname'], data['first_name'], data['last_name'])
+        user_info = self.database.getListOfUsers()[-1]
+        self.openMainApp(user_info)
+
+
+    def logIntoOnlineAccount(self):
+        #TODO: add login functionality
+        pass
+
+
+    def sendResetPassEmail(self, email):
+        # TODO: add reset password
+        pass
+
+
+    def createOnlineUser(self, data):
+        # TODO: add online user creation
+        pass
 
 
 if __name__ == "__main__":

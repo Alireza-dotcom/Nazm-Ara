@@ -65,7 +65,7 @@ class StyleSheetHandler(QObject):
         base_window_size = 900
 
         scale_factor = window_size / base_window_size
-        scale_factor = max(0.9, min(scale_factor, 1.5))
+        scale_factor = max(0.95, min(scale_factor, 1.5))
 
         return scale_factor
 

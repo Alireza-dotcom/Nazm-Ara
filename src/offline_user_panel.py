@@ -112,8 +112,6 @@ class OfflineUserPanel(QFrame):
         if not is_valid:
             return 
 
-        print(data)
-
         self.continue_clicked.emit(data)
 
 

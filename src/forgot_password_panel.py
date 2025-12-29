@@ -128,7 +128,6 @@ class ForgotPasswordPanel(QFrame):
             
         data = self.form_processor.getValidatedData(field_map)
 
-        print(data)
         return True, data
 
 

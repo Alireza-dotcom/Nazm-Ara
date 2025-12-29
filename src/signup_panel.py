@@ -131,7 +131,6 @@ class SignupPanel(QFrame):
         if not is_valid:
             return 
 
-        print(data)
         self.signup_clicked.emit(data)
 
 

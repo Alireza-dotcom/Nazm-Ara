@@ -104,37 +104,52 @@ class OfflineUserPanel(QFrame):
             "last_name": self.last_name.input,
             "nickname": self.display_name_input,
         }
-        form_fields = list(field_map.values())
 
+        if not self.handleEmptyValidation(field_map):
+            return
+
+        is_valid, data = self.handleFormatValidation(field_map)
+        if not is_valid:
+            return 
+
+        print(data)
+
+        self.signup_clicked.emit(data)
+
+
+    def handleFormatValidation(self, field_map):
+        is_valid, result = self.form_processor.getValidationErrors(field_map)
+        
+        if not is_valid:
+            form_fields = list(field_map.values())
+            self.updateInvalidFieldStyle(result["invalid_widgets"], form_fields)
+            
+            errors = "\n".join(result["errors"])
+            duration = max(4000, len(errors) * 50)
+            
+            self.notification_handler.showToast(
+                "bottom_right", "Validation Errors",
+                errors, "error", duration=duration
+            )
+            return False, None
+            
+        data = self.form_processor.getValidatedData(field_map)
+        return True, data
+
+
+    def handleEmptyValidation(self, field_map):
+        form_fields = list(field_map.values())
         field_status = self.form_processor.findEmptyAndFilledFields(form_fields)
+        
         self.updateEmptyFieldStyle(field_status)
+        
         if field_status["empty"]:
             self.notification_handler.showToast(
-            "bottom_right",
-            "Empty fields",
-            "Please fill in all required fields.",
-            "error",
-            duration=5000,
+                "bottom_right", "Empty fields",
+                "Please fill in all required fields.", "error", duration=5000
             )
-
-            return
-
-        is_valid, result = self.form_processor.validateOffilneUserFields(field_map)
-        if not is_valid:
-            self.updateInvalidFieldStyle(result["invalid_widgets"], form_fields)
-            errors = "\n".join(result["errors"])
-
-            calculate_duration = max(4000, len(errors) * 50)  # 50 ms per character
-            self.notification_handler.showToast(
-            "bottom_right",
-            "Validation erros",
-            errors, "error",
-            duration=calculate_duration,
-            )
-
-            return
-
-        self.signup_clicked.emit(result)
+            return False
+        return True
 
 
     def updateEmptyFieldStyle(self, fields):

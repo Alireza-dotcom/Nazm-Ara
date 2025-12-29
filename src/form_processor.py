@@ -68,191 +68,63 @@ class FormProcessor:
         return min_len <= field_length <= max_len
 
 
-    def validateSignupFields(self, field_map):
+    def getValidationErrors(self, field_map, is_signup=False):
         errors = []
         invalid_widgets = []
 
-        # Content validations
-        if "email" in field_map:
-            normalized_email = self.validateEmailField(field_map["email"])
-        if normalized_email is False:
-            errors.append("email format is invalid")
-            invalid_widgets.append(field_map["email"])
-
-        if "password" in field_map and not self.checkLength(field_map["password"], min_len=8, max_len=50):
-            errors.append("password must be at least 8 characters")
-            invalid_widgets.append(field_map["password"])
-        elif "password" in field_map and not self.validatePassword(field_map["password"])[0]:
-            _, pwd_reason = self.validatePassword(field_map["password"])
-            errors.append(pwd_reason)
-            invalid_widgets.append(field_map["password"])
-
-        if "first_name" in field_map and not self.checkLength(field_map["first_name"], min_len=3, max_len=30):
-            errors.append("first name must be at least 3 characters")
-            invalid_widgets.append(field_map["first_name"])
-        elif "first_name" in field_map and not self.validateName(field_map["first_name"]):
-            errors.append("first name format is invalid")
-            invalid_widgets.append(field_map["first_name"])
-
-        if "last_name" in field_map and not self.checkLength(field_map["last_name"], min_len=3, max_len=30):
-            errors.append("last name must be at least 3 characters")
-            invalid_widgets.append(field_map["last_name"])
-        elif "last_name" in field_map and not self.validateName(field_map["last_name"]):
-            errors.append("last name format is invalid")
-            invalid_widgets.append(field_map["last_name"])
-
-        if "nickname" in field_map and not self.checkLength(field_map["nickname"], min_len=3, max_len=25):
-            errors.append("nickname must be at least 2 characters")
-            invalid_widgets.append(field_map["nickname"])
-        elif "nickname" in field_map and not self.validateNickname(field_map["nickname"]):
-            errors.append("nickname format is invalid")
-            invalid_widgets.append(field_map["nickname"])
-
-        if errors:
-            return False, {
-                "errors": errors,
-                "invalid_widgets": invalid_widgets
-            }
-
-        # Build validated fields dict
-        validated = {}
         for name, widget in field_map.items():
-            if name == "email":
-                validated[name] = self.validateEmailField(widget)
-            elif name == "first_name":
-                validated[name] = self.validateName(widget)
-            elif name == "last_name":
-                validated[name] = self.validateName(widget)
-            elif name == "nickname":
-                validated[name] = self.validateName(widget)
+            # Name Rules (Length > 3)
+            if name in ["first_name", "last_name"]:
+                if not self.checkLength(widget, min_len=3, max_len=50):
+                    errors.append(f"{name.replace('_', ' ')} must be at least 3 characters")
+                    invalid_widgets.append(widget)
+                elif not self.validateName(widget):
+                    errors.append(f"{name.replace('_', ' ')} format is invalid")
+                    invalid_widgets.append(widget)
+
+            # Nickname Rules
+            if name == "nickname":
+                if not self.checkLength(widget, min_len=2, max_len=255):
+                    errors.append("nickname must be at least 3 characters")
+                    invalid_widgets.append(field_map["nickname"])
+                elif not self.validateNickname(widget):
+                    errors.append("nickname format is invalid")
+                    invalid_widgets.append(widget)
+
+            # Email Rules
+            elif name == "email":
+                if self.validateEmailField(widget) is False:
+                    errors.append("email format is invalid")
+                    invalid_widgets.append(widget)
+
+            # Password Rules
             elif name == "password":
-                validated[name] = self.getFieldText(widget)
-            else:
-                print("Unknown field:", name)
-                return False, {
-                    "errors": [f"Unknown field: {name}"],
-                    "invalid_widgets": [widget]
-                }
-
-        return True, validated
-
-
-    def validateLoginFields(self, field_map):
-        errors = []
-        invalid_widgets = []
-
-        # Content validations
-        if "email" in field_map:
-            normalized_email = self.validateEmailField(field_map["email"])
-        if normalized_email is False:
-            errors.append("email format is invalid")
-            invalid_widgets.append(field_map["email"])
-
-        if "password" in field_map and not self.checkLength(field_map["password"], min_len=8, max_len=50):
-            errors.append("password must be at least 8 characters")
-            invalid_widgets.append(field_map["password"])
+                # Rule: Always check length > 8
+                if not self.checkLength(widget, min_len=8, max_len=50):
+                    errors.append("password must be at least 8 characters")
+                    invalid_widgets.append(widget)
+                elif is_signup:
+                    valid, reason = self.validatePassword(widget)
+                    if not valid:
+                        errors.append(reason)
+                        invalid_widgets.append(widget)
 
         if errors:
-            return False, {
-                "errors": errors,
-                "invalid_widgets": invalid_widgets
-            }
+            return False, {"errors": errors, "invalid_widgets": invalid_widgets}
+        return True, None
 
-        # Build validated fields dict
+
+    def getValidatedData(self, field_map):
         validated = {}
         for name, widget in field_map.items():
             if name == "email":
                 validated[name] = self.validateEmailField(widget)
-            elif name == "password":
-                validated[name] = self.getFieldText(widget)
-            else:
-                print("Unknown field:", name)
-                return False, {
-                    "errors": [f"Unknown field: {name}"],
-                    "invalid_widgets": [widget]
-                }
-
-        return True, validated
-
-
-    def validateForgotPassFields(self, field_map):
-        errors = []
-        invalid_widgets = []
-
-        # Content validations
-        if "email" in field_map:
-            normalized_email = self.validateEmailField(field_map["email"])
-        if normalized_email is False:
-            errors.append("email format is invalid")
-            invalid_widgets.append(field_map["email"])
-
-        if errors:
-            return False, {
-                "errors": errors,
-                "invalid_widgets": invalid_widgets
-            }
-
-        # Build validated fields dict
-        validated = {}
-        for name, widget in field_map.items():
-            if name == "email":
-                validated[name] = self.validateEmailField(widget)
-            else:
-                print("Unknown field:", name)
-                return False, {
-                    "errors": [f"Unknown field: {name}"],
-                    "invalid_widgets": [widget]
-                }
-
-        return True, validated
-
-
-    def validateOffilneUserFields(self, field_map):
-        errors = []
-        invalid_widgets = []
-
-        # Content validations
-        if "first_name" in field_map and not self.checkLength(field_map["first_name"], min_len=3, max_len=30):
-            errors.append("first name must be at least 3 characters")
-            invalid_widgets.append(field_map["first_name"])
-        elif "first_name" in field_map and not self.validateName(field_map["first_name"]):
-            errors.append("first name format is invalid")
-            invalid_widgets.append(field_map["first_name"])
-
-        if "last_name" in field_map and not self.checkLength(field_map["last_name"], min_len=3, max_len=30):
-            errors.append("last name must be at least 3 characters")
-            invalid_widgets.append(field_map["last_name"])
-        elif "last_name" in field_map and not self.validateName(field_map["last_name"]):
-            errors.append("last name format is invalid")
-            invalid_widgets.append(field_map["last_name"])
-
-        if "nickname" in field_map and not self.checkLength(field_map["nickname"], min_len=3, max_len=25):
-            errors.append("nickname must be at least 2 characters")
-            invalid_widgets.append(field_map["nickname"])
-        elif "nickname" in field_map and not self.validateNickname(field_map["nickname"]):
-            errors.append("nickname format is invalid")
-            invalid_widgets.append(field_map["nickname"])
-
-        if errors:
-            return False, {
-                "errors": errors,
-                "invalid_widgets": invalid_widgets
-            }
-
-        # Build validated fields dict
-        validated = {}
-        for name, widget in field_map.items():
-            if name == "first_name":
-                validated[name] = self.validateName(widget)
-            elif name == "last_name":
+            elif name in ["first_name", "last_name"]:
                 validated[name] = self.validateName(widget)
             elif name == "nickname":
                 validated[name] = self.validateNickname(widget)
+            elif name == "password":
+                validated[name] = self.getFieldText(widget)
             else:
-                print("Unknown field:", name)
-                return False, {
-                    "errors": [f"Unknown field: {name}"],
-                    "invalid_widgets": [widget]
-                }
-
-        return True, validated
+                validated[name] = self.getFieldText(widget)
+        return validated

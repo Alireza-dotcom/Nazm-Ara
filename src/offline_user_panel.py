@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 
 class OfflineUserPanel(QFrame):
     back_to_login_clicked = Signal()
-    continue_clicked = Signal(str)
+    continue_clicked = Signal(dict)
 
     STRETCH_SIZE = 1
     SPACING_SIZE = 13
@@ -114,7 +114,7 @@ class OfflineUserPanel(QFrame):
 
         print(data)
 
-        self.signup_clicked.emit(data)
+        self.continue_clicked.emit(data)
 
 
     def handleFormatValidation(self, field_map):

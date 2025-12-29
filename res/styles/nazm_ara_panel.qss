@@ -1,0 +1,44 @@
+* {
+    font-family: "Nunito", "Vazirmatn";
+}
+
+QMainWindow#MainWindow {
+    background-color: #1c1c1c;
+}
+
+QFrame#Sidebar {
+    background-color: #2e2f35;
+}
+
+QFrame#Sidebar > PushButton {
+    background-color: #323339;
+    border: 1px solid #1c1c1c;
+    color: white;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+RadioButton {
+    background-color: #323339;
+    border: 1px solid #1c1c1c;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+RadioButton:checked {
+    background-color: #1c1c1c;
+}
+
+
+QFrame#MainSection > #UpperFrame {
+    background-color: #323339;
+}
+
+
+QFrame#Sidebar > PushButton:hover {
+    background-color: #4452bb;
+}

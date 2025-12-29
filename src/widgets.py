@@ -4,11 +4,50 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QPushButton,
     QLineEdit,
-    QLabel,
+    QLabel
+)
+from PySide6.QtGui import (
+    QIcon
+)
+from PySide6.QtCore import (
+    QSize,
+    QMargins,
+    Signal,
+    Qt
 )
 
-from PySide6.QtCore import Qt, Signal, QSize, QMargins
-from PySide6.QtGui import QIcon
+
+class RadioButton(QPushButton):
+    # Tracks the currently active button across all instances
+    active_button = None
+
+    def __init__(self, text="", parent=None):
+        super().__init__(text, parent)
+        self.setCheckable(True)
+        self.clicked.connect(self.handle_click)
+        self.update_style()
+
+    def mousePressEvent(self, event):
+        # If already pushed, do nothing
+        if self.isChecked():
+            return 
+        super().mousePressEvent(event)
+
+    def handle_click(self):
+        # Uncheck the previous button if it exists
+        if RadioButton.active_button and RadioButton.active_button != self:
+            RadioButton.active_button.setChecked(False)
+            RadioButton.active_button.update_style()
+
+        self.setChecked(True)
+        RadioButton.active_button = self
+        self.update_style()
+
+    def update_style(self):
+        if self.isChecked():
+            self.setCursor(Qt.ArrowCursor)
+        else:
+            self.setCursor(Qt.PointingHandCursor)
 
 
 class PushButton(QPushButton):

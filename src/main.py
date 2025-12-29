@@ -7,7 +7,7 @@ from utils import loadFont
 from style_sheet_handler import StyleSheetHandler
 from select_acc_panel import SelectAccountPanel
 from database_manager import DatabaseManager
-from nazm_ara_panel import TEMP
+from nazm_ara_panel import NazmAra
 from notification_handler import NotificationHandler
 import resources_rc
 
@@ -78,10 +78,8 @@ class MainWindow(QMainWindow):
 
 
     def openMainApp(self, account_row: dict):
-        # TODO: main app
-        print(f"Selected account: {account_row}")
-        self.style_sheet_handler.setResourceQssPath(":/styles/signup_panel.qss")
-        main = self.loadPage(TEMP, account_row)
+        self.style_sheet_handler.setResourceQssPath(":/styles/nazm_ara_panel.qss")
+        self.loadPage(NazmAra, account_row)
         self.resetShrinkPage()
         self.removeSpacing()
 

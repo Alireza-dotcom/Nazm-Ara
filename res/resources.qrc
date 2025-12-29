@@ -11,5 +11,9 @@
     <file>styles/forgot_pass_panel.qss</file>
     <file>styles/signup_panel.qss</file>
     <file>styles/offline_acc_panel.qss</file>
+    <file>styles/nazm_ara_panel.qss</file>
+    <file>icons/profile.svg</file>
+    <file>icons/settings.svg</file>
+    <file>icons/upload.svg</file>
 </qresource>
 </RCC>

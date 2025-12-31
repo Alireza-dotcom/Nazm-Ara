@@ -51,7 +51,7 @@ QLineEdit:focus {
 
 QFrame > PushButton {
     background-color: #5865f2;
-    color: white;
+    color: #ffffff;
     border-radius: 6px;
     padding: 10px;
     font-size: 16px;

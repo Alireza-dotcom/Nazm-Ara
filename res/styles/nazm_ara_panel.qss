@@ -6,6 +6,7 @@ QMainWindow#MainWindow {
     background-color: #1c1c1c;
 }
 
+/* side bar */
 QFrame#Sidebar {
     background-color: #2e2f35;
 }
@@ -13,13 +14,18 @@ QFrame#Sidebar {
 QFrame#Sidebar > PushButton {
     background-color: #323339;
     border: 1px solid #1c1c1c;
-    color: white;
+    color: #ffffff;
     border-radius: 6px;
     padding: 10px;
     font-size: 16px;
     font-weight: 500;
 }
 
+QFrame#Sidebar > PushButton:hover {
+    background-color: #4452bb;
+}
+
+/* upper frame */
 RadioButton {
     background-color: #323339;
     border: 1px solid #1c1c1c;
@@ -33,12 +39,113 @@ RadioButton:checked {
     background-color: #1c1c1c;
 }
 
-
 QFrame#MainSection > #UpperFrame {
     background-color: #323339;
 }
 
+/* add todo frame */
+QFrame#AddTodoFrame > PushButton {
+    background-color: #1c1c1c;
+    border: 1px solid #323339;
+    border-radius: 4px;
+    font-size: 16px;
+    padding: 6px;
+}
 
-QFrame#Sidebar > PushButton:hover {
+QFrame#AddTodoFrame > PushButton:hover {
+    background-color: #58595d;
+}
+
+QFrame#AddTodoFrame > QLabel {
+    font-size: 18px;
+}
+
+
+/* add todo modal */
+QFrame#AddTodoModal {
+    background-color: #323339;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+#shield {
+    background-color: rgba(0, 0, 0, 100);
+}
+
+QFrame#AddTodoModal > QLineEdit {
+    background-color: #323339;
+    border-radius: 8px;
+    border: 1px solid #58595d;
+    padding: 8px;
+    font-size: 14px;
+    color: #dfe0e2;
+}
+
+QFrame#AddTodoModal > QLineEdit:focus {
+    border: 1px solid #7bb0f5;
+}
+
+QFrame#AddTodoModal > QLabel#TitleLabel {
+    font-size: 25px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+QFrame#AddTodoModal > QLabel {
+    font-size: 14px;
+    color: #ffffff;
+}
+
+QFrame#AddTodoModal > PushButton#CloseButton {
+    background-color: #323339;
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 10px;
+} 
+
+QFrame#AddTodoModal > QComboBox {
+    background-color: #323339;
+    border: 1px solid #58595d;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 18px;
+    color: #ffffff;
+    selection-background-color: #2b75d6;
+    selection-color: #ffffff;
+}
+
+QFrame#AddTodoModal > QComboBox:focus {
+    border: 1px solid #7bb0f5;
+}
+
+/* drop down icon square */
+QFrame#AddTodoModal > QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 30px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    background-color: #3a3b41;
+}
+
+/* arrow icon */
+QFrame#AddTodoModal > QComboBox::down-arrow {
+    image: url(:/icons/arrow_down.svg);
+    width: 15px;
+    height: 15px;
+}
+
+QFrame#AddTodoFrame > PushButton#AddTaskBtn,
+QFrame#AddTodoModal > PushButton#SaveButton {
+    background-color: #5865f2;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 5px 15px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+QFrame#AddTodoFrame > PushButton#AddTaskBtn:hover,
+QFrame#AddTodoModal > PushButton#SaveButton:hover {
     background-color: #4452bb;
 }

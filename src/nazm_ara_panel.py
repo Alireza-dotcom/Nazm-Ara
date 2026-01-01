@@ -1,8 +1,11 @@
 from widgets import PushButton, RadioButton
+from modals import AddTodoModal
+import uuid
 
 from PySide6.QtCore import (
     Qt,
     QMargins,
+    QDate
 )
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -12,6 +15,7 @@ from PySide6.QtWidgets import (
     QWidget,
     QLabel,
     QStackedWidget,
+    QPushButton
 )
 
 class NazmAra(QWidget):
@@ -30,7 +34,7 @@ class NazmAra(QWidget):
 
         # Instantiate Sub-classes
         self.sidebar = UserControlSidebar()
-        self.content_area = MainSection()
+        self.content_area = MainSection(self, self.account_details)
         self.content_area.setObjectName("MainSection")
 
         # Add to main layout
@@ -73,9 +77,10 @@ class MainSection(QFrame):
     TODO_PAGE  = 1
     HABIT_PAGE = 2
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, account_details=None):
         super().__init__(parent)
-        
+        self.account_details = account_details
+
         self.layout = QVBoxLayout(self)
         self.layout.setAlignment(Qt.AlignTop)
         self.layout.setContentsMargins(MainSection.CONTENTS_MARGINS_SIZE)
@@ -96,7 +101,7 @@ class MainSection(QFrame):
         self.pages = QStackedWidget()
 
         self.choose_one = QLabel("choose one")
-        self.todo_page = QLabel("Todo List")   # TODO: task list class
+        self.todo_page = TodoWidget(self, self.account_details)
         self.habit_page = QLabel("Habit List") # TODO: habit list class
 
         # Add pages to stack
@@ -108,3 +113,82 @@ class MainSection(QFrame):
 
         self.todo_list_btn.clicked.connect(lambda: self.pages.setCurrentIndex(MainSection.TODO_PAGE))
         self.habit_list_btn.clicked.connect(lambda: self.pages.setCurrentIndex(MainSection.HABIT_PAGE))
+
+
+class TodoWidget(QWidget):
+    def __init__(self, parent=None, account_details=None):
+        super().__init__(parent)
+        self.account_details = account_details
+
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        self.header_frame = QFrame(self)
+        self.header_frame.setObjectName("AddTodoFrame")
+        self.active_date = QDate.currentDate()
+
+        self.header_layout = QHBoxLayout(self.header_frame)
+        self.header_layout.setAlignment(Qt.AlignLeft)
+
+        self.calendar_btn = PushButton(parent=self)
+        self.calendar_btn.setIcon(QIcon(":icons/calendar.svg"))
+        
+        self.previous_day_btn = PushButton(parent=self)
+        self.previous_day_btn.setIcon(QIcon(":icons/previous_day.svg"))
+        self.previous_day_btn.clicked.connect(lambda: self.nextAndPreviousDay(-1))
+
+        self.date_label = QLabel("Today", self)
+        self.date_label.setFixedWidth(165)
+        self.date_label.setAlignment(Qt.AlignCenter)
+
+        self.next_day_btn = PushButton(parent=self)
+        self.next_day_btn.setIcon(QIcon(":icons/next_day.svg"))
+        self.next_day_btn.clicked.connect(lambda: self.nextAndPreviousDay(1))
+
+        self.go_to_today_btn = PushButton("Today", self)
+        self.go_to_today_btn.clicked.connect(self.jumpToToday)
+
+        self.add_task_btn = PushButton("+ Add task", self)
+        self.add_task_btn.setObjectName("AddTaskBtn")
+        self.add_task_btn.clicked.connect(self.showModal)
+
+        self.header_layout.addWidget(self.calendar_btn)
+        self.header_layout.addWidget(self.previous_day_btn)
+        self.header_layout.addWidget(self.date_label)
+        self.header_layout.addWidget(self.next_day_btn)
+        self.header_layout.addWidget(self.go_to_today_btn)
+        
+        self.header_layout.addStretch(1)
+        self.header_layout.addWidget(self.add_task_btn)
+        #################################
+
+        self.main_layout.addWidget(self.header_frame)
+
+
+    def showModal(self):
+        self.modal = AddTodoModal(self)
+        self.modal.add_todo_clicked.connect(self.createTodo)
+
+
+    def createTodo(self, details):
+        details["date_time"] = self.active_date.toString("d-MMMM-yyyy")
+
+
+    def nextAndPreviousDay(self, next_or_previous):
+        curent_day = QDate.currentDate()
+        self.active_date = self.active_date.addDays(next_or_previous)
+        diff = curent_day.daysTo(self.active_date)
+
+        if diff == -1:
+            self.date_label.setText("Yesterday")
+        elif diff == 0:
+            self.date_label.setText("Today")
+        elif diff == 1:
+            self.date_label.setText("Tomorrow")
+        else:
+            self.date_label.setText(self.active_date.toString(("d-MMMM-yyyy")))
+
+
+    def jumpToToday(self):
+        self.active_date = QDate.currentDate()
+        self.date_label.setText("Today")

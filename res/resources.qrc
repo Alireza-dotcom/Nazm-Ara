@@ -15,5 +15,10 @@
     <file>icons/profile.svg</file>
     <file>icons/settings.svg</file>
     <file>icons/upload.svg</file>
+    <file>icons/calendar.svg</file>
+    <file>icons/next_day.svg</file>
+    <file>icons/previous_day.svg</file>
+    <file>icons/cross.svg</file>
+    <file>icons/arrow_down.svg</file>
 </qresource>
 </RCC>

@@ -128,3 +128,53 @@ class FormProcessor:
             else:
                 validated[name] = self.getFieldText(widget)
         return validated
+
+
+    def validateTodoFields(self, todo_name_field):
+        todo_name = self.getFieldText(todo_name_field)
+        clean_todo_name = " ".join(todo_name.split())
+
+        pattern = r"^[a-zA-Z\u0600-\u06FF0-9\s]+$"
+        if not re.match(pattern, clean_todo_name):
+            return False
+
+        return clean_todo_name
+
+
+    def validatePriority(self, priority_field):
+        priority = priority_field.currentText()
+        valid_priorities = ["Low", "Medium", "High"]
+        if priority not in valid_priorities:
+            return False
+
+        return valid_priorities.index(priority)
+
+
+    def getValidatedTodoData(self, field_map):
+        validated = {}
+        for name, widget in field_map.items():
+            if name in ["title", "description"]:
+                validated[name] = self.validateTodoFields(widget)
+            elif name == "priority":
+                validated[name] = self.validatePriority(widget)
+            else:
+                validated[name] = self.getFieldText(widget)
+        return validated
+
+
+    def getTodoModalsValidationErros(self, field_map):
+        errors = []
+        invalid_widgets = []
+
+        for name, widget in field_map.items():
+            if name in ["title", "description"]:
+                if not self.checkLength(widget, min_len=3, max_len=50):
+                    errors.append(f"{name} must be at least 3 characters")
+                    invalid_widgets.append(widget)
+                elif not self.validateName(widget):
+                    errors.append(f"{name} format is invalid")
+                    invalid_widgets.append(widget)
+
+        if errors:
+            return False, {"errors": errors, "invalid_widgets": invalid_widgets}
+        return True, None

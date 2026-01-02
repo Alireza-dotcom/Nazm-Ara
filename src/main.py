@@ -191,6 +191,7 @@ class NoTabApplication(QApplication):
 if __name__ == "__main__":
     app = NoTabApplication([])
     app.setApplicationName("Nazm Ara")
+    app.styleHints().setColorScheme(Qt.ColorScheme.Dark)
     window = MainWindow()
     window.show()
     sys.exit(app.exec())

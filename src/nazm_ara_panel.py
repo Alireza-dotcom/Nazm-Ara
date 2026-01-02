@@ -188,11 +188,22 @@ class TodoWidget(QWidget):
         for row in tasks:
             item = QListWidgetItem(self.list_widget)
             custom_widget = TodoListItemWidget(row, self)
+            custom_widget.on_check_button_clicked.connect(self.checkedOrUncheckedTask)
             item.setSizeHint(custom_widget.sizeHint())
             item.setData(Qt.UserRole, row)
             self.list_widget.addItem(item)
             self.list_widget.setItemWidget(item, custom_widget)
         
+    def checkedOrUncheckedTask(self, task_object, task_id, value):
+        status = self.database.toggleTask(task_id, value)
+        if status:
+            task_object.toggleCheckedBtn()
+        else:
+            task_object.check_btn.setChecked(False)
+            self.notification_handler.showToast(
+                "bottom_right", "Couldn't Create Task",
+                "A temporary error occurred. Please try again.", "error", duration=4000
+            )
 
     def showModal(self):
         self.modal = AddTodoModal(self)
@@ -209,6 +220,7 @@ class TodoWidget(QWidget):
 
             item = QListWidgetItem(self.list_widget)
             custom_widget = TodoListItemWidget(details, self)
+            custom_widget.on_check_button_clicked.connect(self.checkedOrUncheckedTask)
             item.setSizeHint(custom_widget.sizeHint())
             item.setData(Qt.UserRole, details)
             self.list_widget.addItem(item)

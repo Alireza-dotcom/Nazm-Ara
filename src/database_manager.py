@@ -205,3 +205,15 @@ class DatabaseManager:
         except sqlite3.Error as e:
             print(f"Error fetching tasks by date: {e}")
             return []
+
+
+    def toggleTask(self, task_id, value) -> bool:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(f"UPDATE tasks SET is_complete = ? WHERE local_id = ?", (value, task_id))
+                return True
+        except sqlite3.Error as e:
+            print(f"Error updating specified task: {e}")
+            return False
+

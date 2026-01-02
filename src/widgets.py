@@ -188,6 +188,9 @@ class AccountListItemWidget(QWidget):
 
 
 class TodoListItemWidget(QWidget):
+    on_check_button_clicked = Signal(object, str, int)
+
+
     CONTENTS_MARGINS_SIZE = QMargins(20, 20, 20, 20)
     SPACING_SIZE = 15
     STRETCH_SIZE = 1
@@ -195,24 +198,26 @@ class TodoListItemWidget(QWidget):
     def __init__(self, todo_details: dict, parent=None):
         super().__init__(parent)
 
+        self.todo_details = todo_details
         layout = QHBoxLayout(self)
         layout.setContentsMargins(TodoListItemWidget.CONTENTS_MARGINS_SIZE)
         layout.setSpacing(TodoListItemWidget.SPACING_SIZE)
         desc_and_title_layout = QVBoxLayout()
         text_and_check_box_layout = QHBoxLayout()
 
-        title_text = todo_details["title"]
-        description_text = todo_details["description"]
+        title_text = self.todo_details["title"]
+        description_text = self.todo_details["description"]
         self.check_btn = PushButton(self)
         self.check_btn.setObjectName("TaskButton")
         self.check_btn.setCheckable(True)
         self.check_btn.clicked.connect(self.checkBtnClicked)
         self.check_btn.setFixedSize(25, 25)
 
+
         self.title_label = QLabel(title_text, self)
         self.title_label.setObjectName("TaskTitle")
 
-        todo_prio = todo_details["priority"]
+        todo_prio = self.todo_details["priority"]
         self.priority_label_text = self.getPriorityText(todo_prio)
         self.priority_label_obj_name = self.getPriorityText(todo_prio) #"Low", "Medium", "High"
         self.priority_type_lbl = QLabel(self.priority_label_text, self)
@@ -240,8 +245,17 @@ class TodoListItemWidget(QWidget):
         layout.addStretch(TodoListItemWidget.STRETCH_SIZE)
         layout.addWidget(self.edit_btn)
 
+        if self.todo_details.get("is_complete"):
+            self.check_btn.setChecked(True)
+            self.toggleCheckedBtn()
+
 
     def checkBtnClicked(self):
+        task_id = self.todo_details["local_id"]
+        btn_value = self.check_btn.isChecked()
+        self.on_check_button_clicked.emit(self, task_id, btn_value)
+
+    def toggleCheckedBtn(self):
         if self.check_btn.isChecked():
             btn_font = self.title_label.font()
             btn_font.setStrikeOut(True)
@@ -250,6 +264,7 @@ class TodoListItemWidget(QWidget):
             btn_font = self.title_label.font()
             btn_font.setStrikeOut(False)
             self.title_label.setFont(btn_font)
+
 
 
     def getPriorityText(self, priority):

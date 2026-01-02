@@ -80,15 +80,18 @@ class AddTodoModal(QFrame):
         self.show()
         self.applyResizeLogic()
 
+
     def eventFilter(self, obj, event):
         if obj == self.main_win and event.type() == QEvent.Resize:
             self.applyResizeLogic()
         return super().eventFilter(obj, event)
 
+
     def addPiorityItems(self):
         items = ["Low", "Medium", "High"]
         for item in items:
             self.priority_item.addItem(item)
+
 
     def applyResizeLogic(self):
         self.shield.setGeometry(self.main_win.rect())
@@ -119,6 +122,7 @@ class AddTodoModal(QFrame):
             return 
 
         self.add_todo_clicked.emit(data)
+        self.shield.close()
 
 
     def handleEmptyValidation(self, field_map:dict):

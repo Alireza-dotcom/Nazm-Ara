@@ -134,7 +134,7 @@ class FormProcessor:
         todo_name = self.getFieldText(todo_name_field)
         clean_todo_name = " ".join(todo_name.split())
 
-        pattern = r"^[a-zA-Z\u0600-\u06FF0-9\s]+$"
+        pattern = r"^[a-zA-Z\d\u0600-\u06FF\s]+$"
         if not re.match(pattern, clean_todo_name):
             return False
 
@@ -171,7 +171,7 @@ class FormProcessor:
                 if not self.checkLength(widget, min_len=3, max_len=50):
                     errors.append(f"{name} must be at least 3 characters")
                     invalid_widgets.append(widget)
-                elif not self.validateName(widget):
+                elif not self.validateTodoFields(widget):
                     errors.append(f"{name} format is invalid")
                     invalid_widgets.append(widget)
 

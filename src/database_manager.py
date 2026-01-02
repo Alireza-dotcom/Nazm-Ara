@@ -1,6 +1,7 @@
 import sqlite3
 from contextlib import contextmanager
-from typing import List, Dict
+from typing import List, Dict, Optional
+import uuid
 
 
 class DatabaseManager:
@@ -162,4 +163,35 @@ class DatabaseManager:
                 return [dict(row) for row in rows]
         except sqlite3.Error as e:
             print(f"Error fetching users: {e}")
+            return []
+
+    # ==================== TASKS ====================
+
+    def addTask(self, title: str, description: str = None, priority: int = 1,
+                 date_time: str = None, tag_id: str = None) -> Optional[str]:
+        local_id = str(uuid.uuid4())
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO tasks (local_id, title, description, priority, date_time, tag_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (local_id, title, description, priority, date_time, tag_id))
+                return local_id
+        except sqlite3.Error as e:
+            print(f"Error adding task: {e}")
+            return None
+
+    def getTasksByDate(self, date: str) -> List[Dict]:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT * FROM tasks WHERE date_time = ? AND deleted_at IS NULL
+                    ORDER BY updated_at DESC
+                """, (date,))
+                rows = cursor.fetchall()
+                return [dict(row) for row in rows]
+        except sqlite3.Error as e:
+            print(f"Error fetching tasks by date: {e}")
             return []

@@ -20,5 +20,6 @@
     <file>icons/previous_day.svg</file>
     <file>icons/cross.svg</file>
     <file>icons/arrow_down.svg</file>
+    <file>icons/edit.svg</file>
 </qresource>
 </RCC>

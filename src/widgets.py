@@ -185,3 +185,78 @@ class AccountListItemWidget(QWidget):
 
     def isOnlineAccount(self, account_row: dict) -> bool:
         return account_row.get("user_id") is not None
+
+
+class TodoListItemWidget(QWidget):
+    CONTENTS_MARGINS_SIZE = QMargins(20, 20, 20, 20)
+    SPACING_SIZE = 15
+    STRETCH_SIZE = 1
+
+    def __init__(self, todo_details: dict, parent=None):
+        super().__init__(parent)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(TodoListItemWidget.CONTENTS_MARGINS_SIZE)
+        layout.setSpacing(TodoListItemWidget.SPACING_SIZE)
+        desc_and_title_layout = QVBoxLayout()
+        text_and_check_box_layout = QHBoxLayout()
+
+        title_text = todo_details["title"]
+        description_text = todo_details["description"]
+        self.check_btn = PushButton(self)
+        self.check_btn.setObjectName("TaskButton")
+        self.check_btn.setCheckable(True)
+        self.check_btn.clicked.connect(self.checkBtnClicked)
+        self.check_btn.setFixedSize(25, 25)
+
+        self.title_label = QLabel(title_text, self)
+        self.title_label.setObjectName("TaskTitle")
+
+        todo_prio = todo_details["priority"]
+        self.priority_label_text = self.getPriorityText(todo_prio)
+        self.priority_label_obj_name = self.getPriorityText(todo_prio) #"Low", "Medium", "High"
+        self.priority_type_lbl = QLabel(self.priority_label_text, self)
+        self.priority_type_lbl.setObjectName(self.priority_label_obj_name)
+        self.priority_type_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignVCenter)
+        self.priority_type_lbl.setFixedSize(70, 30)
+        self.priority_type_lbl.setMargin(5)
+
+        self.desc_label = QLabel(description_text, self)
+        self.desc_label.setObjectName("TaskDesc")
+
+        self.edit_btn = PushButton(self)
+        self.edit_btn.setObjectName("EditButton")
+        self.edit_btn.setIcon(QIcon(":/icons/edit.svg"))
+        self.edit_btn.setFixedSize(30, 30)
+
+        text_and_check_box_layout.addWidget(self.check_btn)
+        text_and_check_box_layout.addWidget(self.title_label)
+        text_and_check_box_layout.addWidget(self.priority_type_lbl)
+
+        desc_and_title_layout.addLayout(text_and_check_box_layout)
+        desc_and_title_layout.addWidget(self.desc_label)
+
+        layout.addLayout(desc_and_title_layout)
+        layout.addStretch(TodoListItemWidget.STRETCH_SIZE)
+        layout.addWidget(self.edit_btn)
+
+
+    def checkBtnClicked(self):
+        if self.check_btn.isChecked():
+            btn_font = self.title_label.font()
+            btn_font.setStrikeOut(True)
+            self.title_label.setFont(btn_font)
+        else:
+            btn_font = self.title_label.font()
+            btn_font.setStrikeOut(False)
+            self.title_label.setFont(btn_font)
+
+
+    def getPriorityText(self, priority):
+        mapping = {
+            0: "Low",
+            1: "Medium",
+            2: "High"
+        }
+        
+        return mapping.get(priority, "unknown")

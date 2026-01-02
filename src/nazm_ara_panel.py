@@ -1,6 +1,8 @@
 from widgets import PushButton, RadioButton
 from modals import AddTodoModal
-import uuid
+from widgets import TodoListItemWidget
+from notification_handler import NotificationHandler
+from database_manager import DatabaseManager
 
 from PySide6.QtCore import (
     Qt,
@@ -15,7 +17,9 @@ from PySide6.QtWidgets import (
     QWidget,
     QLabel,
     QStackedWidget,
-    QPushButton
+    QListWidget,
+    QAbstractItemView,
+    QListWidgetItem
 )
 
 class NazmAra(QWidget):
@@ -116,13 +120,18 @@ class MainSection(QFrame):
 
 
 class TodoWidget(QWidget):
+    STRETCH_SIZE = 1
+
     def __init__(self, parent=None, account_details=None):
         super().__init__(parent)
         self.account_details = account_details
+        self.database = DatabaseManager()
+        self.notification_handler = NotificationHandler
 
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
+        # Header Section
         self.header_frame = QFrame(self)
         self.header_frame.setObjectName("AddTodoFrame")
         self.active_date = QDate.currentDate()
@@ -158,12 +167,32 @@ class TodoWidget(QWidget):
         self.header_layout.addWidget(self.next_day_btn)
         self.header_layout.addWidget(self.go_to_today_btn)
         
-        self.header_layout.addStretch(1)
+        self.header_layout.addStretch(TodoWidget.STRETCH_SIZE)
         self.header_layout.addWidget(self.add_task_btn)
-        #################################
-
         self.main_layout.addWidget(self.header_frame)
 
+        # Accounts list
+        self.list_widget = QListWidget(self)
+        self.list_widget.horizontalScrollBar()
+        self.list_widget.setFocusPolicy(Qt.NoFocus)
+        self.list_widget.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.main_layout.addWidget(self.list_widget)
+
+        self.loadTasks()
+
+
+    def loadTasks(self,):
+        date_string = self.active_date.toString(Qt.ISODate)
+        tasks = self.database.getTasksByDate(date_string)
+
+        for row in tasks:
+            item = QListWidgetItem(self.list_widget)
+            custom_widget = TodoListItemWidget(row, self)
+            item.setSizeHint(custom_widget.sizeHint())
+            item.setData(Qt.UserRole, row)
+            self.list_widget.addItem(item)
+            self.list_widget.setItemWidget(item, custom_widget)
+        
 
     def showModal(self):
         self.modal = AddTodoModal(self)
@@ -171,7 +200,23 @@ class TodoWidget(QWidget):
 
 
     def createTodo(self, details):
-        details["date_time"] = self.active_date.toString("d-MMMM-yyyy")
+        details["date_time"] = self.active_date.toString(Qt.ISODate)
+        task_id = self.database.addTask(details["title"], details["description"],
+                                details["priority"], details["date_time"])
+        if task_id:
+            details["local_id"] = task_id
+
+            item = QListWidgetItem(self.list_widget)
+            custom_widget = TodoListItemWidget(details, self)
+            item.setSizeHint(custom_widget.sizeHint())
+            item.setData(Qt.UserRole, details)
+            self.list_widget.addItem(item)
+            self.list_widget.setItemWidget(item, custom_widget)
+        else:
+            self.notification_handler.showToast(
+                "bottom_right", "Couldn’t Create Task",
+                "A temporary error occurred. Please try again.", "error", duration=4000
+            )
 
 
     def nextAndPreviousDay(self, next_or_previous):
@@ -187,6 +232,9 @@ class TodoWidget(QWidget):
             self.date_label.setText("Tomorrow")
         else:
             self.date_label.setText(self.active_date.toString(("d-MMMM-yyyy")))
+        
+        self.list_widget.clear()
+        self.loadTasks()
 
 
     def jumpToToday(self):

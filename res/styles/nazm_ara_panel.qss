@@ -60,7 +60,6 @@ QFrame#AddTodoFrame > QLabel {
     font-size: 18px;
 }
 
-
 /* add todo modal */
 QFrame#AddTodoModal {
     background-color: #323339;
@@ -148,4 +147,97 @@ QFrame#AddTodoModal > PushButton#SaveButton {
 QFrame#AddTodoFrame > PushButton#AddTaskBtn:hover,
 QFrame#AddTodoModal > PushButton#SaveButton:hover {
     background-color: #4452bb;
+}
+
+/* todo section */
+PushButton#TaskButton {
+    background-color: transparent;
+    border: 2px solid #ffffff;;
+    border-radius: 5px;
+}
+
+PushButton#TaskButton:checked {
+    background-color: #ffffff;
+}
+
+QLabel#Low,
+QLabel#Medium,
+QLabel#High {
+    border-radius: 5px;
+    font: 15px;
+}
+
+QLabel#Low{
+    color: #4caf50;
+    background-color: #263925;
+}
+
+QLabel#Medium {
+    color: #ffab40;
+    background-color: #3d2b16;
+}
+
+QLabel#High{
+    color: #ff5252;
+    background-color: #3d1d1d;
+}
+
+QListView {
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+QListView::item {
+    border: 1px solid #58595d;
+    background: #232428;
+    border-radius: 5px;
+    margin: 2px;
+}
+
+QListView::item:hover {
+    background-color: #36373d;
+}
+
+QLabel#TaskTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+QLabel#TaskDesc {
+    font-size: 15px;
+    color: #ffffff;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: transparent;
+    width: 8px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical {
+    background: #bdc3c7;
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #95a5a6;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+    height: 0px;
+}
+
+PushButton#EditButton {
+    background-color: transparent;
+    border-radius: 5px;
+}
+
+PushButton#EditButton:hover {
+    border: 1px solid #ffffff;
 }

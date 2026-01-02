@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QHBoxLayout,
 )
-
+from PySide6.QtCore import Qt
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -174,10 +174,24 @@ class MainWindow(QMainWindow):
         # TODO: add online user creation
         pass
 
+class NoTabApplication(QApplication):
+    def __init__(self, argv):
+        super().__init__(argv)
+
+        self.installEventFilter(self)
+    
+    def eventFilter(self, obj, event):
+        if event.type() == event.Type.KeyPress:
+            if event.key() == Qt.Key.Key_Tab:
+                return True
+            if event.key() == Qt.Key.Key_Backtab:
+                return True
+        return super().eventFilter(obj, event)
 
 if __name__ == "__main__":
-    app = QApplication([])
+    app = NoTabApplication([])
     app.setApplicationName("Nazm Ara")
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
+

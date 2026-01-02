@@ -28,7 +28,7 @@ class DatabaseManager:
         try:
             with self.getConnection() as conn:
                 cursor = conn.cursor()
-                
+
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS users (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,45 +40,53 @@ class DatabaseManager:
                         email TEXT
                     )
                 """)
-                
+
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS tags (
                         local_id TEXT PRIMARY KEY NOT NULL,
                         server_id INTEGER DEFAULT NULL,
+                        user_id INTEGER NOT NULL,
                         name TEXT NOT NULL UNIQUE,
                         needs_sync INTEGER DEFAULT 1 CHECK(needs_sync IN (0,1)),
                         deleted_at TEXT DEFAULT NULL,
-                        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-                    )
-                """)
-                
-                cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS tasks (
-                        local_id TEXT PRIMARY KEY NOT NULL,
-                        server_id INTEGER DEFAULT NULL,
-                        title TEXT NOT NULL,
-                        description TEXT,
-                        priority INTEGER DEFAULT 1 CHECK(priority IN (0,1,2)),
-                        date_time TEXT,
-                        tag_id TEXT DEFAULT NULL,
-                        needs_sync INTEGER DEFAULT 1 CHECK(needs_sync IN (0,1)),
-                        deleted_at TEXT DEFAULT NULL,
                         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (tag_id) REFERENCES tags(local_id) ON DELETE SET NULL
+                        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                        UNIQUE (user_id, name)
                     )
                 """)
-                
+
                 cursor.execute("""
-                    CREATE INDEX IF NOT EXISTS idx_tasks_server_id ON tasks(server_id)
+                        CREATE TABLE IF NOT EXISTS tasks (
+                            local_id TEXT PRIMARY KEY NOT NULL,
+                            server_id INTEGER DEFAULT NULL,
+                            user_id INTEGER NOT NULL,
+                            title TEXT NOT NULL,
+                            is_complete INTEGER DEFAULT 0 CHECK(is_complete IN (0,1)),
+                            description TEXT,
+                            priority INTEGER DEFAULT 1 CHECK(priority IN (0,1,2)),
+                            date_time TEXT,
+                            tag_id TEXT DEFAULT NULL,
+                            needs_sync INTEGER DEFAULT 1 CHECK(needs_sync IN (0,1)),
+                            deleted_at TEXT DEFAULT NULL,
+                            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                            FOREIGN KEY (tag_id) REFERENCES tags(local_id) ON DELETE SET NULL,
+                            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                        )
                 """)
+
                 cursor.execute("""
-                    CREATE INDEX IF NOT EXISTS idx_tasks_sync ON tasks(needs_sync)
+                    CREATE INDEX IF NOT EXISTS idx_tasks_server_id ON tasks(server_id);
                 """)
-                
+
+                cursor.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_tasks_sync ON tasks(needs_sync);
+                """)
+
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS habits (
                         local_id TEXT PRIMARY KEY NOT NULL,
                         server_id INTEGER DEFAULT NULL,
+                        user_id INTEGER NOT NULL,
                         title TEXT NOT NULL,
                         question TEXT NOT NULL,
                         unit INTEGER NOT NULL,
@@ -90,14 +98,15 @@ class DatabaseManager:
                         needs_sync INTEGER DEFAULT 1 CHECK(needs_sync IN (0,1)),
                         deleted_at TEXT DEFAULT NULL,
                         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (tag_id) REFERENCES tags(local_id) ON DELETE SET NULL
-                    )
+                        FOREIGN KEY (tag_id) REFERENCES tags(local_id) ON DELETE SET NULL,
+                        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                        )
                 """)
-                
+
                 cursor.execute("""
                     CREATE INDEX IF NOT EXISTS idx_habits_server_id ON habits(server_id)
                 """)
-                
+
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS daily_habits (
                         local_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -167,29 +176,30 @@ class DatabaseManager:
 
     # ==================== TASKS ====================
 
-    def addTask(self, title: str, description: str = None, priority: int = 1,
+    def addTask(self, title: str, user_id, description: str = None, priority: int = 1,
                  date_time: str = None, tag_id: str = None) -> Optional[str]:
         local_id = str(uuid.uuid4())
         try:
             with self.getConnection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    INSERT INTO tasks (local_id, title, description, priority, date_time, tag_id)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (local_id, title, description, priority, date_time, tag_id))
+                    INSERT INTO tasks (local_id, title, description, priority, date_time, tag_id, user_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (local_id, title, description, priority, date_time, tag_id, user_id))
                 return local_id
         except sqlite3.Error as e:
             print(f"Error adding task: {e}")
             return None
 
-    def getTasksByDate(self, date: str) -> List[Dict]:
+
+    def getTasksByDate(self, date: str, user_id: int) -> List[Dict]:
         try:
             with self.getConnection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    SELECT * FROM tasks WHERE date_time = ? AND deleted_at IS NULL
+                    SELECT * FROM tasks WHERE date_time = ? AND deleted_at IS NULL AND user_id = ?
                     ORDER BY updated_at DESC
-                """, (date,))
+                """, (date, user_id))
                 rows = cursor.fetchall()
                 return [dict(row) for row in rows]
         except sqlite3.Error as e:

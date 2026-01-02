@@ -126,7 +126,7 @@ class TodoWidget(QWidget):
         super().__init__(parent)
         self.account_details = account_details
         self.database = DatabaseManager()
-        self.notification_handler = NotificationHandler
+        self.notification_handler = NotificationHandler()
 
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -183,7 +183,7 @@ class TodoWidget(QWidget):
 
     def loadTasks(self,):
         date_string = self.active_date.toString(Qt.ISODate)
-        tasks = self.database.getTasksByDate(date_string)
+        tasks = self.database.getTasksByDate(date_string, self.account_details["id"])
 
         for row in tasks:
             item = QListWidgetItem(self.list_widget)
@@ -201,7 +201,8 @@ class TodoWidget(QWidget):
 
     def createTodo(self, details):
         details["date_time"] = self.active_date.toString(Qt.ISODate)
-        task_id = self.database.addTask(details["title"], details["description"],
+        user_id = self.account_details["id"]
+        task_id = self.database.addTask(details["title"], user_id ,details["description"],
                                 details["priority"], details["date_time"])
         if task_id:
             details["local_id"] = task_id
@@ -214,7 +215,7 @@ class TodoWidget(QWidget):
             self.list_widget.setItemWidget(item, custom_widget)
         else:
             self.notification_handler.showToast(
-                "bottom_right", "Couldn’t Create Task",
+                "bottom_right", "Couldn't Create Task",
                 "A temporary error occurred. Please try again.", "error", duration=4000
             )
 

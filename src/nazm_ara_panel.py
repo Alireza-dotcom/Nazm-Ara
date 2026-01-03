@@ -1,13 +1,13 @@
-from widgets import PushButton, RadioButton
+from widgets import PushButton, RadioButton, TodoListItemWidget, TodoCalendar
 from modals import AddTodoModal
-from widgets import TodoListItemWidget
 from notification_handler import NotificationHandler
 from database_manager import DatabaseManager
 
 from PySide6.QtCore import (
     Qt,
     QMargins,
-    QDate
+    QDate,
+    QPoint
 )
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -139,9 +139,13 @@ class TodoWidget(QWidget):
         self.header_layout = QHBoxLayout(self.header_frame)
         self.header_layout.setAlignment(Qt.AlignLeft)
 
+        self.todo_calendar = TodoCalendar(self.active_date, parent=self)
+        self.todo_calendar.day_changed.connect(self.jumpToSelectedDay)
+
         self.calendar_btn = PushButton(parent=self)
+        self.calendar_btn.clicked.connect(self.showCalendarAtButton)
         self.calendar_btn.setIcon(QIcon(":icons/calendar.svg"))
-        
+
         self.previous_day_btn = PushButton(parent=self)
         self.previous_day_btn.setIcon(QIcon(":icons/previous_day.svg"))
         self.previous_day_btn.clicked.connect(lambda: self.nextAndPreviousDay(-1))
@@ -181,7 +185,22 @@ class TodoWidget(QWidget):
         self.loadTasks()
 
 
-    def loadTasks(self,):
+    def showCalendarAtButton(self):
+        button_pos = self.calendar_btn.mapToGlobal(QPoint(0, 0))
+        
+        calendar_pos = button_pos + QPoint(0, self.calendar_btn.height())
+        
+        self.todo_calendar.setSelectedDate(self.active_date)
+        self.todo_calendar.move(calendar_pos)
+        self.todo_calendar.show()
+
+
+    def jumpToSelectedDay(self, date):
+        current_day = self.active_date
+        self.nextAndPreviousDay(current_day.daysTo(date))
+
+
+    def loadTasks(self):
         date_string = self.active_date.toString(Qt.ISODate)
         tasks = self.database.getTasksByDate(date_string, self.account_details["id"])
 
@@ -193,7 +212,8 @@ class TodoWidget(QWidget):
             item.setData(Qt.UserRole, row)
             self.list_widget.addItem(item)
             self.list_widget.setItemWidget(item, custom_widget)
-        
+
+
     def checkedOrUncheckedTask(self, task_object, task_id, value):
         status = self.database.toggleTask(task_id, value)
         if status:
@@ -204,6 +224,7 @@ class TodoWidget(QWidget):
                 "bottom_right", "Couldn't Create Task",
                 "A temporary error occurred. Please try again.", "error", duration=4000
             )
+
 
     def showModal(self):
         self.modal = AddTodoModal(self)
@@ -253,3 +274,6 @@ class TodoWidget(QWidget):
     def jumpToToday(self):
         self.active_date = QDate.currentDate()
         self.date_label.setText("Today")
+
+        self.list_widget.clear()
+        self.loadTasks()

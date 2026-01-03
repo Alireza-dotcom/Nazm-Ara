@@ -241,3 +241,36 @@ PushButton#EditButton {
 PushButton#EditButton:hover {
     border: 1px solid #ffffff;
 }
+
+/* Month & year navigation bar background */
+QCalendarWidget QWidget#qt_calendar_navigationbar {
+    background-color: #323339;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+/* Month / Year text widgets */
+QCalendarWidget QToolButton {
+    background-color: transparent;
+    color: #ffffff;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+/* navigation bar hover */
+QCalendarWidget QToolButton:hover {
+    background-color: #232428;
+}
+
+/* reset item view */
+QCalendarWidget QAbstractItemView {
+    selection-background-color: transparent;
+    outline: none;
+}
+
+/* Selected day */
+QCalendarWidget QAbstractItemView:item:selected {
+    background-color: #5865f2;
+    border-radius: 5px;
+}

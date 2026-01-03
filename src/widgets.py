@@ -4,10 +4,14 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QPushButton,
     QLineEdit,
-    QLabel
+    QLabel,
+    QCalendarWidget
 )
 from PySide6.QtGui import (
-    QIcon
+    QIcon,
+    QColor,
+    QTextCharFormat,
+    QBrush,
 )
 from PySide6.QtCore import (
     QSize,
@@ -275,3 +279,32 @@ class TodoListItemWidget(QWidget):
         }
         
         return mapping.get(priority, "unknown")
+
+
+class TodoCalendar(QCalendarWidget):
+    day_changed = Signal(object)
+
+    def __init__(self, current_day, parent=None):
+        super().__init__(parent)
+        self.current_day = current_day
+        self.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
+        self.setGridVisible(True)
+        self.setFixedSize(280, 280)
+
+        self.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
+        self.setFocusPolicy(Qt.ClickFocus)
+        
+        self.todo_format = QTextCharFormat()
+        self.todo_format.setBackground(QBrush(QColor("#2D2926")))
+
+        self.selectionChanged.connect(self.onSelectionChanged)
+
+
+    def setTodoDates(self, dates_list):
+        for date in dates_list:
+            self.setDateTextFormat(date, self.todo_format)
+
+
+    def onSelectionChanged(self):
+        self.day_changed.emit(self.selectedDate())
+        self.hide()

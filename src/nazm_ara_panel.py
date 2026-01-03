@@ -141,6 +141,7 @@ class TodoWidget(QWidget):
 
         self.todo_calendar = TodoCalendar(self.active_date, parent=self)
         self.todo_calendar.day_changed.connect(self.jumpToSelectedDay)
+        self.highlightTaskDays()
 
         self.calendar_btn = PushButton(parent=self)
         self.calendar_btn.clicked.connect(self.showCalendarAtButton)
@@ -251,6 +252,7 @@ class TodoWidget(QWidget):
                 "bottom_right", "Couldn't Create Task",
                 "A temporary error occurred. Please try again.", "error", duration=4000
             )
+        self.todo_calendar.setTodoDates([self.active_date])
 
 
     def nextAndPreviousDay(self, next_or_previous):
@@ -277,3 +279,9 @@ class TodoWidget(QWidget):
 
         self.list_widget.clear()
         self.loadTasks()
+
+
+    def highlightTaskDays(self):
+        dates = self.database.getUserTaskDates(self.account_details["id"])
+        qdates = [QDate.fromString(date, Qt.ISODate) for date in dates]
+        self.todo_calendar.setTodoDates(qdates)

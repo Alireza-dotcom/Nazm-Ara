@@ -198,7 +198,6 @@ class DatabaseManager:
                 cursor = conn.cursor()
                 cursor.execute("""
                     SELECT * FROM tasks WHERE date_time = ? AND deleted_at IS NULL AND user_id = ?
-                    ORDER BY updated_at DESC
                 """, (date, user_id))
                 rows = cursor.fetchall()
                 return [dict(row) for row in rows]
@@ -217,3 +216,14 @@ class DatabaseManager:
             print(f"Error updating specified task: {e}")
             return False
 
+
+    def getUserTaskDates(self, user_id) ->  Optional[list]:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(f"SELECT DISTINCT date_time FROM tasks WHERE user_id = ?", (user_id,))
+                rows = cursor.fetchall()
+                return [str(row[0]) for row in rows]
+        except sqlite3.Error as e:
+            print(f"Error fetching task dates: {e}")
+            return []

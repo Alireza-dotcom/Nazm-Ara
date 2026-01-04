@@ -1,4 +1,4 @@
-from widgets import PushButton
+from widgets import PushButton, FieldStyleManager
 from form_processor import FormProcessor
 from notification_handler import NotificationHandler
 from PySide6.QtCore import Qt
@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QRect, QEvent, Signal
 
-class AddTodoModal(QFrame):
+class AddTodoModal(QFrame, FieldStyleManager):
     add_todo_clicked = Signal(dict)
     on_delete_clicked = Signal(object, str)
     on_update_clicked = Signal(str ,dict, object)
@@ -195,19 +195,3 @@ class AddTodoModal(QFrame):
             
         data = self.form_processor.getValidatedTodoData(field_map)
         return True, data
-
-
-    def updateEmptyFieldStyle(self, fields):
-        for field in fields["empty"]:
-            field.setStyleSheet("QLineEdit { border: 1px solid red; }")
-        
-        for field in fields["filled"]:
-            field.setStyleSheet("")
-
-
-    def updateInvalidFieldStyle(self, invalid_fields, all_fields):
-        for field in all_fields:
-            if field in invalid_fields:
-                field.setStyleSheet("QLineEdit { border: 1px solid red; }")
-            else:
-                field.setStyleSheet("")

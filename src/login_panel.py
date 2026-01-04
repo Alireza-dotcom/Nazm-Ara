@@ -1,4 +1,4 @@
-from widgets import PasswordField, ClickableLabel, PushButton
+from widgets import PasswordField, ClickableLabel, PushButton, FieldStyleManager
 from form_processor import FormProcessor
 from notification_handler import NotificationHandler
 
@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class LoginPanel(QFrame):
+class LoginPanel(QFrame, FieldStyleManager):
     forgot_clicked = Signal()
     signup_clicked = Signal()
     continue_clicked = Signal()
@@ -176,19 +176,3 @@ class LoginPanel(QFrame):
             )
             return False
         return True
-
-
-    def updateEmptyFieldStyle(self, fields):
-        for field in fields["empty"]:
-            field.setStyleSheet("QLineEdit { border: 1px solid red; }")
-        
-        for field in fields["filled"]:
-            field.setStyleSheet("")
-
-
-    def updateInvalidFieldStyle(self, invalid_fields, all_fields):
-        for field in all_fields:
-            if field in invalid_fields:
-                field.setStyleSheet("QLineEdit { border: 1px solid red; }")
-            else:
-                field.setStyleSheet("")

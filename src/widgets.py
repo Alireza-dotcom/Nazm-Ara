@@ -329,3 +329,22 @@ class TodoCalendar(QCalendarWidget):
     def onSelectionChanged(self):
         self.day_changed.emit(self.selectedDate())
         self.hide()
+
+
+class FieldStyleManager:
+    ERROR_STYLE = "QLineEdit { border: 1px solid red; }"
+    DEFAULT_STYLE = ""
+
+    def updateEmptyFieldStyle(self, fields):
+        for field in fields["empty"]:
+            field.setStyleSheet(FieldStyleManager.ERROR_STYLE)
+        
+        for field in fields["filled"]:
+            field.setStyleSheet(FieldStyleManager.DEFAULT_STYLE)
+
+    def updateInvalidFieldStyle(self, invalid_fields, all_fields):
+        for field in all_fields:
+            if field in invalid_fields:
+                field.setStyleSheet(FieldStyleManager.ERROR_STYLE)
+            else:
+                field.setStyleSheet(FieldStyleManager.DEFAULT_STYLE)

@@ -209,8 +209,8 @@ class TodoWidget(QWidget):
             item = QListWidgetItem(self.list_widget)
             custom_widget = TodoListItemWidget(row, self)
             custom_widget.on_check_button_clicked.connect(self.checkedOrUncheckedTask)
+            custom_widget.on_edit_button_clicked.connect(self.showEditModal)
             item.setSizeHint(custom_widget.sizeHint())
-            item.setData(Qt.UserRole, row)
             self.list_widget.addItem(item)
             self.list_widget.setItemWidget(item, custom_widget)
 
@@ -228,9 +228,46 @@ class TodoWidget(QWidget):
 
 
     def showModal(self):
-        self.modal = AddTodoModal(self)
+        self.modal = AddTodoModal(self, False)
         self.modal.add_todo_clicked.connect(self.createTodo)
 
+
+    def showEditModal(self, task_object, task_details):
+        self.modal = AddTodoModal(self, task_object, task_details)
+        self.modal.on_update_clicked.connect(self.updateTodo)
+        self.modal.on_delete_clicked.connect(self.deleteTodo)
+
+
+    def updateTodo(self, local_id, data, item_object):
+        title = data.get("title")
+        desc = data.get("description")
+        priority = data.get("priority")
+        if self.database.updateTask(local_id, title=title, description=desc, priority=priority):
+            item_object.update(priority, desc, title)
+        else:
+            self.notification_handler.showToast(
+                "bottom_right", "Couldn't Create Task",
+                "A temporary error occurred. Please try again.", "error", duration=4000
+            )
+
+
+    def deleteTodo(self, item_object, local_id):
+        if self.database.deleteTask(local_id):
+            item = self.list_widget.itemAt(item_object.pos())
+            row = self.list_widget.row(item)
+            taken_item = self.list_widget.takeItem(row) # Removes the item from view
+            del taken_item
+
+            if self.list_widget.count() == 0:
+                self.todo_calendar.setWithoutTodoDate(self.active_date)
+
+
+        else:
+            self.notification_handler.showToast(
+                "bottom_right", "Couldn't Create Task",
+                "A temporary error occurred. Please try again.", "error", duration=4000
+            )
+        
 
     def createTodo(self, details):
         details["date_time"] = self.active_date.toString(Qt.ISODate)
@@ -243,8 +280,8 @@ class TodoWidget(QWidget):
             item = QListWidgetItem(self.list_widget)
             custom_widget = TodoListItemWidget(details, self)
             custom_widget.on_check_button_clicked.connect(self.checkedOrUncheckedTask)
+            custom_widget.on_edit_button_clicked.connect(self.showEditModal)
             item.setSizeHint(custom_widget.sizeHint())
-            item.setData(Qt.UserRole, details)
             self.list_widget.addItem(item)
             self.list_widget.setItemWidget(item, custom_widget)
         else:

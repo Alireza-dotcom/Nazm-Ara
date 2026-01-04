@@ -193,7 +193,7 @@ class AccountListItemWidget(QWidget):
 
 class TodoListItemWidget(QWidget):
     on_check_button_clicked = Signal(object, str, int)
-
+    on_edit_button_clicked = Signal(object, dict)
 
     CONTENTS_MARGINS_SIZE = QMargins(20, 20, 20, 20)
     SPACING_SIZE = 15
@@ -217,7 +217,6 @@ class TodoListItemWidget(QWidget):
         self.check_btn.clicked.connect(self.checkBtnClicked)
         self.check_btn.setFixedSize(25, 25)
 
-
         self.title_label = QLabel(title_text, self)
         self.title_label.setObjectName("TaskTitle")
 
@@ -236,6 +235,7 @@ class TodoListItemWidget(QWidget):
         self.edit_btn = PushButton(self)
         self.edit_btn.setObjectName("EditButton")
         self.edit_btn.setIcon(QIcon(":/icons/edit.svg"))
+        self.edit_btn.clicked.connect(self.editBtnClicked)
         self.edit_btn.setFixedSize(30, 30)
 
         text_and_check_box_layout.addWidget(self.check_btn)
@@ -259,6 +259,22 @@ class TodoListItemWidget(QWidget):
         btn_value = self.check_btn.isChecked()
         self.on_check_button_clicked.emit(self, task_id, btn_value)
 
+
+    def editBtnClicked(self):
+        self.on_edit_button_clicked.emit(self, self.todo_details)
+
+
+    def update(self, priority, description, title):
+        self.priority_type_lbl.setText(self.getPriorityText(priority))
+        self.priority_type_lbl.setObjectName(self.getPriorityText(priority))
+        self.window().style_sheet_handler.updateStylesheet()
+        self.desc_label.setText(description)
+        self.title_label.setText(title)
+        self.todo_details["priority"] = priority
+        self.todo_details["title"] = title
+        self.todo_details["description"] = description
+
+
     def toggleCheckedBtn(self):
         if self.check_btn.isChecked():
             btn_font = self.title_label.font()
@@ -268,7 +284,6 @@ class TodoListItemWidget(QWidget):
             btn_font = self.title_label.font()
             btn_font.setStrikeOut(False)
             self.title_label.setFont(btn_font)
-
 
 
     def getPriorityText(self, priority):
@@ -293,9 +308,11 @@ class TodoCalendar(QCalendarWidget):
 
         self.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
         self.setFocusPolicy(Qt.ClickFocus)
-        
+
         self.todo_format = QTextCharFormat()
         self.todo_format.setBackground(QBrush(QColor("#2D2926")))
+
+        self.normal_format = QTextCharFormat()
 
         self.selectionChanged.connect(self.onSelectionChanged)
 
@@ -303,6 +320,10 @@ class TodoCalendar(QCalendarWidget):
     def setTodoDates(self, dates_list):
         for date in dates_list:
             self.setDateTextFormat(date, self.todo_format)
+
+
+    def setWithoutTodoDate(self, date):
+        self.setDateTextFormat(date, self.normal_format)
 
 
     def onSelectionChanged(self):

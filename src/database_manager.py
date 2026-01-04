@@ -1,6 +1,7 @@
 import sqlite3
 from contextlib import contextmanager
 from typing import List, Dict, Optional
+from datetime import datetime
 import uuid
 
 
@@ -221,9 +222,45 @@ class DatabaseManager:
         try:
             with self.getConnection() as conn:
                 cursor = conn.cursor()
-                cursor.execute(f"SELECT DISTINCT date_time FROM tasks WHERE user_id = ?", (user_id,))
+                cursor.execute(f"SELECT DISTINCT date_time FROM tasks WHERE user_id = ? AND deleted_at IS NULL", (user_id,))
                 rows = cursor.fetchall()
                 return [str(row[0]) for row in rows]
         except sqlite3.Error as e:
             print(f"Error fetching task dates: {e}")
             return []
+
+
+    def deleteTask(self, local_id: str) -> bool:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE tasks SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP, needs_sync = 1
+                    WHERE local_id = ?
+                """, (local_id,))
+                return True
+        except sqlite3.Error as e:
+            print(f"Error deleting task: {e}")
+            return False
+
+
+    def updateTask(self, local_id: str, **kwargs) -> bool:
+        allowed_fields = {'title', 'description', 'priority'}
+        update_fields = {k: v for k, v in kwargs.items() if k in allowed_fields}
+        
+        if not update_fields:
+            return False
+
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                update_fields['updated_at'] = datetime.now().isoformat()
+                update_fields['needs_sync'] = 1
+                
+                set_clause = ", ".join([f"{k} = ?" for k in update_fields.keys()])
+                values = list(update_fields.values()) + [local_id]
+                cursor.execute(f"UPDATE tasks SET {set_clause} WHERE local_id = ?", values)
+                return True
+        except sqlite3.Error as e:
+            print(f"Error updating task: {e}")
+            return False

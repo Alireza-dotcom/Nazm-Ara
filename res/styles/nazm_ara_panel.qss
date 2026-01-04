@@ -274,3 +274,16 @@ QCalendarWidget QAbstractItemView:item:selected {
     background-color: #5865f2;
     border-radius: 5px;
 }
+
+QFrame#AddTodoModal > PushButton#DeleteButton {
+    background-color: #e53232;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 5px 15px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+QFrame#AddTodoModal > PushButton#DeleteButton:hover {
+    background-color: #b62828;
+}

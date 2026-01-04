@@ -15,11 +15,13 @@ from PySide6.QtCore import Qt, QRect, QEvent, Signal
 
 class AddTodoModal(QFrame):
     add_todo_clicked = Signal(dict)
+    on_delete_clicked = Signal(object, str)
+    on_update_clicked = Signal(str ,dict, object)
 
     STRETCH_SIZE = 1
     MEDIUM_INDEX = 1
 
-    def __init__(self, parent):
+    def __init__(self, parent, task_object, todo_details: dict = None):
         self.main_win = parent.window()
         self.shield = QFrame(self.main_win)
         self.shield.setObjectName("shield")
@@ -27,7 +29,9 @@ class AddTodoModal(QFrame):
         super().__init__(self.shield)
         self.setObjectName("AddTodoModal")
         self.shield.setAttribute(Qt.WA_DeleteOnClose)
-        
+        self.todo_details = todo_details
+        self.task_object = task_object
+
         self.form_processor = FormProcessor()
         self.notification_handler = NotificationHandler()
 
@@ -68,10 +72,26 @@ class AddTodoModal(QFrame):
         layout.addWidget(self.priority_item)
         layout.addStretch(AddTodoModal.STRETCH_SIZE)
 
-        self.save_btn = PushButton("Save", self)
-        self.save_btn.setObjectName("SaveButton")
-        self.save_btn.clicked.connect(self.onSaveClicked)
-        layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignRight)
+        if not self.todo_details:
+            self.save_btn = PushButton("Save", self)
+            self.save_btn.setObjectName("SaveButton")
+            self.save_btn.clicked.connect(self.onSaveClicked)
+            layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignRight)
+        else:
+            buttons_layout = QHBoxLayout()
+            self.save_btn = PushButton("Save", self)
+            self.save_btn.setObjectName("SaveButton")
+            self.save_btn.clicked.connect(self.onSaveClicked)
+
+            self.delete_btn = PushButton("Delete", self)
+            self.delete_btn.setObjectName("DeleteButton")
+            self.delete_btn.clicked.connect(self.onDeleteClicked)
+            buttons_layout.addWidget(self.delete_btn)
+            buttons_layout.addStretch(AddTodoModal.STRETCH_SIZE)
+            buttons_layout.addWidget(self.save_btn)
+
+            layout.addLayout(buttons_layout)
+            self.initialFields()
 
         # Listen to Main Window for Resizing
         self.main_win.installEventFilter(self)
@@ -79,6 +99,17 @@ class AddTodoModal(QFrame):
         self.shield.show()
         self.show()
         self.applyResizeLogic()
+
+
+    def initialFields(self):
+        self.task_name_input.setText(self.todo_details.get("title"))
+        self.description_input.setText(self.todo_details.get("description"))
+        self.priority_item.setCurrentIndex(self.todo_details.get("priority"))
+
+
+    def onDeleteClicked(self):
+        self.on_delete_clicked.emit(self.task_object, self.todo_details["local_id"])
+        self.shield.close()
 
 
     def eventFilter(self, obj, event):
@@ -121,7 +152,12 @@ class AddTodoModal(QFrame):
         if not is_valid:
             return 
 
-        self.add_todo_clicked.emit(data)
+        if self.todo_details:
+            todo_id = self.todo_details.get("local_id")
+            self.on_update_clicked.emit(todo_id, data, self.task_object)
+        else:
+            self.add_todo_clicked.emit(data)
+
         self.shield.close()
 
 

@@ -104,12 +104,14 @@ class MainSection(QFrame):
 
         self.pages = QStackedWidget()
 
-        self.choose_one = QLabel("choose one")
+
+        self.welcome_page = QLabel(f"Hay {account_details["f_name"]}!\nChoose a path to get started.", self, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.welcome_page.setObjectName("WelcomePage")
         self.todo_page = TodoWidget(self, self.account_details)
         self.habit_page = QLabel("Habit List") # TODO: habit list class
 
         # Add pages to stack
-        self.pages.addWidget(self.choose_one)
+        self.pages.addWidget(self.welcome_page)
         self.pages.addWidget(self.todo_page)
         self.pages.addWidget(self.habit_page)
         

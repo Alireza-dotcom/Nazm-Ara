@@ -287,3 +287,8 @@ QFrame#AddTodoModal > PushButton#DeleteButton {
 QFrame#AddTodoModal > PushButton#DeleteButton:hover {
     background-color: #b62828;
 }
+
+QLabel#WelcomePage {
+    font-size: 25px;
+    font-weight: 600;
+}

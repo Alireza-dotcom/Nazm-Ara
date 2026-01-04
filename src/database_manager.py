@@ -75,13 +75,9 @@ class DatabaseManager:
                         )
                 """)
 
-                cursor.execute("""
-                    CREATE INDEX IF NOT EXISTS idx_tasks_server_id ON tasks(server_id);
-                """)
-
-                cursor.execute("""
-                    CREATE INDEX IF NOT EXISTS idx_tasks_sync ON tasks(needs_sync);
-                """)
+                # Indexes improve search speed for synchronization and date-based filtering
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_tasks_server_id ON tasks(server_id)")
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_tasks_sync ON tasks(needs_sync)")
 
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS habits (
@@ -179,6 +175,7 @@ class DatabaseManager:
 
     def addTask(self, title: str, user_id, description: str = None, priority: int = 1,
                  date_time: str = None, tag_id: str = None) -> Optional[str]:
+        """Generates a UUID for local_id and saves the task. Returns the UUID for further UI reference."""
         local_id = str(uuid.uuid4())
         try:
             with self.getConnection() as conn:
@@ -194,6 +191,7 @@ class DatabaseManager:
 
 
     def getTasksByDate(self, date: str, user_id: int) -> List[Dict]:
+        """Retrieves tasks for a specific date, excluding those marked for deletion."""
         try:
             with self.getConnection() as conn:
                 cursor = conn.cursor()
@@ -207,7 +205,7 @@ class DatabaseManager:
             return []
 
 
-    def toggleTask(self, task_id, value) -> bool:
+    def toggleTask(self, task_id: str, value: bool) -> bool:
         try:
             with self.getConnection() as conn:
                 cursor = conn.cursor()
@@ -218,7 +216,8 @@ class DatabaseManager:
             return False
 
 
-    def getUserTaskDates(self, user_id) ->  Optional[list]:
+    def getUserTaskDates(self, user_id: str) ->  Optional[list]:
+        """Returns a unique list of dates where the user has active tasks."""
         try:
             with self.getConnection() as conn:
                 cursor = conn.cursor()
@@ -231,6 +230,7 @@ class DatabaseManager:
 
 
     def deleteTask(self, local_id: str) -> bool:
+        """Performs a soft delete by setting deleted_at."""
         try:
             with self.getConnection() as conn:
                 cursor = conn.cursor()
@@ -245,6 +245,7 @@ class DatabaseManager:
 
 
     def updateTask(self, local_id: str, **kwargs) -> bool:
+        """Updates specific fields and flags the row for synchronization."""
         allowed_fields = {'title', 'description', 'priority'}
         update_fields = {k: v for k, v in kwargs.items() if k in allowed_fields}
         

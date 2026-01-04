@@ -17,7 +17,8 @@ from PySide6.QtWidgets import (
 
 
 class LoginPanel(QFrame, FieldStyleManager):
-    forgot_clicked = Signal()
+    """A UI panel that handles user authentication."""
+    forgot_password_clicked = Signal()
     signup_clicked = Signal()
     continue_clicked = Signal()
     select_account_clicked = Signal()
@@ -39,21 +40,17 @@ class LoginPanel(QFrame, FieldStyleManager):
         layout.setAlignment(Qt.AlignTop)
         layout.addStretch(LoginPanel.STRETCH_SIZE)
 
-        # Logo placeholder
         logo = QLabel(self)
-        logo_file = QPixmap(":logos/logo.svg")
-        logo.setPixmap(logo_file)
+        logo.setPixmap(QPixmap(":logos/logo.svg"))
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo, alignment=Qt.AlignCenter)
         layout.addStretch(LoginPanel.STRETCH_SIZE)
 
-        # Title
         title = QLabel("Login", self)
         title.setObjectName("TitleLabel")
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 
-        # Email field
         email_label = QLabel("Email", self)
         email_label.setObjectName("FieldLabel")
         layout.addWidget(email_label)
@@ -63,7 +60,6 @@ class LoginPanel(QFrame, FieldStyleManager):
         self.email_input.setObjectName("FieldLabel")
         layout.addWidget(self.email_input)
 
-        # Password field
         password_label = QLabel("Password", self)
         password_label.setObjectName("FieldLabel")
         layout.addWidget(password_label)
@@ -73,68 +69,50 @@ class LoginPanel(QFrame, FieldStyleManager):
         self.password_input.input.setMaxLength(50)
         layout.addWidget(self.password_input)
 
-        # Forgot password link
         forgot_label = ClickableLabel("Forgot your password?", self)
-        forgot_label.clicked.connect(self.onForgotClicked)
+        forgot_label.clicked.connect(lambda: self.forgot_password_clicked.emit())
         forgot_label.setAlignment(Qt.AlignRight)
         layout.addWidget(forgot_label)
 
-        # Login button
         login_btn = PushButton("Login", self)
         login_btn.clicked.connect(self.onLoginClicked)
         layout.addWidget(login_btn)
 
-        # Divider
+        # Visual divider
         divider = QLabel("──────────  or continue offline  ──────────", self)
         divider.setAlignment(Qt.AlignCenter)
         divider.setObjectName("DividerLabel")
         layout.addWidget(divider)
 
-        # Continue button
         self.cont_btn = PushButton("Continue without Account", self)
         layout.addWidget(self.cont_btn)
-        self.cont_btn.clicked.connect(self.onCntClicked)
+        self.cont_btn.clicked.connect(lambda: self.continue_clicked.emit())
 
-        # Signup text
         signup_label = ClickableLabel("Don't have an account? Sign up", self)
-        signup_label.clicked.connect(self.onSignupClicked)
+        signup_label.clicked.connect(lambda: self.signup_clicked.emit())
         signup_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(signup_label)
         layout.addStretch(LoginPanel.STRETCH_SIZE)
 
-        # select account text
         select_account_label = ClickableLabel("Choose an Account", self)
-        select_account_label.clicked.connect(self.onSelectAccountClicked)
+        select_account_label.clicked.connect(lambda: self.select_account_clicked.emit())
         select_account_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(select_account_label)
         layout.addStretch(LoginPanel.STRETCH_SIZE)
 
 
-    def onForgotClicked(self):
-        self.forgot_clicked.emit()
-
-
-    def onSignupClicked(self):
-        self.signup_clicked.emit()
-
-
-    def onCntClicked(self):
-        self.continue_clicked.emit()
-
-
-    def onSelectAccountClicked(self):
-        self.select_account_clicked.emit()
-
-
     def onLoginClicked(self):
+        """Checks the validation process before emitting the login signal."""
         field_map = {
             "email": self.email_input,
             "password": self.password_input.input
         }
 
+        # Step 1: Ensure fields aren't blank
         if not self.handleEmptyValidation(field_map):
             return
 
+        # Step 2: Ensure data format is correct
         is_valid, data = self.handleFormatValidation(field_map)
         if not is_valid:
             return 
@@ -142,14 +120,16 @@ class LoginPanel(QFrame, FieldStyleManager):
         self.login_clicked.emit(data)
 
 
-    def handleFormatValidation(self, field_map):
+    def handleFormatValidation(self, field_map: dict):
+        """Checks formatting and displays notifications for invalid input."""
         is_valid, result = self.form_processor.getValidationErrors(field_map)
         
         if not is_valid:
             form_fields = list(field_map.values())
-            self.updateInvalidFieldStyle(result["invalid_widgets"], form_fields)
+            self.updateInvalidFieldStyle(result.get("invalid_widgets"), form_fields)
             
-            errors = "\n".join(result["errors"])
+            # Show a toast notification with the specific error reasons
+            errors = "\n".join(result.get("errors"))
             duration = max(4000, len(errors) * 50)
             
             self.notification_handler.showToast(
@@ -159,17 +139,18 @@ class LoginPanel(QFrame, FieldStyleManager):
             return False, None
             
         data = self.form_processor.getValidatedData(field_map)
-        print(data)
         return True, data
 
 
-    def handleEmptyValidation(self, field_map):
+    def handleEmptyValidation(self, field_map: dict):
+        """Checks for missing input and provides visual feedback."""
         form_fields = list(field_map.values())
         field_status = self.form_processor.findEmptyAndFilledFields(form_fields)
         
+        # Update field UI styles based on whether they are empty or filled
         self.updateEmptyFieldStyle(field_status)
         
-        if field_status["empty"]:
+        if field_status.get("empty"):
             self.notification_handler.showToast(
                 "bottom_right", "Empty fields",
                 "Please fill in all required fields.", "error", duration=5000

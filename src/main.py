@@ -1,24 +1,24 @@
 import sys
-from login_panel import LoginPanel
-from forgot_password_panel import ForgotPasswordPanel
-from signup_panel import SignupPanel
-from offline_user_panel import OfflineUserPanel
 from utils import loadFont
-from style_sheet_handler import StyleSheetHandler
-from select_acc_panel import SelectAccountPanel
-from database_manager import DatabaseManager
+from widgets import NoTabApplication
+from login_panel import LoginPanel
 from nazm_ara_panel import NazmAra
+from signup_panel import SignupPanel
+from database_manager import DatabaseManager
+from select_acc_panel import SelectAccountPanel
+from offline_user_panel import OfflineUserPanel
+from style_sheet_handler import StyleSheetHandler
+from forgot_password_panel import ForgotPasswordPanel
 from notification_handler import NotificationHandler
-import resources_rc
 
 from PySide6.QtWidgets import (
-    QApplication,
     QWidget,
     QStackedWidget,
     QMainWindow,
     QHBoxLayout,
 )
 from PySide6.QtCore import Qt
+import resources_rc
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
         self.layout = QHBoxLayout(self.central_widget)
         self.layout.addWidget(self.stack)
 
-
+        # If users exist in DB, show account selector; otherwise, go to Login
         if self.database.getListOfUsers():
             self.showSelectAccountPage()
         else:
@@ -52,16 +52,17 @@ class MainWindow(QMainWindow):
     def showLoginPage(self):
         self.style_sheet_handler.setResourceQssPath(":/styles/login_panel.qss")
         self.login_panel = self.loadPage(LoginPanel)
-        self.login_panel.forgot_clicked.connect(self.showForgotPasswordPage)
+        self.login_panel.forgot_password_clicked.connect(self.showForgotPasswordPage)
         self.login_panel.signup_clicked.connect(self.showSignupPage)
         self.login_panel.select_account_clicked.connect(self.showSelectAccountPage)
-        self.login_panel.continue_clicked.connect(self.showOfflineAccountPanel)
+        self.login_panel.continue_clicked.connect(self.showOfflineAccountPage)
         self.login_panel.login_clicked.connect(self.logIntoOnlineAccount)
         self.shrinkPage()
         self.addSpacing()
 
 
     def showSelectAccountPage(self):
+        """Displays page to pick an existing local account."""
         self.style_sheet_handler.setResourceQssPath(":/styles/select_acc_panel.qss")
         self.select_account_panel = self.loadPage(SelectAccountPanel)
         self.select_account_panel.add_account_clicked.connect(self.showLoginPage)
@@ -70,16 +71,19 @@ class MainWindow(QMainWindow):
         self.addSpacing()
 
 
-    def showOfflineAccountPanel(self):
+    def showOfflineAccountPage(self):
+        """Displays page for creating a local-only user."""
         self.style_sheet_handler.setResourceQssPath(":/styles/offline_acc_panel.qss")
         self.offline_account_panel = self.loadPage(OfflineUserPanel)
         self.offline_account_panel.back_to_login_clicked.connect(self.showLoginPage)
         self.offline_account_panel.continue_clicked.connect(self.createOfflineUser)
 
 
-    def openMainApp(self, account_row: dict):
+    def openMainApp(self, account_details: dict):
+        """Transitions from Auth/Selection pages to the actual application dashboard."""
         self.style_sheet_handler.setResourceQssPath(":/styles/nazm_ara_panel.qss")
-        self.loadPage(NazmAra, account_row)
+        self.loadPage(NazmAra, account_details)
+        # Expand the UI to fill the whole window for the main app
         self.resetShrinkPage()
         self.removeSpacing()
 
@@ -100,64 +104,77 @@ class MainWindow(QMainWindow):
 
 
     def loadPage(self, ClassWidget, *args, **kwargs):
+        """
+        Helper to instantiate a new widget, add it to the stack, 
+        and clean up the previous widget from memory.
+        """
         previous_widget = self.stack.currentWidget()
 
         new_widget = ClassWidget(self, *args, **kwargs)
         index = self.stack.addWidget(new_widget)
-
         self.stack.setCurrentIndex(index)
+
+        # Clean up previous widget
         if previous_widget:
             self.stack.removeWidget(previous_widget)
             previous_widget.deleteLater()
-        
+
         return new_widget
 
 
     def resizeEvent(self, event):
+        """Triggers UI adjustments and CSS refreshes when the window is resized."""
         self.shrinkPage()
         self.style_sheet_handler.updateStylesheet()
 
         super().resizeEvent(event)
 
+
     def shrinkPage(self):
+        """Limits the width of Auth panels to look centered."""
         if not self.stack.currentWidget().objectName() == "NazmAra":
             MIN_PANEL_WIDTH = 430
             PANEL_WIDTH_RATIO = 0.32
 
             window_width = self.width()
-            target_width = max(MIN_PANEL_WIDTH, int(window_width * PANEL_WIDTH_RATIO)) # 32% of width, min 430px
+            # Calculate 32% of window width, but never smaller than 430px
+            target_width = max(MIN_PANEL_WIDTH, int(window_width * PANEL_WIDTH_RATIO))
             self.stack.setFixedWidth(target_width)
 
 
     def resetShrinkPage(self):
+        """Allows the StackedWidget to expand to full width (used for the main dashboard)."""
         self.stack.setMinimumWidth(0)
         self.stack.setMaximumWidth(16777215)
 
 
     def addSpacing(self):
+        """Adds padding around the auth panels."""
         self.layout.setSpacing(6)
         self.layout.setContentsMargins(9, 9, 9, 9)
 
 
     def removeSpacing(self):
+        """Removes all margins for a true full-screen dashboard."""
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
 
 
-    def createOfflineUser(self, data):
-        if self.database.addOfflineUser(data['nickname'], data['first_name'], data['last_name']):
+    def createOfflineUser(self, user_info: dict):
+        """Handles the logic of saving a new local user to database."""
+        if self.database.addOfflineUser(user_info.get("nickname"), user_info.get("first_name"), user_info.get("last_name")):
             self.notification_handler.showToast(
                 "bottom_right", "Welcome!",
                 "Your account has been successfully created.", "success", duration=4000
             )
+            # Retrieve the newly created user and log them in 
             user_info = self.database.getListOfUsers()[-1]
             self.openMainApp(user_info)
         else:
             self.notification_handler.showToast(
-                "bottom_right", "Couldn’t Create Account",
+                "bottom_right", "Couldn't Create Account",
                 "A temporary error occurred. Please try again.", "error", duration=4000
             )
-
 
 
     def logIntoOnlineAccount(self):
@@ -174,19 +191,6 @@ class MainWindow(QMainWindow):
         # TODO: add online user creation
         pass
 
-class NoTabApplication(QApplication):
-    def __init__(self, argv):
-        super().__init__(argv)
-
-        self.installEventFilter(self)
-    
-    def eventFilter(self, obj, event):
-        if event.type() == event.Type.KeyPress:
-            if event.key() == Qt.Key.Key_Tab:
-                return True
-            if event.key() == Qt.Key.Key_Backtab:
-                return True
-        return super().eventFilter(obj, event)
 
 if __name__ == "__main__":
     app = NoTabApplication([])
@@ -195,4 +199,3 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
-

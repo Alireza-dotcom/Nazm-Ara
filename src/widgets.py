@@ -5,7 +5,8 @@ from PySide6.QtWidgets import (
     QPushButton,
     QLineEdit,
     QLabel,
-    QCalendarWidget
+    QCalendarWidget,
+    QApplication
 )
 from PySide6.QtGui import (
     QIcon,
@@ -17,11 +18,16 @@ from PySide6.QtCore import (
     QSize,
     QMargins,
     Signal,
-    Qt
+    Qt,
+    QDate
 )
 
 
 class RadioButton(QPushButton):
+    """
+    Custom button that behaves like a RadioButton.
+    Only one instance can be active at a time across the application.
+    """
     # Tracks the currently active button across all instances
     active_button = None
 
@@ -32,13 +38,13 @@ class RadioButton(QPushButton):
         self.update_style()
 
     def mousePressEvent(self, event):
-        # If already pushed, do nothing
+        # Prevents unchecking a button by clicking it again once active
         if self.isChecked():
             return 
         super().mousePressEvent(event)
 
     def handle_click(self):
-        # Uncheck the previous button if it exists
+        """Ensures only one option is active."""
         if RadioButton.active_button and RadioButton.active_button != self:
             RadioButton.active_button.setChecked(False)
             RadioButton.active_button.update_style()
@@ -48,6 +54,7 @@ class RadioButton(QPushButton):
         self.update_style()
 
     def update_style(self):
+        """Changes the cursor to indicate whether the button is interactable."""
         if self.isChecked():
             self.setCursor(Qt.ArrowCursor)
         else:
@@ -55,6 +62,7 @@ class RadioButton(QPushButton):
 
 
 class PushButton(QPushButton):
+    """QPushButton with a pointing hand cursor for better UX."""
     def __init__(self, text="" , parent=None):
         super().__init__(text, parent)
 
@@ -62,6 +70,10 @@ class PushButton(QPushButton):
 
 
 class PasswordField(QWidget):
+    """
+    Composite widget containing a QLineEdit and a toggle button 
+    to switch between masked (password) and plain text visibility.
+    """
     PASS_VISIBILITY_BTN_SIZE = QSize(40, 40)
     CONTENTS_MARGINS_SIZE = QMargins(0, 0, 0, 0)
 
@@ -74,14 +86,12 @@ class PasswordField(QWidget):
         self.input = QLineEdit(self)
         self.input.setEchoMode(QLineEdit.Password)
 
-        # Create the toggle button
         self.toggle_button = QPushButton(self)
         self.toggle_button.setIcon(self.eye_open_icon)
         self.toggle_button.setCheckable(True)
         self.toggle_button.setFixedSize(PasswordField.PASS_VISIBILITY_BTN_SIZE)
         self.toggle_button.clicked.connect(self.togglePasswordVisibility)
 
-        # Layout
         layout = QHBoxLayout(self)
         layout.addWidget(self.input)
         layout.addWidget(self.toggle_button)
@@ -99,6 +109,7 @@ class PasswordField(QWidget):
 
 
 class ClickableLabel(QLabel):
+    """A QLabel that behaves like a button, emitting a clicked signal."""
     clicked = Signal()
 
     def __init__(self, text="", parent=None):
@@ -113,6 +124,7 @@ class ClickableLabel(QLabel):
 
 
     def mouseReleaseEvent(self, event):
+        """Emits clicked signal only if the mouse is released inside the label area."""
         if self._mouse_pressed and event.button() == Qt.LeftButton:
             if self.rect().contains(event.position().toPoint()): # Released inside label
                 self.clicked.emit()
@@ -121,15 +133,17 @@ class ClickableLabel(QLabel):
 
 
 class FormRow(QWidget):
+    """Helper widget that groups a Label and a LineEdit vertically for forms."""
     CONTENTS_MARGINS_SIZE = QMargins(0, 0, 0, 0)
 
-    def __init__(self, label_text, object_name, parent=None):
+    def __init__(self, label_text: str, object_name: str, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(FormRow.CONTENTS_MARGINS_SIZE)
 
         self.label = QLabel(label_text, self)
         self.input = QLineEdit(self)
+        # Applying object name to the widget for QSS targeting
         self.setObjectName(object_name)
 
         layout.addWidget(self.label)
@@ -137,6 +151,7 @@ class FormRow(QWidget):
 
 
 class AccountListItemWidget(QWidget):
+    """Custom widget for account selection list items, showing user info and account type."""
     def __init__(self, account_row: dict, parent=None):
         super().__init__(parent)
 
@@ -157,6 +172,7 @@ class AccountListItemWidget(QWidget):
 
         layout.addLayout(text_layout)
 
+        # Logic to display "Online" vs "Offline" badge
         acc_type_label_txt = "Online" if self.isOnlineAccount(account_row) else "Offline"
         acc_type_label_obj_name = "onlineLabel" if self.isOnlineAccount(account_row) else "offlineLabel"
 
@@ -169,6 +185,7 @@ class AccountListItemWidget(QWidget):
 
 
     def formatTitle(self, account_row: dict) -> str:
+        """Returns nickname or a fallback ID-based string."""
         nickname = account_row.get("nickname")
         if nickname:
             return nickname
@@ -176,6 +193,7 @@ class AccountListItemWidget(QWidget):
 
 
     def formatSubtitle(self, account_row: dict) -> str:
+        """Returns email or combined first/last name."""
         email = account_row.get("email")
         f_name = account_row.get("f_name")
         l_name = account_row.get("l_name")
@@ -188,10 +206,15 @@ class AccountListItemWidget(QWidget):
 
 
     def isOnlineAccount(self, account_row: dict) -> bool:
+        """Determines if the account is online or offline."""
         return account_row.get("user_id") is not None
 
 
-class TodoListItemWidget(QWidget):
+class TaskListItemWidget(QWidget):
+    """
+    Custom widget for Task items. 
+    Includes a completion check, priority badge, and edit button.
+    """
     on_check_button_clicked = Signal(object, str, int)
     on_edit_button_clicked = Signal(object, dict)
 
@@ -199,18 +222,20 @@ class TodoListItemWidget(QWidget):
     SPACING_SIZE = 15
     STRETCH_SIZE = 1
 
-    def __init__(self, todo_details: dict, parent=None):
+    def __init__(self, task_details: dict, parent=None):
         super().__init__(parent)
 
-        self.todo_details = todo_details
+        self.task_details = task_details
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(TodoListItemWidget.CONTENTS_MARGINS_SIZE)
-        layout.setSpacing(TodoListItemWidget.SPACING_SIZE)
+        layout.setContentsMargins(TaskListItemWidget.CONTENTS_MARGINS_SIZE)
+        layout.setSpacing(TaskListItemWidget.SPACING_SIZE)
+
         desc_and_title_layout = QVBoxLayout()
         text_and_check_box_layout = QHBoxLayout()
 
-        title_text = self.todo_details["title"]
-        description_text = self.todo_details["description"]
+        # Check/Completion button
+        title_text = self.task_details.get("title")
+        description_text = self.task_details.get("description")
         self.check_btn = PushButton(self)
         self.check_btn.setObjectName("TaskButton")
         self.check_btn.setCheckable(True)
@@ -220,10 +245,12 @@ class TodoListItemWidget(QWidget):
         self.title_label = QLabel(title_text, self)
         self.title_label.setObjectName("TaskTitle")
 
-        todo_prio = self.todo_details["priority"]
-        self.priority_label_text = self.getPriorityText(todo_prio)
-        self.priority_label_obj_name = self.getPriorityText(todo_prio) #"Low", "Medium", "High"
+        # Priority Badge
+        task_prio = self.task_details.get("priority")
+        self.priority_label_text = self.getPriorityText(task_prio)
+        self.priority_label_obj_name = self.getPriorityText(task_prio) #"Low", "Medium", "High"
         self.priority_type_lbl = QLabel(self.priority_label_text, self)
+        # The object name is used in QSS to color-code Low/Medium/High
         self.priority_type_lbl.setObjectName(self.priority_label_obj_name)
         self.priority_type_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignVCenter)
         self.priority_type_lbl.setFixedSize(70, 30)
@@ -235,7 +262,7 @@ class TodoListItemWidget(QWidget):
         self.edit_btn = PushButton(self)
         self.edit_btn.setObjectName("EditButton")
         self.edit_btn.setIcon(QIcon(":/icons/edit.svg"))
-        self.edit_btn.clicked.connect(self.editBtnClicked)
+        self.edit_btn.clicked.connect(lambda: self.on_edit_button_clicked.emit(self, self.task_details))
         self.edit_btn.setFixedSize(30, 30)
 
         text_and_check_box_layout.addWidget(self.check_btn)
@@ -246,60 +273,63 @@ class TodoListItemWidget(QWidget):
         desc_and_title_layout.addWidget(self.desc_label)
 
         layout.addLayout(desc_and_title_layout)
-        layout.addStretch(TodoListItemWidget.STRETCH_SIZE)
+        layout.addStretch(TaskListItemWidget.STRETCH_SIZE)
         layout.addWidget(self.edit_btn)
 
-        if self.todo_details.get("is_complete"):
+        # Initialize visual state if task is already complete
+        if self.task_details.get("is_complete"):
             self.check_btn.setChecked(True)
             self.toggleCheckedBtn()
 
 
     def checkBtnClicked(self):
-        task_id = self.todo_details["local_id"]
+        """Emits signal to update database and toggles visual strike-out."""
+        task_id = self.task_details.get("local_id")
         btn_value = self.check_btn.isChecked()
         self.on_check_button_clicked.emit(self, task_id, btn_value)
 
 
-    def editBtnClicked(self):
-        self.on_edit_button_clicked.emit(self, self.todo_details)
-
-
     def update(self, priority, description, title):
+        """Updates internal data and UI labels after an edit."""
         self.priority_type_lbl.setText(self.getPriorityText(priority))
         self.priority_type_lbl.setObjectName(self.getPriorityText(priority))
+
+        # Refresh stylesheet to apply priority-based color change
         self.window().style_sheet_handler.updateStylesheet()
+
         self.desc_label.setText(description)
         self.title_label.setText(title)
-        self.todo_details["priority"] = priority
-        self.todo_details["title"] = title
-        self.todo_details["description"] = description
+        self.task_details.update({"priority": priority, "title": title, "description": description})
+        # self.task_details["priority"] = priority
+        # self.task_details["title"] = title
+        # self.task_details["description"] = description
 
 
     def toggleCheckedBtn(self):
-        if self.check_btn.isChecked():
-            btn_font = self.title_label.font()
-            btn_font.setStrikeOut(True)
-            self.title_label.setFont(btn_font)
-        else:
-            btn_font = self.title_label.font()
-            btn_font.setStrikeOut(False)
-            self.title_label.setFont(btn_font)
+        """Applies or removes strike-out font effect based on completion status."""
+        btn_font = self.title_label.font()
+        btn_font.setStrikeOut(self.check_btn.isChecked())
+        self.title_label.setFont(btn_font)
 
 
     def getPriorityText(self, priority):
+        """Maps integer priority levels to display strings."""
         mapping = {
             0: "Low",
             1: "Medium",
             2: "High"
         }
-        
         return mapping.get(priority, "unknown")
 
 
-class TodoCalendar(QCalendarWidget):
+class TaskCalendar(QCalendarWidget):
+    """
+    Customized calendar for task date selection.
+    Uses QTextCharFormat to highlight dates containing tasks.
+    """
     day_changed = Signal(object)
 
-    def __init__(self, current_day, parent=None):
+    def __init__(self, current_day: QDate, parent=None):
         super().__init__(parent)
         self.current_day = current_day
         self.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
@@ -309,42 +339,66 @@ class TodoCalendar(QCalendarWidget):
         self.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
         self.setFocusPolicy(Qt.ClickFocus)
 
-        self.todo_format = QTextCharFormat()
-        self.todo_format.setBackground(QBrush(QColor("#2D2926")))
-
+        # Format for days with existing tasks
+        self.task_format = QTextCharFormat()
+        self.task_format.setBackground(QBrush(QColor("#2D2926")))
         self.normal_format = QTextCharFormat()
 
         self.selectionChanged.connect(self.onSelectionChanged)
 
 
-    def setTodoDates(self, dates_list):
+    def setTaskColor(self, dates_list: list):
+        """Applies task highlighting to specific dates."""
         for date in dates_list:
-            self.setDateTextFormat(date, self.todo_format)
+            self.setDateTextFormat(date, self.task_format)
 
 
-    def setWithoutTodoDate(self, date):
+    def clearTaskColor(self, date: QDate):
+        """Resets a date to default formatting (e.g., if a task was deleted)."""
         self.setDateTextFormat(date, self.normal_format)
 
 
     def onSelectionChanged(self):
+        """Emits the new date and hides the popup on selection."""
         self.day_changed.emit(self.selectedDate())
         self.hide()
 
 
 class FieldStyleManager:
+    """Mix-in class to handle error highlighting on form fields."""
     ERROR_STYLE = "QLineEdit { border: 1px solid red; }"
     DEFAULT_STYLE = ""
 
-    def updateEmptyFieldStyle(self, fields):
-        for field in fields["empty"]:
+    def updateEmptyFieldStyle(self, fields: dict):
+        """Highlights empty fields and resets filled ones."""
+        for field in fields.get("empty"):
             field.setStyleSheet(FieldStyleManager.ERROR_STYLE)
         
-        for field in fields["filled"]:
+        for field in fields.get("filled"):
             field.setStyleSheet(FieldStyleManager.DEFAULT_STYLE)
 
     def updateInvalidFieldStyle(self, invalid_fields, all_fields):
+        """Highlights specific invalid fields based on validation logic."""
         for field in all_fields:
             if field in invalid_fields:
                 field.setStyleSheet(FieldStyleManager.ERROR_STYLE)
             else:
                 field.setStyleSheet(FieldStyleManager.DEFAULT_STYLE)
+
+
+class NoTabApplication(QApplication):
+    """
+    A custom QApplication that disables Tab-key focus navigation 
+    globally via an event filter.
+    """
+    def __init__(self, argv):
+        super().__init__(argv)
+
+        self.installEventFilter(self)
+    
+    def eventFilter(self, obj, event):
+        # Ignore Tab and Backtab key presses to prevent focus jumping
+        if event.type() == event.Type.KeyPress:
+            if event.key() in [Qt.Key.Key_Tab, Qt.Key.Key_Backtab]:
+                return True # Event handled (ignore the key press)
+        return super().eventFilter(obj, event)

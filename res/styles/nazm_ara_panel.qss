@@ -43,8 +43,8 @@ QFrame#MainSection > #UpperFrame {
     background-color: #323339;
 }
 
-/* add todo frame */
-QFrame#AddTodoFrame > PushButton {
+/* add task frame */
+QFrame#AddTaskFrame > PushButton {
     background-color: #1c1c1c;
     border: 1px solid #323339;
     border-radius: 4px;
@@ -52,16 +52,16 @@ QFrame#AddTodoFrame > PushButton {
     padding: 6px;
 }
 
-QFrame#AddTodoFrame > PushButton:hover {
+QFrame#AddTaskFrame > PushButton:hover {
     background-color: #58595d;
 }
 
-QFrame#AddTodoFrame > QLabel {
+QFrame#AddTaskFrame > QLabel {
     font-size: 18px;
 }
 
-/* add todo modal */
-QFrame#AddTodoModal {
+/* add task modal */
+QFrame#AddTaskModal {
     background-color: #323339;
     border-radius: 8px;
     padding: 10px;
@@ -71,7 +71,7 @@ QFrame#AddTodoModal {
     background-color: rgba(0, 0, 0, 100);
 }
 
-QFrame#AddTodoModal > QLineEdit {
+QFrame#AddTaskModal > QLineEdit {
     background-color: #323339;
     border-radius: 8px;
     border: 1px solid #58595d;
@@ -80,29 +80,29 @@ QFrame#AddTodoModal > QLineEdit {
     color: #dfe0e2;
 }
 
-QFrame#AddTodoModal > QLineEdit:focus {
+QFrame#AddTaskModal > QLineEdit:focus {
     border: 1px solid #7bb0f5;
 }
 
-QFrame#AddTodoModal > QLabel#TitleLabel {
+QFrame#AddTaskModal > QLabel#TitleLabel {
     font-size: 25px;
     font-weight: 600;
     color: #ffffff;
 }
 
-QFrame#AddTodoModal > QLabel {
+QFrame#AddTaskModal > QLabel {
     font-size: 14px;
     color: #ffffff;
 }
 
-QFrame#AddTodoModal > PushButton#CloseButton {
+QFrame#AddTaskModal > PushButton#CloseButton {
     background-color: #323339;
     color: #ffffff;
     border-radius: 4px;
     padding: 10px;
 } 
 
-QFrame#AddTodoModal > QComboBox {
+QFrame#AddTaskModal > QComboBox {
     background-color: #323339;
     border: 1px solid #58595d;
     border-radius: 6px;
@@ -113,12 +113,12 @@ QFrame#AddTodoModal > QComboBox {
     selection-color: #ffffff;
 }
 
-QFrame#AddTodoModal > QComboBox:focus {
+QFrame#AddTaskModal > QComboBox:focus {
     border: 1px solid #7bb0f5;
 }
 
 /* drop down icon square */
-QFrame#AddTodoModal > QComboBox::drop-down {
+QFrame#AddTaskModal > QComboBox::drop-down {
     subcontrol-origin: padding;
     subcontrol-position: top right;
     width: 30px;
@@ -128,14 +128,14 @@ QFrame#AddTodoModal > QComboBox::drop-down {
 }
 
 /* arrow icon */
-QFrame#AddTodoModal > QComboBox::down-arrow {
+QFrame#AddTaskModal > QComboBox::down-arrow {
     image: url(:/icons/arrow_down.svg);
     width: 15px;
     height: 15px;
 }
 
-QFrame#AddTodoFrame > PushButton#AddTaskBtn,
-QFrame#AddTodoModal > PushButton#SaveButton {
+QFrame#AddTaskFrame > PushButton#AddTaskBtn,
+QFrame#AddTaskModal > PushButton#SaveButton {
     background-color: #5865f2;
     color: #ffffff;
     border-radius: 6px;
@@ -144,12 +144,12 @@ QFrame#AddTodoModal > PushButton#SaveButton {
     font-weight: 500;
 }
 
-QFrame#AddTodoFrame > PushButton#AddTaskBtn:hover,
-QFrame#AddTodoModal > PushButton#SaveButton:hover {
+QFrame#AddTaskFrame > PushButton#AddTaskBtn:hover,
+QFrame#AddTaskModal > PushButton#SaveButton:hover {
     background-color: #4452bb;
 }
 
-/* todo section */
+/* task section */
 PushButton#TaskButton {
     background-color: transparent;
     border: 2px solid #ffffff;;
@@ -275,7 +275,7 @@ QCalendarWidget QAbstractItemView:item:selected {
     border-radius: 5px;
 }
 
-QFrame#AddTodoModal > PushButton#DeleteButton {
+QFrame#AddTaskModal > PushButton#DeleteButton {
     background-color: #e53232;
     color: #ffffff;
     border-radius: 6px;
@@ -284,7 +284,7 @@ QFrame#AddTodoModal > PushButton#DeleteButton {
     font-weight: 500;
 }
 
-QFrame#AddTodoModal > PushButton#DeleteButton:hover {
+QFrame#AddTaskModal > PushButton#DeleteButton:hover {
     background-color: #b62828;
 }
 

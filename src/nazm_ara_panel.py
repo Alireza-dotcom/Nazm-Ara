@@ -2,6 +2,7 @@ from widgets import PushButton, RadioButton, TaskListItemWidget, TaskCalendar
 from modals import AddTaskModal
 from notification_handler import NotificationHandler
 from database_manager import DatabaseManager
+from habbit_list import HabitWidget
 
 from PySide6.QtCore import (
     Qt,
@@ -111,7 +112,7 @@ class MainSection(QFrame):
                                   )
         self.welcome_page.setObjectName("WelcomePage")
         self.task_page = TaskWidget(self, self.account_details)
-        self.habit_page = QLabel("Habit List") # TODO: habit list class
+        self.habit_page = HabitWidget(self, self.account_details)
 
         # Add pages to stack
         self.pages.addWidget(self.welcome_page)

@@ -146,7 +146,7 @@ class FormProcessor:
         return validated
 
 
-    def validateTaskFields(self, task_name_field: QWidget):
+    def validateTaskAndHabitFields(self, task_name_field: QWidget):
         """Validates task titles and descriptions allowing alphanumeric and Persian characters."""
         task_name = self.getFieldText(task_name_field)
         clean_task_name = " ".join(task_name.split())
@@ -173,7 +173,7 @@ class FormProcessor:
         validated = {}
         for name, widget in field_map.items():
             if name in ["title", "description"]:
-                validated[name] = self.validateTaskFields(widget)
+                validated[name] = self.validateTaskAndHabitFields(widget)
             elif name == "priority":
                 validated[name] = self.validatePriority(widget)
             else:
@@ -191,7 +191,61 @@ class FormProcessor:
                 if not self.checkLength(widget, min_len=3, max_len=50):
                     errors.append(f"{name} must be at least 3 characters")
                     invalid_widgets.append(widget)
-                elif not self.validateTaskFields(widget):
+                elif not self.validateTaskAndHabitFields(widget):
+                    errors.append(f"{name} format is invalid")
+                    invalid_widgets.append(widget)
+
+        if errors:
+            return False, {"errors": errors, "invalid_widgets": invalid_widgets}
+        return True, None
+
+    def validateTarget(self, target_field: QWidget):
+        """Validates target allowing numeric characters."""
+        target = self.getFieldText(target_field)
+
+        pattern = r"^[\d]+$"
+        if not re.match(pattern, target):
+            return False
+
+        return target
+
+
+    def getValidatedHabitData(self, field_map: dict):
+        """Retrieves and cleans data from fields after successful validation."""
+        validated = {}
+        for name, widget in field_map.items():
+            if name in ["title", "description", "unit", "question"]:
+                validated[name] = self.validateTaskAndHabitFields(widget)
+            elif name == "target":
+                validated[name] = int(self.validateTarget(widget))
+            elif name == "color":
+                validated[name] = widget
+            elif name == "priority":
+                validated[name] = self.validatePriority(widget)
+            else:
+                validated[name] = self.getFieldText(widget)
+        return validated
+
+
+    def getHabitModalsValidationErrors(self, field_map: dict):
+        """Validates inputs for task-related modal windows."""
+        errors = []
+        invalid_widgets = []
+
+        for name, widget in field_map.items():
+            if name in ["title", "description", "unit", "question"]:
+                if not self.checkLength(widget, min_len=3, max_len=50):
+                    errors.append(f"{name} must be at least 3 characters")
+                    invalid_widgets.append(widget)
+                elif not self.validateTaskAndHabitFields(widget):
+                    errors.append(f"{name} format is invalid")
+                    invalid_widgets.append(widget)
+            elif name == "target":
+                if not self.validateTarget(widget):
+                    errors.append(f"{name} format is invalid")
+                    invalid_widgets.append(widget)
+            elif name == "value":
+                if not self.validateTarget(widget):
                     errors.append(f"{name} format is invalid")
                     invalid_widgets.append(widget)
 

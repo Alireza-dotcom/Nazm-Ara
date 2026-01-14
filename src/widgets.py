@@ -6,7 +6,8 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QLabel,
     QCalendarWidget,
-    QApplication
+    QApplication,
+    QFrame,
 )
 from PySide6.QtGui import (
     QIcon,
@@ -402,3 +403,159 @@ class NoTabApplication(QApplication):
             if event.key() in [Qt.Key.Key_Tab, Qt.Key.Key_Backtab]:
                 return True # Event handled (ignore the key press)
         return super().eventFilter(obj, event)
+
+
+class HabitListItemWidget(QWidget):
+    on_edit_button_clicked = Signal(object, dict)
+
+    CONTENTS_MARGINS_SIZE = QMargins(20, 20, 20, 20)
+    SPACING_SIZE = 15
+    STRETCH_SIZE = 1
+
+    def __init__(self, habit_details: dict, parent=None):
+        super().__init__(parent)
+        self.button_list = []
+        self.habit_details = habit_details
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(TaskListItemWidget.CONTENTS_MARGINS_SIZE)
+        self.layout.setSpacing(TaskListItemWidget.SPACING_SIZE)
+        self.current_date = QDate.currentDate()
+
+        # Check/Completion button
+        title_text = self.habit_details.get("title")
+
+        self.title_label = QLabel(title_text, self)
+        self.title_label.setObjectName("TaskTitle")
+
+        # Priority Badge
+        task_prio = self.habit_details.get("priority")
+        self.priority_label_text = self.getPriorityText(task_prio)
+        self.priority_label_obj_name = self.getPriorityText(task_prio) #"Low", "Medium", "High"
+        self.priority_type_lbl = QLabel(self.priority_label_text, self)
+        # The object name is used in QSS to color-code Low/Medium/High
+        self.priority_type_lbl.setObjectName(self.priority_label_obj_name)
+        self.priority_type_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignVCenter)
+        self.priority_type_lbl.setFixedSize(70, 30)
+        self.priority_type_lbl.setMargin(5)
+
+        self.edit_btn = PushButton(self)
+        self.edit_btn.setObjectName("EditButton")
+        self.edit_btn.setIcon(QIcon(":/icons/edit.svg"))
+        self.edit_btn.clicked.connect(lambda: self.on_edit_button_clicked.emit(self, self.habit_details))
+        self.edit_btn.setFixedSize(30, 30)
+
+        # layout.addLayout(desc_and_title_layout)
+        self.layout.addWidget(self.title_label)
+        self.layout.addWidget(self.priority_type_lbl)
+        self.layout.addStretch(HabitListItemWidget.STRETCH_SIZE)
+        self.layout.addWidget(self.edit_btn)
+
+        self.addHabitButtons()
+
+
+    def addHabitButtons(self):
+        for i in range(-4, 1, 1):
+            btn = HabitButton(self, self.current_date.addDays(i), self.habit_details)
+            self.button_list.append(btn)
+            self.layout.addWidget(btn)
+
+
+    def update(self, data: dict):
+        """Updates internal data and UI labels after an edit."""
+        title = data.get("title")
+        priority = data.get("priority")
+        self.priority_type_lbl.setText(self.getPriorityText(priority))
+        self.priority_type_lbl.setObjectName(self.getPriorityText(priority))
+
+        # Refresh stylesheet to apply priority-based color change
+        self.window().style_sheet_handler.updateStylesheet()
+
+        self.title_label.setText(title)
+        self.habit_details.update({"priority": priority,
+                                   "title": title,
+                                   "description": data.get("description"),
+                                   "color": data.get("color"),
+                                   "question": data.get("question"),
+                                   "target": data.get("target"),
+                                   "unit": data.get("unit")
+                                   })
+
+
+    def getPriorityText(self, priority):
+        """Maps integer priority levels to display strings."""
+        mapping = {
+            0: "Low",
+            1: "Medium",
+            2: "High"
+        }
+        return mapping.get(priority, "unknown")
+
+
+class HabitButton(QPushButton):
+    on_habit_button_clicked = Signal(object, object, dict, dict)
+    def __init__(self, parent: QWidget, date: QDate, habit_deatils: dict, daily_habit_details: dict = {}):
+        super().__init__(parent)
+        self.date = date
+        self.habit_details = habit_deatils
+        self.daily_habit_details = daily_habit_details
+        self.setFixedSize(80, 80)
+        self.setObjName("HabitButton")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.clicked.connect(
+            lambda: self.on_habit_button_clicked.emit(self,
+                                                      self.date,
+                                                      self.habit_details,
+                                                      self.daily_habit_details)
+            )
+
+
+    def setObjName(self, object_name: str = "HabitButton"):
+        self.setObjectName(object_name)
+
+
+class ColorPicker(QFrame):
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+        self.setObjectName("ColorPicker")
+        self.main_layout = QHBoxLayout(self)
+        self.color = "blue"
+
+        self.color_main = QPushButton(parent=self)
+        self.color_main.setObjectName("MainColor")
+        self.main_layout.addWidget(self.color_main)
+        self.main_layout.addStretch(1)
+
+        self.blue_color = PushButton(parent=self)
+        self.blue_color.setObjectName("BlueColor")
+        self.blue_color.clicked.connect(lambda: self.changeColor("blue"))
+        self.main_layout.addWidget(self.blue_color)
+
+        self.red_color = PushButton(parent=self)
+        self.red_color.setObjectName("RedColor")
+        self.red_color.clicked.connect(lambda: self.changeColor("red"))
+        self.main_layout.addWidget(self.red_color)
+
+        self.green_color = PushButton(parent=self)
+        self.green_color.setObjectName("GreenColor")
+        self.green_color.clicked.connect(lambda: self.changeColor("green"))
+        self.main_layout.addWidget(self.green_color)
+
+        self.yellow_color = PushButton(parent=self)
+        self.yellow_color.setObjectName("YellowColor")
+        self.yellow_color.clicked.connect(lambda: self.changeColor("yellow"))
+        self.main_layout.addWidget(self.yellow_color)
+
+        self.orange_color = PushButton(parent=self)
+        self.orange_color.setObjectName("OrangeColor")
+        self.orange_color.clicked.connect(lambda: self.changeColor("orange"))
+        self.main_layout.addWidget(self.orange_color)
+
+        self.cyan_color = PushButton(parent=self)
+        self.cyan_color.setObjectName("CyanColor")
+        self.cyan_color.clicked.connect(lambda: self.changeColor("cyan"))
+        self.main_layout.addWidget(self.cyan_color)
+
+
+    def changeColor(self, color: str):
+        self.color_main.setStyleSheet(f"background-color: {color};")
+        self.color = color

@@ -87,6 +87,7 @@ class DatabaseManager:
                         title TEXT NOT NULL,
                         question TEXT NOT NULL,
                         unit INTEGER NOT NULL,
+                        target INTEGER NOT NULL,
                         tag_id TEXT DEFAULT NULL,
                         description TEXT,
                         priority INTEGER DEFAULT 1 CHECK(priority IN (0,1,2)),
@@ -116,8 +117,7 @@ class DatabaseManager:
                         deleted_at TEXT DEFAULT NULL,
                         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (habit_id) REFERENCES habits(local_id) ON DELETE CASCADE,
-                        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                        UNIQUE (user_id, habit_id, date)
+                        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
                     )
                 """)
                 
@@ -265,3 +265,127 @@ class DatabaseManager:
         except sqlite3.Error as e:
             print(f"Error updating task: {e}")
             return False
+
+    # ==================== HABITS ====================
+
+    def addHabit(self, user_id: str, title: str, question: str,
+                 unit: int, target: int , color: str, description: str = None,
+                 priority: int = 1) -> Optional[str]:
+        local_id = str(uuid.uuid4())
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO habits (local_id, user_id, title, question, unit, color, target, description, priority)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (local_id, user_id, title, question, unit, color, target, description, priority))
+                return local_id
+        except sqlite3.Error as e:
+            print(f"Error adding habit: {e}")
+            return None
+
+
+    def getAllHabits(self, user_id: str) -> List[Dict]:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM habits WHERE user_id = ? AND deleted_at IS NULL", (user_id,))
+                rows = cursor.fetchall()
+                return [dict(row) for row in rows]
+        except sqlite3.Error as e:
+            print(f"Error fetching habits: {e}")
+            return []
+
+
+    def deleteHabit(self, local_id: str) -> bool:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE habits SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP, needs_sync = 1
+                    WHERE local_id = ?
+                """, (local_id,))
+                return True
+        except sqlite3.Error as e:
+            print(f"Error deleting habit: {e}")
+            return False
+
+
+    def updateHabit(self, local_id: str, **kwargs) -> bool:
+        allowed_fields = {'title', 'question', 'unit', 'description', 'priority', 'color', 'archive', 'target'}
+        update_fields = {k: v for k, v in kwargs.items() if k in allowed_fields}
+        
+        if not update_fields:
+            return False
+        
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                update_fields['updated_at'] = datetime.now().isoformat()
+                update_fields['needs_sync'] = 1
+                
+                set_clause = ", ".join([f"{k} = ?" for k in update_fields.keys()])
+                values = list(update_fields.values()) + [local_id]
+                cursor.execute(f"UPDATE habits SET {set_clause} WHERE local_id = ?", values)
+                return True
+        except sqlite3.Error as e:
+            print(f"Error updating habit: {e}")
+            return False
+
+    # ==================== DAILY HABITS ====================
+
+    def addDailyHabit(self, habit_id: str, user_id: int, date: str, value: int = 0) -> Optional[int]:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO daily_habits (habit_id, user_id, date, value)
+                    VALUES (?, ?, ?, ?)
+                """, (habit_id, user_id, date, value))
+                return cursor.lastrowid
+        except sqlite3.Error as e:
+            print(f"Error adding daily habit: {e}")
+            return None
+
+
+    def getDailyHabitRange(self, user_id: int, habit_id: str, start_date: str, end_date: str) -> List[Dict]:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT dh.*, h.title, h.unit, h.color, h.target
+                    FROM daily_habits dh
+                    JOIN habits h ON dh.habit_id = h.local_id
+                    WHERE dh.habit_id = ? AND dh.user_id = ? AND dh.date BETWEEN ? AND ? AND dh.deleted_at IS NULL
+                    ORDER BY dh.date DESC, dh.updated_at DESC
+                """, (user_id,  habit_id, start_date, end_date))
+                rows = cursor.fetchall()
+                return [dict(row) for row in rows]
+        except sqlite3.Error as e:
+            print(f"Error fetching daily habit range: {e}")
+            return []
+
+
+    def updateDailyHabit(self, daily_habit_id: int, value: int) -> bool:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                print(value, daily_habit_id)
+                cursor.execute(f""" UPDATE daily_habits SET updated_at = CURRENT_TIMESTAMP, needs_sync = 1, value = ? WHERE local_id = ?""",(value, daily_habit_id))
+                return True
+        except sqlite3.Error as e:
+            print(f"Error updating daily habit: {e}")
+            return False
+
+
+    def getDailyHabitById(self, daily_habit_id: int) -> Optional[Dict]:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(""" select * from daily_habits WHERE local_id = ? """,
+                               (daily_habit_id,))
+                row = cursor.fetchone()
+                return dict(row)
+        except sqlite3.Error as e:
+            print(f"Error deleting daily habit: {e}")
+            return None

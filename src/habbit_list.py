@@ -26,7 +26,7 @@ class HabitWidget(QWidget):
         super().__init__(parent)
         self.account_details = account_details
         self.database = DatabaseManager()
-        self.notification_handler = NotificationHandler()
+        self.notification_handler = NotificationHandler(self)
         self.currrent_date = QDate.currentDate()
         self.main_layout = QVBoxLayout(self)
 
@@ -39,7 +39,7 @@ class HabitWidget(QWidget):
         self.add_habit_layout = QHBoxLayout()
         self.add_habit_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        self.add_habit_btn = PushButton("+ Add habit", self)
+        self.add_habit_btn = PushButton(text="+ Add habit", parent=self)
         self.add_habit_btn.setObjectName("AddHabitBtn")
         self.add_habit_btn.clicked.connect(self.showHabitCreateModal)
 
@@ -48,7 +48,7 @@ class HabitWidget(QWidget):
         self.header_layout.addLayout(self.add_habit_layout)
 
         self.labels_layout = QHBoxLayout()
-        label = QLabel("Habit", self)
+        label = QLabel(text="Habit", parent=self)
         label.setObjectName("HabitLabel")
         self.labels_layout.addWidget(label)
         self.addHeaderLabels()
@@ -59,7 +59,7 @@ class HabitWidget(QWidget):
         # Task List Display
         self.list_widget = QListWidget(self)
         self.list_widget.horizontalScrollBar()
-        self.list_widget.setFocusPolicy(Qt.NoFocus)
+        self.list_widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.list_widget.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self.main_layout.addWidget(self.list_widget)
 
@@ -73,7 +73,7 @@ class HabitWidget(QWidget):
 
     def addHeaderLabels(self):
         for i in range(-4, 1, 1):
-            label = QLabel(self.currrent_date.addDays(i).toString("ddd\nd"), self)
+            label = QLabel(text=self.currrent_date.addDays(i).toString("ddd\nd"), parent=self)
             label.setObjectName("DateLabel")
             label.setFixedWidth(90)
             label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
@@ -97,22 +97,22 @@ class HabitWidget(QWidget):
             self.list_widget.setItemWidget(item, custom_widget)
 
 
-    def loadHabitButtons(self, row: dict, widget: HabitListItemWidget):
+    def loadHabitButtons(self, row: dict, habit_widget: HabitListItemWidget):
         habit_id = row.get("local_id")
         user_id = self.account_details.get("id")
-        start_date = self.currrent_date.addDays(-4).toString(Qt.ISODate)
-        end_date = self.currrent_date.toString(Qt.ISODate)
+        start_date = self.currrent_date.addDays(-4).toString(Qt.DateFormat.ISODate)
+        end_date = self.currrent_date.toString(Qt.DateFormat.ISODate)
         daily_habits = self.database.getDailyHabitRange(habit_id, user_id, start_date, end_date)
 
         # convert dates to iso format so i can compare them with data that i fetched from db
         buttons_date_in_iso_format = []
-        for btn in widget.button_list:
+        for btn in habit_widget.button_list:
             iso_format = btn.date.toString(Qt.DateFormat.ISODate) 
             buttons_date_in_iso_format.append(iso_format)
 
         for daily_habit_details in daily_habits:
             index = buttons_date_in_iso_format.index(daily_habit_details["date"])
-            btn_widget = widget.button_list[index]
+            btn_widget = habit_widget.button_list[index]
             btn_widget.daily_habit_details = daily_habit_details
             value = int(daily_habit_details.get("value"))
             target = int(daily_habit_details.get("target"))
@@ -120,8 +120,8 @@ class HabitWidget(QWidget):
             self.applyStyleToDailyHabits(btn_widget, value, target, color)
 
 
-    def connectHabitButtonsSignals(self, widget: HabitListItemWidget):
-        for button in widget.button_list:
+    def connectHabitButtonsSignals(self, habit_widget: HabitListItemWidget):
+        for button in habit_widget.button_list:
             button.on_habit_button_clicked.connect(self.showDailyHabitModal)
 
 
@@ -131,18 +131,18 @@ class HabitWidget(QWidget):
         self.modal.add_habit_clicked.connect(self.createHabit)
 
 
-    def createHabit(self, details: list):
+    def createHabit(self, habit_details: dict):
         """Adds a new habit to the database and add it into the current view."""
         user_id = self.account_details.get("id")
-        habit_id = self.database.addHabit(user_id, details.get("title"),details.get("question"),
-                                          details.get("unit"), details.get("target"),
-                                          details.get("color"), details.get("description"))
+        habit_id = self.database.addHabit(user_id, habit_details.get("title"),habit_details.get("question"),
+                                          habit_details.get("unit"), habit_details.get("target"),
+                                          habit_details.get("color"), habit_details.get("description"))
         if habit_id:
-            details["local_id"] = habit_id
-            details["user_id"] = self.account_details["id"]
+            habit_details["local_id"] = habit_id
+            habit_details["user_id"] = self.account_details["id"]
 
             item = QListWidgetItem(self.list_widget)
-            custom_widget = HabitListItemWidget(details, self)
+            custom_widget = HabitListItemWidget(habit_details, self)
             custom_widget.on_edit_button_clicked.connect(self.showHabitEditModal)
             self.connectHabitButtonsSignals(custom_widget)
             item.setSizeHint(custom_widget.sizeHint())
@@ -155,31 +155,31 @@ class HabitWidget(QWidget):
             )
 
 
-    def showHabitEditModal(self, habit_object: HabitListItemWidget, habit_details: dict):
+    def showHabitEditModal(self, habit_widget: HabitListItemWidget, habit_details: dict):
         """Opens the modal to edit or delete an existing habit."""
-        self.modal = AddHabitModal(self, habit_object, habit_details)
+        self.modal = AddHabitModal(self, habit_widget, habit_details)
         self.modal.on_update_clicked.connect(self.updateHabit)
         self.modal.on_delete_clicked.connect(self.deleteHabit)
 
 
-    def updateHabit(self, habit_object: HabitListItemWidget, data: dict, local_id: str):
+    def updateHabit(self, habit_widget: HabitListItemWidget, habit_details: dict, local_id: str):
         """Validates and saves modifications to an existing task."""
-        title = data.get("title")
-        description = data.get("description")
-        priority = data.get("priority")
-        color = data.get("color")
-        question = data.get("question")
-        target = data.get("target")
-        unit = data.get("unit")
+        title = habit_details.get("title")
+        description = habit_details.get("description")
+        priority = habit_details.get("priority")
+        color = habit_details.get("color")
+        question = habit_details.get("question")
+        target = habit_details.get("target")
+        unit = habit_details.get("unit")
         if self.database.updateHabit(local_id, title=title, description=description,
                                      priority=priority, color=color,
                                      question=question, target=target, unit=unit):
-            habit_object.update(data)
+            habit_widget.update(habit_details)
 
-            for button in habit_object.button_list:
+            for button in habit_widget.button_list:
                 btn_details = button.daily_habit_details
                 if btn_details:
-                    btn_details.update({"target": data.get("target")})
+                    btn_details.update({"target": habit_details.get("target")})
                     self.applyStyleToDailyHabits(button, btn_details.get("value"),
                                                 btn_details.get("target"), color)
 
@@ -192,10 +192,10 @@ class HabitWidget(QWidget):
             )
 
 
-    def deleteHabit(self, habit_object: HabitListItemWidget, local_id: str):
+    def deleteHabit(self, habit_widget: HabitListItemWidget, local_id: str):
         """Removes a habit from the database and the UI list."""
         if self.database.deleteHabit(local_id):
-            item = self.list_widget.itemAt(habit_object.pos())
+            item = self.list_widget.itemAt(habit_widget.pos())
             row = self.list_widget.row(item)
             taken_item = self.list_widget.takeItem(row) # Removes the item from view
             del taken_item
@@ -208,7 +208,6 @@ class HabitWidget(QWidget):
     # ==================== DAILY HABITS ====================
 
     def showDailyHabitModal(self, habit_button_object: HabitButton, date: QDate, habit_details: dict, daily_habit_details: dict):
-        print(daily_habit_details)
         self.modal = AddDailyHabitModal(self, date, habit_button_object, habit_details, daily_habit_details)
         if not daily_habit_details:
             self.modal.add_daily_habit_clicked.connect(self.createDailyHabit)
@@ -217,17 +216,17 @@ class HabitWidget(QWidget):
             self.modal.on_update_clicked.connect(self.updateDailyHabit)
 
 
-    def updateDailyHabit(self, item_object: QWidget, data: dict):
-        id = data.get("local_id")
-        target = data.get("target")
-        color = data.get("color")
-        value = data.get("value")
+    def updateDailyHabit(self, habit_button_object: HabitButton, habit_button_details: dict):
+        id = habit_button_details.get("local_id")
+        target = habit_button_details.get("target")
+        color = habit_button_details.get("color")
+        value = habit_button_details.get("value")
 
         is_updated = self.database.updateDailyHabit(id, value)
         updated_details = self.database.getDailyHabitById(id)
         if is_updated and updated_details:
-            item_object.daily_habit_details = updated_details
-            self.applyStyleToDailyHabits(item_object, value, target, color)
+            habit_button_object.daily_habit_details = updated_details
+            self.applyStyleToDailyHabits(habit_button_object, value, target, color)
 
             # Refresh stylesheet to apply priority-based color change
             self.resetStyleSheet()
@@ -238,10 +237,12 @@ class HabitWidget(QWidget):
             )
 
 
-    def deleteDailyHabit(self, button_widget: QWidget, id: int):
+    #FIXME add delete dailyhabit functionality
+    def deleteDailyHabit(self, habit_button_object: HabitButton, id: int):
+        print(habit_button_object)
         if self.database.deleteDailyHabit(id):
-            button_widget.setObjName("HabitButton")
-            button_widget.daily_habit_details = {}
+            habit_button_object.setObjName("HabitButton")
+            habit_button_object.daily_habit_details = {}
 
             # Refresh stylesheet to apply priority-based color change
             self.resetStyleSheet()
@@ -252,16 +253,22 @@ class HabitWidget(QWidget):
             )
 
 
-    def createDailyHabit(self, button_widget: QWidget, data: dict):
+    def createDailyHabit(self, habit_button_object: HabitButton, habit_button_details: dict):
         """Adds a new daily habit to the database and update the button."""
-        id = self.database.addDailyHabit(data.get("habit_id"), data.get("user_id"),
-                                          data.get("date"), data.get("value"))
+        id = self.database.addDailyHabit(habit_button_details.get("habit_id"),
+                                         habit_button_details.get("user_id"),
+                                         habit_button_details.get("date"),
+                                         habit_button_details.get("value")
+                                        )
         details = self.database.getDailyHabitById(id)
 
         if id and details:
-            self.applyStyleToDailyHabits(button_widget, data.get("value"),
-                                         data.get("target"), data.get("color"))
-            button_widget.daily_habit_details = details
+            self.applyStyleToDailyHabits(habit_button_object,
+                                         habit_button_details.get("value"),
+                                         habit_button_details.get("target"),
+                                         habit_button_details.get("color")
+                                        )
+            habit_button_object.daily_habit_details = details
             # Refresh stylesheet to apply priority-based color change
             self.resetStyleSheet()
         else:
@@ -271,6 +278,6 @@ class HabitWidget(QWidget):
             )
 
 
-    def applyStyleToDailyHabits(self, button_obj: QWidget, value: int, target: int, color: str):
+    def applyStyleToDailyHabits(self, habit_button_object: HabitButton, value: int, target: int, color: str):
         object_name = f"{color.title()}Color" if value >= target else f"Lesser{color.title()}Color"
-        button_obj.setObjectName(object_name)
+        habit_button_object.setObjectName(object_name)

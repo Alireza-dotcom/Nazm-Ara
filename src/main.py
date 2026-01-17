@@ -51,12 +51,12 @@ class MainWindow(QMainWindow):
 
     def showLoginPage(self):
         self.style_sheet_handler.setResourceQssPath(":/styles/login_panel.qss")
-        self.login_panel = self.loadPage(LoginPanel)
-        self.login_panel.forgot_password_clicked.connect(self.showForgotPasswordPage)
-        self.login_panel.signup_clicked.connect(self.showSignupPage)
-        self.login_panel.select_account_clicked.connect(self.showSelectAccountPage)
-        self.login_panel.continue_clicked.connect(self.showOfflineAccountPage)
-        self.login_panel.login_clicked.connect(self.logIntoOnlineAccount)
+        login_panel = self.loadPage(LoginPanel)
+        login_panel.forgot_password_clicked.connect(self.showForgotPasswordPage)
+        login_panel.signup_clicked.connect(self.showSignupPage)
+        login_panel.select_account_clicked.connect(self.showSelectAccountPage)
+        login_panel.continue_clicked.connect(self.showOfflineAccountPage)
+        login_panel.login_clicked.connect(self.logIntoOnlineAccount)
         self.shrinkPage()
         self.addSpacing()
 
@@ -65,9 +65,9 @@ class MainWindow(QMainWindow):
         """Displays page to pick an existing local account."""
         self.style_sheet_handler.setResourceQssPath(":/styles/select_acc_panel.qss")
         list_of_accounts_detil = self.database.getListOfUsers()
-        self.select_account_panel = self.loadPage(SelectAccountPanel, list_of_accounts_detil)
-        self.select_account_panel.add_account_clicked.connect(self.showLoginPage)
-        self.select_account_panel.account_selected.connect(self.openMainApp)
+        select_account_panel = self.loadPage(SelectAccountPanel, list_of_accounts_detil)
+        select_account_panel.add_account_clicked.connect(self.showLoginPage)
+        select_account_panel.account_selected.connect(self.openMainApp)
         self.shrinkPage()
         self.addSpacing()
 
@@ -75,9 +75,9 @@ class MainWindow(QMainWindow):
     def showOfflineAccountPage(self):
         """Displays page for creating a local-only user."""
         self.style_sheet_handler.setResourceQssPath(":/styles/offline_acc_panel.qss")
-        self.offline_account_panel = self.loadPage(OfflineUserPanel)
-        self.offline_account_panel.back_to_login_clicked.connect(self.showLoginPage)
-        self.offline_account_panel.continue_clicked.connect(self.createOfflineUser)
+        offline_account_panel = self.loadPage(OfflineUserPanel)
+        offline_account_panel.back_to_login_clicked.connect(self.showLoginPage)
+        offline_account_panel.continue_clicked.connect(self.createOfflineUser)
 
 
     def openMainApp(self, account_details: dict):
@@ -91,17 +91,17 @@ class MainWindow(QMainWindow):
 
     def showForgotPasswordPage(self):
         self.style_sheet_handler.setResourceQssPath(":/styles/forgot_pass_panel.qss")
-        self.forgot_pass_panel = self.loadPage(ForgotPasswordPanel)
-        self.forgot_pass_panel.back_to_login_clicked.connect(self.showLoginPage)
-        self.forgot_pass_panel.create_new_acc_clicked.connect(self.showSignupPage)
-        self.forgot_pass_panel.reset_password_clicked.connect(self.sendResetPassEmail)
+        forgot_pass_panel = self.loadPage(ForgotPasswordPanel)
+        forgot_pass_panel.back_to_login_clicked.connect(self.showLoginPage)
+        forgot_pass_panel.create_new_acc_clicked.connect(self.showSignupPage)
+        forgot_pass_panel.reset_password_clicked.connect(self.sendResetPassEmail)
 
 
     def showSignupPage(self):
         self.style_sheet_handler.setResourceQssPath(":/styles/signup_panel.qss")
-        self.signup_panel = self.loadPage(SignupPanel)
-        self.signup_panel.already_have_account_clicked.connect(self.showLoginPage)
-        self.signup_panel.signup_clicked.connect(self.createOnlineUser)
+        signup_panel = self.loadPage(SignupPanel)
+        signup_panel.already_have_account_clicked.connect(self.showLoginPage)
+        signup_panel.signup_clicked.connect(self.createOnlineUser)
 
 
     def loadPage(self, ClassWidget, *args, **kwargs):

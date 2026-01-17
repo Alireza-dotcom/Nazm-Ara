@@ -11,7 +11,8 @@ from PySide6.QtCore import (
 from PySide6.QtWidgets import (
     QLabel,
     QFrame,
-    QVBoxLayout
+    QVBoxLayout,
+    QWidget
 )
 
 
@@ -28,7 +29,7 @@ class LoginPanel(QFrame, FieldStyleManager):
     CONTENTS_MARGIN_SIZE = QMargins(50, 40, 50, 40)
     REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setObjectName("LoginPanel")
         self.form_processor = FormProcessor()

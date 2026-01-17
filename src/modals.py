@@ -1,4 +1,12 @@
-from widgets import PushButton, FieldStyleManager, ColorPicker, FormRow
+from widgets import (
+    PushButton,
+    FieldStyleManager,
+    ColorPicker,
+    FormRow,
+    TaskListItemWidget,
+    HabitListItemWidget,
+    HabitButton
+)
 from form_processor import FormProcessor
 from notification_handler import NotificationHandler
 from PySide6.QtGui import QIcon
@@ -23,7 +31,7 @@ class AddTaskModal(QFrame, FieldStyleManager):
     MEDIUM_INDEX = 1
     REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
-    def __init__(self, parent: QWidget, task_object: QWidget, task_details: dict = None):
+    def __init__(self, parent: QWidget, task_object: TaskListItemWidget, task_details: dict = None):
         # The 'shield' acts as a semi-transparent overlay covering the parent window
         # to block interactions and serve as a background for the modal.
         self.main_win = parent.window()
@@ -32,12 +40,12 @@ class AddTaskModal(QFrame, FieldStyleManager):
 
         super().__init__(self.shield)
         self.setObjectName("AddTaskModal")
-        self.shield.setAttribute(Qt.WA_DeleteOnClose)
+        self.shield.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.task_details = task_details
         self.task_object = task_object
 
         self.form_processor = FormProcessor()
-        self.notification_handler = NotificationHandler()
+        self.notification_handler = NotificationHandler(self)
 
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -225,19 +233,19 @@ class AddHabitModal(QFrame, FieldStyleManager):
     CONTENT_SPACING = 5
     REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
-    def __init__(self, parent: QWidget, habit_object: QWidget, habit_details: dict = None):
+    def __init__(self, parent: QWidget, habit_object: HabitListItemWidget, habit_details: dict = None):
         self.main_win = parent.window()
         self.shield = QFrame(self.main_win)
         self.shield.setObjectName("shield")
 
         super().__init__(self.shield)
         self.setObjectName("AddHabitModal")
-        self.shield.setAttribute(Qt.WA_DeleteOnClose)
+        self.shield.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.habit_details = habit_details
         self.habit_object = habit_object
 
         self.form_processor = FormProcessor()
-        self.notification_handler = NotificationHandler()
+        self.notification_handler = NotificationHandler(self)
 
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -464,7 +472,7 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
     MEDIUM_INDEX = 1
     CONTENT_SPACING = 20
 
-    def __init__(self, parent: QWidget, date: QDate ,habit_object: QWidget, habit_details: dict = None, daily_habit_details: dict = None):
+    def __init__(self, parent: QWidget, date: QDate ,habit_button: HabitButton, habit_details: dict, daily_habit_details: dict = None):
         self.main_win = parent.window()
         self.shield = QFrame(self.main_win)
         self.shield.setObjectName("shield")
@@ -474,13 +482,13 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
         self.shield.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.date = date
         self.habit_details = habit_details
-        self.habit_object = habit_object
+        self.habit_button = habit_button
         self.daily_habit_details = daily_habit_details
         self.question = habit_details.get("question")
         self.unit = habit_details.get("unit")
 
         self.form_processor = FormProcessor()
-        self.notification_handler = NotificationHandler()
+        self.notification_handler = NotificationHandler(self)
 
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -579,7 +587,7 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
 
     def onDeleteClicked(self):
         id =  self.daily_habit_details.get("local_id")
-        self.on_delete_clicked.emit(self.habit_object, id)
+        self.on_delete_clicked.emit(self.habit_button, id)
         self.shield.close()
 
 
@@ -609,11 +617,10 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
 
         # Emit appropriate signal based on whether we are updating an existing item or adding a new one
         if self.daily_habit_details:
-            # print(self.daily_habit_details)
             data.update({"local_id": self.daily_habit_details["local_id"]})
-            self.on_update_clicked.emit(self.habit_object, data)
+            self.on_update_clicked.emit(self.habit_button, data)
         else:
-            self.add_daily_habit_clicked.emit(self.habit_object, data)
+            self.add_daily_habit_clicked.emit(self.habit_button, data)
 
         self.shield.close()
 

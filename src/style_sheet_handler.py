@@ -5,11 +5,12 @@ from PySide6.QtCore import (
     QFile,
     QTextStream,
 )
+from PySide6.QtWidgets import QWidget
 
 
 class StyleSheetHandler(QObject):
     """Handles loading, parsing, and dynamically updating the application's stylesheet (QSS)."""
-    def __init__(self, parent_window):
+    def __init__(self, parent_window: QWidget):
         super().__init__(parent_window)
         self.parent_window = parent_window
 
@@ -25,7 +26,7 @@ class StyleSheetHandler(QObject):
         """Reads the QSS file from the resource system or local path."""
         file = QFile(self.resource_qss_path)
 
-        if file.open(QIODevice.ReadOnly | QIODevice.Text):
+        if file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
             stream = QTextStream(file)
             content = stream.readAll()
             file.close()
@@ -57,7 +58,7 @@ class StyleSheetHandler(QObject):
         return merged_qss
 
 
-    def scaleFontSizeInLine(self, line, scale_factor):
+    def scaleFontSizeInLine(self, line: str, scale_factor: float):
         """Uses regex to find px values in font-size declarations and scales them."""
 
         match = re.search(r'font-size:\s*(\d+)px', line)

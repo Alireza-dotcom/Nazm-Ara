@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QFrame,
     QVBoxLayout,
+    QWidget
 )
 
 
@@ -26,7 +27,7 @@ class ForgotPasswordPanel(QFrame, FieldStyleManager):
     CONTENTS_MARGINS_SIZE = QMargins(50, 40, 50, 40)
     REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setObjectName("ForgotPasswordPanel")
 
@@ -39,7 +40,7 @@ class ForgotPasswordPanel(QFrame, FieldStyleManager):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addStretch(ForgotPasswordPanel.STRETCH_SIZE)
 
-        logo = QLabel(self)
+        logo = QLabel(parent=self)
         logo.setPixmap(QPixmap(":logos/logo.svg"))
         layout.addWidget(logo, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(ForgotPasswordPanel.STRETCH_SIZE)

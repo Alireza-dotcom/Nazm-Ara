@@ -33,7 +33,7 @@ class RadioButton(QPushButton):
     # Tracks the currently active button across all instances
     active_button = None
 
-    def __init__(self, text="", parent=None):
+    def __init__(self, text: str="", parent: QWidget=None):
         super().__init__(text, parent)
         self.setCheckable(True)
         self.clicked.connect(self.handle_click)
@@ -58,12 +58,11 @@ class RadioButton(QPushButton):
     def update_style(self):
         """Changes the cursor to indicate whether the button is interactable."""
         if self.isChecked():
-            self.setCursor(Qt.ArrowCursor)
+            self.setCursor(Qt.CursorShape.ArrowCursor)
         else:
-            self.setCursor(Qt.PointingHandCursor)
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
 
 
-#TODO: fix all of the PushButton instances
 class PushButton(QPushButton):
     """QPushButton with a pointing hand cursor for better UX."""
     def __init__(self, text: str=None, parent: QWidget=None):
@@ -149,7 +148,7 @@ class FormRow(QWidget):
         self.input_max_length = input_max_length
         self.input_placeholder_text = input_placeholder_text
 
-        self.label = QLabel(label_text, self)
+        self.label = QLabel(text=self.label_text, parent=self)
         self.main_layout.addWidget(self.label)
 
         if is_pass_field:
@@ -186,10 +185,10 @@ class AccountListItemWidget(QWidget):
         title_text = self.formatTitle()
         subtitle_text = self.formatSubtitle()
 
-        self.title_label = QLabel(title_text, self)
+        self.title_label = QLabel(text=title_text, parent=self)
         self.title_label.setObjectName("ItemTitle")
 
-        self.sub_label = QLabel(subtitle_text, self)
+        self.sub_label = QLabel(text=subtitle_text, parent=self)
         self.sub_label.setObjectName("ItemSub")
 
         text_layout.addWidget(self.title_label)
@@ -201,7 +200,7 @@ class AccountListItemWidget(QWidget):
         acc_type_label_txt = "Online" if self.isOnlineAccount() else "Offline"
         acc_type_label_obj_name = "onlineLabel" if self.isOnlineAccount() else "offlineLabel"
 
-        self.acc_type_lbl = QLabel(acc_type_label_txt, self)
+        self.acc_type_lbl = QLabel(text=acc_type_label_txt, parent=self)
         self.acc_type_lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.acc_type_lbl.setObjectName(acc_type_label_obj_name)
         self.acc_type_lbl.setFixedSize(50, 30)
@@ -247,7 +246,7 @@ class TaskListItemWidget(QWidget):
     SPACING_SIZE = 15
     STRETCH_SIZE = 1
 
-    def __init__(self, task_details: dict, parent=None):
+    def __init__(self, task_details: dict, parent: QWidget=None):
         super().__init__(parent)
 
         self.task_details = task_details
@@ -261,30 +260,30 @@ class TaskListItemWidget(QWidget):
         # Check/Completion button
         title_text = self.task_details.get("title")
         description_text = self.task_details.get("description")
-        self.check_btn = PushButton(self)
+        self.check_btn = PushButton(parent=self)
         self.check_btn.setObjectName("TaskButton")
         self.check_btn.setCheckable(True)
         self.check_btn.clicked.connect(self.checkBtnClicked)
         self.check_btn.setFixedSize(25, 25)
 
-        self.title_label = QLabel(title_text, parent=self)
+        self.title_label = QLabel(text=title_text, parent=self)
         self.title_label.setObjectName("TaskTitle")
 
         # Priority Badge
         task_prio = self.task_details.get("priority")
         self.priority_label_text = self.getPriorityText(task_prio)
         self.priority_label_obj_name = self.getPriorityText(task_prio) #"Low", "Medium", "High"
-        self.priority_type_lbl = QLabel(self.priority_label_text, self)
+        self.priority_type_lbl = QLabel(text=self.priority_label_text, parent=self)
         # The object name is used in QSS to color-code Low/Medium/High
         self.priority_type_lbl.setObjectName(self.priority_label_obj_name)
-        self.priority_type_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignVCenter)
+        self.priority_type_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
         self.priority_type_lbl.setFixedSize(70, 30)
         self.priority_type_lbl.setMargin(5)
 
-        self.desc_label = QLabel(description_text, parent=self)
+        self.desc_label = QLabel(text=description_text, parent=self)
         self.desc_label.setObjectName("TaskDesc")
 
-        self.edit_btn = PushButton(self)
+        self.edit_btn = PushButton(parent=self)
         self.edit_btn.setObjectName("EditButton")
         self.edit_btn.setIcon(QIcon(":/icons/edit.svg"))
         self.edit_btn.clicked.connect(lambda: self.on_edit_button_clicked.emit(self, self.task_details))
@@ -325,9 +324,6 @@ class TaskListItemWidget(QWidget):
         self.desc_label.setText(description)
         self.title_label.setText(title)
         self.task_details.update({"priority": priority, "title": title, "description": description})
-        # self.task_details["priority"] = priority
-        # self.task_details["title"] = title
-        # self.task_details["description"] = description
 
 
     def toggleCheckedBtn(self):
@@ -354,15 +350,15 @@ class TaskCalendar(QCalendarWidget):
     """
     day_changed = Signal(object)
 
-    def __init__(self, current_day: QDate, parent=None):
+    def __init__(self, current_day: QDate, parent: QWidget):
         super().__init__(parent)
         self.current_day = current_day
-        self.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
+        self.setVerticalHeaderFormat(QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader)
         self.setGridVisible(True)
         self.setFixedSize(280, 280)
 
-        self.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
-        self.setFocusPolicy(Qt.ClickFocus)
+        self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
         # Format for days with existing tasks
         self.task_format = QTextCharFormat()
@@ -436,7 +432,7 @@ class HabitListItemWidget(QWidget):
     SPACING_SIZE = 15
     STRETCH_SIZE = 1
 
-    def __init__(self, habit_details: dict, parent=None):
+    def __init__(self, habit_details: dict, parent: QWidget=None):
         super().__init__(parent)
         self.button_list = []
         self.habit_details = habit_details
@@ -448,21 +444,21 @@ class HabitListItemWidget(QWidget):
         # Check/Completion button
         title_text = self.habit_details.get("title")
 
-        self.title_label = QLabel(title_text, self)
+        self.title_label = QLabel(text=title_text, parent=self)
         self.title_label.setObjectName("TaskTitle")
 
         # Priority Badge
         task_prio = self.habit_details.get("priority")
         self.priority_label_text = self.getPriorityText(task_prio)
         self.priority_label_obj_name = self.getPriorityText(task_prio) #"Low", "Medium", "High"
-        self.priority_type_lbl = QLabel(self.priority_label_text, self)
+        self.priority_type_lbl = QLabel(text=self.priority_label_text, parent=self)
         # The object name is used in QSS to color-code Low/Medium/High
         self.priority_type_lbl.setObjectName(self.priority_label_obj_name)
         self.priority_type_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignVCenter)
         self.priority_type_lbl.setFixedSize(70, 30)
         self.priority_type_lbl.setMargin(5)
 
-        self.edit_btn = PushButton(self)
+        self.edit_btn = PushButton(parent=self)
         self.edit_btn.setObjectName("EditButton")
         self.edit_btn.setIcon(QIcon(":/icons/edit.svg"))
         self.edit_btn.clicked.connect(lambda: self.on_edit_button_clicked.emit(self, self.habit_details))
@@ -484,10 +480,10 @@ class HabitListItemWidget(QWidget):
             self.layout.addWidget(btn)
 
 
-    def update(self, data: dict):
+    def update(self, habit_details: dict):
         """Updates internal data and UI labels after an edit."""
-        title = data.get("title")
-        priority = data.get("priority")
+        title = habit_details.get("title")
+        priority = habit_details.get("priority")
         self.priority_type_lbl.setText(self.getPriorityText(priority))
         self.priority_type_lbl.setObjectName(self.getPriorityText(priority))
 
@@ -497,11 +493,11 @@ class HabitListItemWidget(QWidget):
         self.title_label.setText(title)
         self.habit_details.update({"priority": priority,
                                    "title": title,
-                                   "description": data.get("description"),
-                                   "color": data.get("color"),
-                                   "question": data.get("question"),
-                                   "target": data.get("target"),
-                                   "unit": data.get("unit")
+                                   "description": habit_details.get("description"),
+                                   "color": habit_details.get("color"),
+                                   "question": habit_details.get("question"),
+                                   "target": habit_details.get("target"),
+                                   "unit": habit_details.get("unit")
                                    })
 
 

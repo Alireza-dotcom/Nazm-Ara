@@ -59,16 +59,16 @@ class UserControlSidebar(QFrame):
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(UserControlSidebar.CONTENTS_MARGINS_SIZE)
-        layout.setAlignment(Qt.AlignTop)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.profile_button = PushButton(self)
+        self.profile_button = PushButton(parent=self)
         self.profile_button.clicked.connect(lambda: self.window().showSelectAccountPage())
         self.profile_button.setIcon(QIcon(":icons/profile.svg"))
         
-        self.save_button = PushButton(self)
+        self.save_button = PushButton(parent=self)
         self.save_button.setIcon(QIcon(":icons/upload.svg"))
         
-        self.settings_button = PushButton(self)
+        self.settings_button = PushButton(parent=self)
         self.settings_button.setIcon(QIcon(":icons/settings.svg"))
 
         layout.addWidget(self.profile_button)
@@ -83,15 +83,15 @@ class MainSection(QFrame):
     Uses a QStackedWidget to transition between the Welcome screen, Task list, and Habit list.
     """
     CONTENTS_MARGINS_SIZE = QMargins(0, 0, 0, 0)
-    TODO_PAGE  = 1
-    HABIT_PAGE = 2
+    TODO_PAGE_INDEX  = 1
+    HABIT_PAGE_INDEX = 2
 
-    def __init__(self, parent=None, account_details: dict = None):
+    def __init__(self, parent: QWidget, account_details: dict):
         super().__init__(parent)
         self.account_details = account_details
 
         self.layout = QVBoxLayout(self)
-        self.layout.setAlignment(Qt.AlignTop)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.layout.setContentsMargins(MainSection.CONTENTS_MARGINS_SIZE)
 
         # Top Navigation Frame
@@ -99,8 +99,8 @@ class MainSection(QFrame):
         self.upper_frame.setObjectName("UpperFrame")
         upper_layout = QHBoxLayout(self.upper_frame)
 
-        self.task_list_btn = RadioButton("Task list", self)
-        self.habit_list_btn = RadioButton("Habit list", self)
+        self.task_list_btn = RadioButton(text="Task list", parent=self)
+        self.habit_list_btn = RadioButton(text="Habit list", parent=self)
 
         upper_layout.addWidget(self.task_list_btn)
         upper_layout.addWidget(self.habit_list_btn)
@@ -108,8 +108,8 @@ class MainSection(QFrame):
 
         self.pages = QStackedWidget()
 
-        self.welcome_page = QLabel(f"Hay {account_details.get("f_name")}!\nChoose a path to get started.",
-                                   self, alignment=Qt.AlignmentFlag.AlignCenter
+        self.welcome_page = QLabel(text=f"Hay {account_details.get("f_name")}!\nChoose a path to get started.",
+                                   parent=self, alignment=Qt.AlignmentFlag.AlignCenter
                                   )
         self.welcome_page.setObjectName("WelcomePage")
         self.task_page = TaskWidget(self, self.account_details)
@@ -123,19 +123,19 @@ class MainSection(QFrame):
         self.layout.addWidget(self.pages)
 
         # Page Switching Logic
-        self.task_list_btn.clicked.connect(lambda: self.pages.setCurrentIndex(MainSection.TODO_PAGE))
-        self.habit_list_btn.clicked.connect(lambda: self.pages.setCurrentIndex(MainSection.HABIT_PAGE))
+        self.task_list_btn.clicked.connect(lambda: self.pages.setCurrentIndex(MainSection.TODO_PAGE_INDEX))
+        self.habit_list_btn.clicked.connect(lambda: self.pages.setCurrentIndex(MainSection.HABIT_PAGE_INDEX))
 
 
 class TaskWidget(QWidget):
     """task management view."""
     STRETCH_SIZE = 1
 
-    def __init__(self, parent=None, account_details=None):
+    def __init__(self, parent: QWidget, account_details: dict):
         super().__init__(parent)
         self.account_details = account_details
         self.database = DatabaseManager()
-        self.notification_handler = NotificationHandler()
+        self.notification_handler = NotificationHandler(self)
 
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -146,7 +146,7 @@ class TaskWidget(QWidget):
         self.active_date = QDate.currentDate()
 
         self.header_layout = QHBoxLayout(self.header_frame)
-        self.header_layout.setAlignment(Qt.AlignLeft)
+        self.header_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         # Initialize Calendar Popup
         self.task_calendar = TaskCalendar(self.active_date, parent=self)
@@ -162,18 +162,18 @@ class TaskWidget(QWidget):
         self.previous_day_btn.setIcon(QIcon(":icons/previous_day.svg"))
         self.previous_day_btn.clicked.connect(lambda: self.nextAndPreviousDay(-1))
 
-        self.date_label = QLabel("Today", self)
+        self.date_label = QLabel(text="Today", parent=self)
         self.date_label.setFixedWidth(175)
-        self.date_label.setAlignment(Qt.AlignCenter)
+        self.date_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.next_day_btn = PushButton(parent=self)
         self.next_day_btn.setIcon(QIcon(":icons/next_day.svg"))
         self.next_day_btn.clicked.connect(lambda: self.nextAndPreviousDay(1))
 
-        self.go_to_today_btn = PushButton("Today", self)
+        self.go_to_today_btn = PushButton(text="Today", parent=self)
         self.go_to_today_btn.clicked.connect(self.jumpToToday)
 
-        self.add_task_btn = PushButton("+ Add task", self)
+        self.add_task_btn = PushButton(text="+ Add task", parent=self)
         self.add_task_btn.setObjectName("AddTaskBtn")
         self.add_task_btn.clicked.connect(self.showCreateModal)
 
@@ -216,7 +216,7 @@ class TaskWidget(QWidget):
 
     def loadTasks(self):
         """Retrieves tasks for the currently active date from the database and renders them."""
-        date_string = self.active_date.toString(Qt.ISODate)
+        date_string = self.active_date.toString(Qt.DateFormat.ISODate)
         tasks = self.database.getTasksByDate(date_string, self.account_details.get("id"))
 
         for row in tasks:
@@ -231,14 +231,14 @@ class TaskWidget(QWidget):
             self.list_widget.setItemWidget(item, custom_widget)
 
 
-    def checkedOrUncheckedTask(self, task_object: QWidget, task_id: str, value: bool):
+    def checkedOrUncheckedTask(self, task_item_widget: TaskListItemWidget, task_id: str, value: bool):
         """Updates the completion status of a task in the database."""
         status = self.database.toggleTask(task_id, value)
         if status:
-            task_object.toggleCheckedBtn()
+            task_item_widget.toggleCheckedBtn()
         else:
             # Fallback if DB update fails
-            task_object.check_btn.setChecked(False)
+            task_item_widget.check_btn.setChecked(False)
             self.notification_handler.showToast(
                 "bottom_right", "Couldn't Create Task",
                 "A temporary error occurred. Please try again.", "error", duration=4000
@@ -251,20 +251,20 @@ class TaskWidget(QWidget):
         self.modal.add_task_clicked.connect(self.createTask)
 
 
-    def showEditModal(self, task_object: QWidget, task_details: dict):
+    def showEditModal(self, task_item_widget: TaskListItemWidget, task_details: dict):
         """Opens the modal to edit or delete an existing task."""
-        self.modal = AddTaskModal(self, task_object, task_details)
+        self.modal = AddTaskModal(self, task_item_widget, task_details)
         self.modal.on_update_clicked.connect(self.updateTask)
         self.modal.on_delete_clicked.connect(self.deleteTask)
 
 
-    def updateTask(self, item_object: QWidget, data: dict, local_id: str):
+    def updateTask(self, task_item_widget: TaskListItemWidget, task_details: dict, local_id: str):
         """Validates and saves modifications to an existing task."""
-        title = data.get("title")
-        desc = data.get("description")
-        priority = data.get("priority")
+        title = task_details.get("title")
+        desc = task_details.get("description")
+        priority = task_details.get("priority")
         if self.database.updateTask(local_id, title=title, description=desc, priority=priority):
-            item_object.update(priority, desc, title)
+            task_item_widget.update(priority, desc, title)
         else:
             self.notification_handler.showToast(
                 "bottom_right", "Couldn't Create Task",
@@ -272,10 +272,10 @@ class TaskWidget(QWidget):
             )
 
 
-    def deleteTask(self, item_object: QWidget, local_id: str):
+    def deleteTask(self, task_item_widget: TaskListItemWidget, local_id: str):
         """Removes a task from the database and the UI list."""
         if self.database.deleteTask(local_id):
-            item = self.list_widget.itemAt(item_object.pos())
+            item = self.list_widget.itemAt(task_item_widget.pos())
             row = self.list_widget.row(item)
             taken_item = self.list_widget.takeItem(row) # Removes the item from view
             del taken_item
@@ -290,17 +290,17 @@ class TaskWidget(QWidget):
             )
 
 
-    def createTask(self, details: list):
+    def createTask(self, task_details: dict):
         """Adds a new task to the database and add it into the current view."""
-        details["date_time"] = self.active_date.toString(Qt.ISODate)
+        task_details["date_time"] = self.active_date.toString(Qt.DateFormat.ISODate)
         user_id = self.account_details.get("id")
-        task_id = self.database.addTask(details.get("title"), user_id ,details.get("description"),
-                                details.get("priority"), details.get("date_time"))
+        task_id = self.database.addTask(task_details.get("title"), user_id ,task_details.get("description"),
+                                task_details.get("priority"), task_details.get("date_time"))
         if task_id:
-            details["local_id"] = task_id
+            task_details["local_id"] = task_id
 
             item = QListWidgetItem(self.list_widget)
-            custom_widget = TaskListItemWidget(details, self)
+            custom_widget = TaskListItemWidget(task_details, self)
             custom_widget.on_check_button_clicked.connect(self.checkedOrUncheckedTask)
             custom_widget.on_edit_button_clicked.connect(self.showEditModal)
             item.setSizeHint(custom_widget.sizeHint())
@@ -347,5 +347,5 @@ class TaskWidget(QWidget):
     def highlightTaskDays(self):
         """Queries the database for all dates with tasks and applies calendar formatting."""
         dates = self.database.getUserTaskDates(self.account_details.get("id"))
-        qdates = [QDate.fromString(date, Qt.ISODate) for date in dates]
+        qdates = [QDate.fromString(date, Qt.DateFormat.ISODate) for date in dates]
         self.task_calendar.setTaskColor(qdates)

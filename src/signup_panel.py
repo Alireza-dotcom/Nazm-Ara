@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QVBoxLayout,
     QHBoxLayout,
+    QWidget
 )
 
 
@@ -30,7 +31,7 @@ class SignupPanel(QFrame, FieldStyleManager):
     CONTENTS_MARGINS_SIZE = QMargins(50, 40, 50, 40)
     REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setObjectName("SignupPanel")
 

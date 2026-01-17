@@ -22,11 +22,11 @@ class SelectAccountPanel(QFrame):
     SPACING_SIZE = 40
     CONTENTS_MARGINS_SIZE = QMargins(50, 40, 50, 40)
 
-    def __init__(self, parent: QWidget, accounts_detail: list):
+    def __init__(self, parent: QWidget, accounts_detail_list: list):
         super().__init__(parent)
         self.setObjectName("SelectAccountPanel")
         self.database = DatabaseManager()
-        self.accounts_detail = accounts_detail
+        self.accounts_detail_list = accounts_detail_list
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(SelectAccountPanel.CONTENTS_MARGINS_SIZE)
@@ -60,7 +60,7 @@ class SelectAccountPanel(QFrame):
 
     def loadAccounts(self):
         """populates the QListWidget with custom widgets."""
-        for acc_details in self.accounts_detail:
+        for acc_details in self.accounts_detail_list:
             # Create a container item for the QListWidget
             item = QListWidgetItem(self.list_widget)
             # Store the raw account data within the item for easy retrieval

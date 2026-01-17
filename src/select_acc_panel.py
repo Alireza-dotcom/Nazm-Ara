@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QAbstractItemView,
+    QWidget
 )
 from PySide6.QtGui import QPixmap
 
@@ -21,10 +22,11 @@ class SelectAccountPanel(QFrame):
     SPACING_SIZE = 40
     CONTENTS_MARGINS_SIZE = QMargins(50, 40, 50, 40)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget, accounts_detail: list):
         super().__init__(parent)
         self.setObjectName("SelectAccountPanel")
         self.database = DatabaseManager()
+        self.accounts_detail = accounts_detail
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(SelectAccountPanel.CONTENTS_MARGINS_SIZE)
@@ -57,11 +59,8 @@ class SelectAccountPanel(QFrame):
 
 
     def loadAccounts(self):
-        """Fetches users from the database and populates the QListWidget with custom widgets."""
-        accounts = self.database.getListOfUsers()
-        #TODO: move fetch users to main window
-
-        for acc_details in accounts:
+        """populates the QListWidget with custom widgets."""
+        for acc_details in self.accounts_detail:
             # Create a container item for the QListWidget
             item = QListWidgetItem(self.list_widget)
             # Store the raw account data within the item for easy retrieval

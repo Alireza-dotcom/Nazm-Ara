@@ -64,7 +64,8 @@ class MainWindow(QMainWindow):
     def showSelectAccountPage(self):
         """Displays page to pick an existing local account."""
         self.style_sheet_handler.setResourceQssPath(":/styles/select_acc_panel.qss")
-        self.select_account_panel = self.loadPage(SelectAccountPanel)
+        list_of_accounts_detil = self.database.getListOfUsers()
+        self.select_account_panel = self.loadPage(SelectAccountPanel, list_of_accounts_detil)
         self.select_account_panel.add_account_clicked.connect(self.showLoginPage)
         self.select_account_panel.account_selected.connect(self.openMainApp)
         self.shrinkPage()

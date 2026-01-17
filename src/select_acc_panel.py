@@ -24,37 +24,34 @@ class SelectAccountPanel(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("SelectAccountPanel")
-
         self.database = DatabaseManager()
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(SelectAccountPanel.CONTENTS_MARGINS_SIZE)
         layout.setSpacing(SelectAccountPanel.SPACING_SIZE)
-        layout.setAlignment(Qt.AlignTop)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        logo = QLabel(self)
+        logo = QLabel(parent=self)
         logo.setPixmap(QPixmap(":logos/logo.svg"))
-        logo.setAlignment(Qt.AlignCenter)
-        layout.addWidget(logo, alignment=Qt.AlignCenter)
+        layout.addWidget(logo, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        title = QLabel("Select an Account", self)
+        title = QLabel(text="Select an Account", parent=self)
         title.setObjectName("TitleLabel")
-        title.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title)
+        layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        self.list_widget = QListWidget(self)
+        self.list_widget = QListWidget(parent=self)
         self.list_widget.horizontalScrollBar()
         self.list_widget.setMinimumSize(200, 282)
         # Disable default focus and selection highlights for a cleaner UI
-        self.list_widget.setFocusPolicy(Qt.NoFocus)
+        self.list_widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.list_widget.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self.list_widget.itemDoubleClicked.connect(self.onAccountDoubleClicked)
+            
         layout.addWidget(self.list_widget)
 
-        add_account_label = ClickableLabel("Add another Account", self)
-        add_account_label.setAlignment(Qt.AlignCenter)
+        add_account_label = ClickableLabel(text="Add another Account", parent=self)
         add_account_label.clicked.connect(lambda: self.add_account_clicked.emit())
-        layout.addWidget(add_account_label)
+        layout.addWidget(add_account_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.loadAccounts()
 
@@ -62,16 +59,17 @@ class SelectAccountPanel(QFrame):
     def loadAccounts(self):
         """Fetches users from the database and populates the QListWidget with custom widgets."""
         accounts = self.database.getListOfUsers()
+        #TODO: move fetch users to main window
 
-        for row in accounts:
+        for acc_details in accounts:
             # Create a container item for the QListWidget
             item = QListWidgetItem(self.list_widget)
+            # Store the raw account data within the item for easy retrieval
+            item.setData(Qt.ItemDataRole.UserRole, acc_details)
             # Use custom widget for displaying account details
-            custom_widget = AccountListItemWidget(row, self)
+            custom_widget = AccountListItemWidget(widget_item=item, parent=self.list_widget)
             # Ensure the list item matches the custom widget's size requirements
             item.setSizeHint(custom_widget.sizeHint())
-            # Store the raw account data within the item for easy retrieval
-            item.setData(Qt.UserRole, row)
 
             self.list_widget.addItem(item)
             self.list_widget.setItemWidget(item, custom_widget)
@@ -79,6 +77,5 @@ class SelectAccountPanel(QFrame):
 
     def onAccountDoubleClicked(self, item: QListWidgetItem):
         """Extracts stored user data and notifies the parent window to log into account."""
-        data = item.data(Qt.UserRole)
-        if isinstance(data, dict):
-            self.account_selected.emit(data)
+        account_details = item.data(Qt.ItemDataRole.UserRole)
+        self.account_selected.emit(account_details)

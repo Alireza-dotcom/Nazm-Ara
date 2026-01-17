@@ -1,4 +1,4 @@
-from widgets import ClickableLabel, PushButton, FieldStyleManager
+from widgets import ClickableLabel, PushButton, FieldStyleManager, FormRow
 from notification_handler import NotificationHandler
 from form_processor import FormProcessor
 
@@ -11,7 +11,6 @@ from PySide6.QtCore import (
 from PySide6.QtWidgets import (
     QLabel,
     QFrame,
-    QLineEdit,
     QVBoxLayout,
 )
 
@@ -25,6 +24,7 @@ class ForgotPasswordPanel(QFrame, FieldStyleManager):
     STRETCH_SIZE = 1
     SPACING_SIZE = 13
     CONTENTS_MARGINS_SIZE = QMargins(50, 40, 50, 40)
+    REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -36,47 +36,39 @@ class ForgotPasswordPanel(QFrame, FieldStyleManager):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(ForgotPasswordPanel.CONTENTS_MARGINS_SIZE)
         layout.setSpacing(ForgotPasswordPanel.SPACING_SIZE)
-        layout.setAlignment(Qt.AlignTop)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addStretch(ForgotPasswordPanel.STRETCH_SIZE)
 
         logo = QLabel(self)
         logo.setPixmap(QPixmap(":logos/logo.svg"))
-        logo.setAlignment(Qt.AlignCenter)
-        layout.addWidget(logo, alignment=Qt.AlignCenter)
+        layout.addWidget(logo, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(ForgotPasswordPanel.STRETCH_SIZE)
 
-        title = QLabel("Trouble logging in?", self)
+        title = QLabel(text="Trouble logging in?", parent=self)
         title.setObjectName("TitleLabel")
-        title.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title)
+        layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        email_label = QLabel("Email", self)
-        email_label.setObjectName("FieldLabel")
-        layout.addWidget(email_label)
+        self.email = FormRow(label_text=f"Email{ForgotPasswordPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="example@hotmail.com",
+                             input_max_length=254,
+                             parent=self)
+        layout.addWidget(self.email)
 
-        self.email_input = QLineEdit(self)
-        self.email_input.setObjectName("FieldLabel")
-        self.email_input.setMaxLength(254)
-        layout.addWidget(self.email_input)
-
-        self.reset_pass_btn = PushButton("Reset Password", self)
+        self.reset_pass_btn = PushButton(text="Reset Password", parent=self)
         self.reset_pass_btn.clicked.connect(self.onResetPasswordClicked)
         layout.addWidget(self.reset_pass_btn)
 
         # Visual divider
-        divider = QLabel("──────────  or  ──────────", self)
-        divider.setAlignment(Qt.AlignCenter)
+        divider = QLabel(text="──────────  or  ──────────", parent=self)
         divider.setObjectName("DividerLabel")
-        layout.addWidget(divider)
+        layout.addWidget(divider, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        create_new_acc_label = ClickableLabel("Create new account", self)
+        create_new_acc_label = ClickableLabel(text="Create new account", parent=self)
         create_new_acc_label.clicked.connect(lambda: self.create_new_acc_clicked.emit())
-        create_new_acc_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(create_new_acc_label)
-
+        layout.addWidget(create_new_acc_label, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(ForgotPasswordPanel.STRETCH_SIZE)
 
-        back_to_login_btn = PushButton("Back to login", self)
+        back_to_login_btn = PushButton(text="Back to login", parent=self)
         back_to_login_btn.clicked.connect(lambda: self.back_to_login_clicked.emit())
         layout.addWidget(back_to_login_btn)
         layout.addStretch(ForgotPasswordPanel.STRETCH_SIZE)
@@ -85,7 +77,7 @@ class ForgotPasswordPanel(QFrame, FieldStyleManager):
     def onResetPasswordClicked(self):
         """Executes the validation process before emitting the reset signal."""
         field_map = {
-            "email": self.email_input,
+            "email": self.email.input,
         }
 
         # Step 1: Ensure fields aren't blank

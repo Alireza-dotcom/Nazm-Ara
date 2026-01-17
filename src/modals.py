@@ -10,7 +10,6 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QComboBox,
     QWidget,
-    
 )
 
 from PySide6.QtCore import Qt, QRect, QEvent, Signal, QDate
@@ -22,6 +21,7 @@ class AddTaskModal(QFrame, FieldStyleManager):
 
     STRETCH_SIZE = 1
     MEDIUM_INDEX = 1
+    REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
     def __init__(self, parent: QWidget, task_object: QWidget, task_details: dict = None):
         # The 'shield' acts as a semi-transparent overlay covering the parent window
@@ -43,7 +43,7 @@ class AddTaskModal(QFrame, FieldStyleManager):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         title_exit_layout = QHBoxLayout()
-        create_task_lbl = QLabel("Create task", self)
+        create_task_lbl = QLabel(text="Create task", parent=self)
         create_task_lbl.setObjectName("TitleLabel")
         title_exit_layout.addWidget(create_task_lbl)
         title_exit_layout.addStretch(AddTaskModal.STRETCH_SIZE)
@@ -55,19 +55,19 @@ class AddTaskModal(QFrame, FieldStyleManager):
         title_exit_layout.addWidget(close_btn)
         layout.addLayout(title_exit_layout)
 
-        task_name_lbl = QLabel("Task name", self)
-        layout.addWidget(task_name_lbl)
-        self.task_name_input = QLineEdit(self)
-        self.task_name_input.setMaxLength(50)
-        layout.addWidget(self.task_name_input)
+        self.task_name = FormRow(label_text=f"Task name{AddTaskModal.REQUIRED_FIELD}",
+                             input_placeholder_text="e.g. Add feature X to project",
+                             input_max_length=70,
+                             parent=self)
+        layout.addWidget(self.task_name)
 
-        description_lbl = QLabel("Description", self)
-        layout.addWidget(description_lbl)
-        self.description_input = QLineEdit(self)
-        self.description_input.setMaxLength(50)
-        layout.addWidget(self.description_input)
+        self.description = FormRow(label_text="Description",
+                             input_placeholder_text="(Optional)",
+                             input_max_length=70,
+                             parent=self)
+        layout.addWidget(self.description)
 
-        priority_lbl = QLabel("Priority", self)
+        priority_lbl = QLabel(text="Priority", parent=self)
         layout.addWidget(priority_lbl)
         self.priority_item = QComboBox(self)
         self.addPriorityItems()
@@ -78,17 +78,17 @@ class AddTaskModal(QFrame, FieldStyleManager):
         # If task_details is not provided, open modal in create mode;
         # otherwise, open in edit mode.
         if not self.task_details:
-            self.save_btn = PushButton("Save", self)
+            self.save_btn = PushButton(text="Save", parent=self)
             self.save_btn.setObjectName("SaveButton")
             self.save_btn.clicked.connect(self.onSaveClicked)
             layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignRight)
         else:
             buttons_layout = QHBoxLayout()
-            self.save_btn = PushButton("Save", self)
+            self.save_btn = PushButton(text="Save", parent=self)
             self.save_btn.setObjectName("SaveButton")
             self.save_btn.clicked.connect(self.onSaveClicked)
 
-            self.delete_btn = PushButton("Delete", self)
+            self.delete_btn = PushButton(text="Delete", parent=self)
             self.delete_btn.setObjectName("DeleteButton")
             self.delete_btn.clicked.connect(self.onDeleteClicked)
             buttons_layout.addWidget(self.delete_btn)
@@ -109,8 +109,8 @@ class AddTaskModal(QFrame, FieldStyleManager):
 
     def initialFields(self):
         """Populates fields with existing data when in edit mode."""
-        self.task_name_input.setText(self.task_details.get("title"))
-        self.description_input.setText(self.task_details.get("description"))
+        self.task_name.input.setText(self.task_details.get("title"))
+        self.description.input.setText(self.task_details.get("description"))
         self.priority_item.setCurrentIndex(self.task_details.get("priority"))
 
 
@@ -151,8 +151,8 @@ class AddTaskModal(QFrame, FieldStyleManager):
     def onSaveClicked(self):
         """Checks the validation process before emitting the (update or add) signal."""
         field_map = {
-            "title": self.task_name_input,
-            "description": self.description_input,
+            "title": self.task_name.input,
+            "description": self.description.input,
             "priority": self.priority_item
         }
 
@@ -223,6 +223,7 @@ class AddHabitModal(QFrame, FieldStyleManager):
     STRETCH_SIZE = 1
     MEDIUM_INDEX = 1
     CONTENT_SPACING = 5
+    REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
     def __init__(self, parent: QWidget, habit_object: QWidget, habit_details: dict = None):
         self.main_win = parent.window()
@@ -243,7 +244,7 @@ class AddHabitModal(QFrame, FieldStyleManager):
         layout.setSpacing(AddHabitModal.CONTENT_SPACING)
 
         title_exit_layout = QHBoxLayout()
-        create_task_lbl = QLabel("Create habit", self)
+        create_task_lbl = QLabel(text="Create habit", parent=self)
         create_task_lbl.setObjectName("TitleLabel")
         title_exit_layout.addWidget(create_task_lbl)
         title_exit_layout.addStretch(AddHabitModal.STRETCH_SIZE)
@@ -255,47 +256,49 @@ class AddHabitModal(QFrame, FieldStyleManager):
         title_exit_layout.addWidget(close_btn)
         layout.addLayout(title_exit_layout)
 
-        habit_name_lbl = QLabel("Name", self)
-        layout.addWidget(habit_name_lbl)
-        self.habit_name_input = QLineEdit(self)
-        self.habit_name_input.setMaxLength(50) #TODO change to apropriate amount
-        layout.addWidget(self.habit_name_input)
-
-        question_lbl = QLabel("Question", self)
-        layout.addWidget(question_lbl)
-        self.question_input = QLineEdit(self)
-        self.question_input.setMaxLength(50) #TODO change to apropriate amount
-        layout.addWidget(self.question_input)
-
-        self.unit = FormRow(label_text="Unit",\
-                             object_name="FieldLabel",\
+        self.habit_name = FormRow(label_text=f"Habit name{AddTaskModal.REQUIRED_FIELD}",
+                             input_placeholder_text="e.g. Reading book",
+                             input_max_length=50,
                              parent=self)
-        self.unit.input.setMaxLength(30) #TODO change to apropriate amount
+        layout.addWidget(self.habit_name)
 
-        self.target = FormRow(label_text="Target",\
-                             object_name="FieldLabel",\
+        self.question = FormRow(label_text=f"Question{AddTaskModal.REQUIRED_FIELD}",
+                             input_placeholder_text="e.g. Linux Bible",
+                             input_max_length=50,
                              parent=self)
-        self.target.input.setMaxLength(30) #TODO change to apropriate amount
+        layout.addWidget(self.question)
+
+        self.unit = FormRow(label_text=f"Unit{AddTaskModal.REQUIRED_FIELD}",
+                             input_placeholder_text="e.g. page",
+                             input_max_length=30,
+                             parent=self)
+        layout.addWidget(self.unit)
+
+        self.target = FormRow(label_text=f"Target{AddTaskModal.REQUIRED_FIELD}",
+                             input_placeholder_text="e.g. 20",
+                             input_max_length=30,
+                             parent=self)
+        layout.addWidget(self.target)
 
         unit_target_layout = QHBoxLayout()
         unit_target_layout.addWidget(self.unit)
         unit_target_layout.addWidget(self.target)
         layout.addLayout(unit_target_layout)
 
-        description_lbl = QLabel("Description", self)
-        layout.addWidget(description_lbl)
-        self.description_input = QLineEdit(self)
-        self.description_input.setMaxLength(50) #TODO change to apropriate amount
-        layout.addWidget(self.description_input)
+        self.description = FormRow(label_text="Description",
+                             input_placeholder_text="(Optional)",
+                             input_max_length=50,
+                             parent=self)
+        layout.addWidget(self.description)
 
-        priority_lbl = QLabel("Priority", self)
+        priority_lbl = QLabel(text="Priority", parent=self)
         layout.addWidget(priority_lbl)
         self.priority_item = QComboBox(self)
         self.addPriorityItems()
         self.priority_item.setCurrentIndex(AddHabitModal.MEDIUM_INDEX)
         layout.addWidget(self.priority_item)
 
-        color_lbl = QLabel("Color", self)
+        color_lbl = QLabel(text="Color", parent=self)
         layout.addWidget(color_lbl)
         self.color_picker = ColorPicker(self)
         layout.addWidget(self.color_picker)
@@ -304,17 +307,17 @@ class AddHabitModal(QFrame, FieldStyleManager):
         # If habit_details is not provided, open modal in create mode;
         # otherwise, open in edit mode.
         if not self.habit_details:
-            self.save_btn = PushButton("Save", self)
+            self.save_btn = PushButton(text="Save", parent=self)
             self.save_btn.setObjectName("SaveButton")
             self.save_btn.clicked.connect(self.onSaveClicked)
             layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignRight)
         else:
             buttons_layout = QHBoxLayout()
-            self.save_btn = PushButton("Save", self)
+            self.save_btn = PushButton(text="Save", parent=self)
             self.save_btn.setObjectName("SaveButton")
             self.save_btn.clicked.connect(self.onSaveClicked)
 
-            self.delete_btn = PushButton("Delete", self)
+            self.delete_btn = PushButton(text="Delete", parent=self)
             self.delete_btn.setObjectName("DeleteButton")
             self.delete_btn.clicked.connect(self.onDeleteClicked)
             buttons_layout.addWidget(self.delete_btn)
@@ -335,11 +338,11 @@ class AddHabitModal(QFrame, FieldStyleManager):
 
     def initialFields(self):
         """Populates fields with existing data when in edit mode."""
-        self.habit_name_input.setText(self.habit_details.get("title"))
-        self.question_input.setText(self.habit_details.get("question"))
+        self.habit_name.input.setText(self.habit_details.get("title"))
+        self.question.input.setText(self.habit_details.get("question"))
         self.unit.input.setText(str(self.habit_details.get("unit")))
         self.target.input.setText(str(self.habit_details.get("target")))
-        self.description_input.setText(self.habit_details.get("description"))
+        self.description.input.setText(self.habit_details.get("description"))
         self.priority_item.setCurrentIndex(self.habit_details.get("priority"))
         self.color_picker.changeColor(self.habit_details.get("color"))
 
@@ -381,11 +384,11 @@ class AddHabitModal(QFrame, FieldStyleManager):
     def onSaveClicked(self):
         """Checks the validation process before emitting the (update or add) signal."""
         field_map = {
-            "title": self.habit_name_input,
-            "question": self.question_input,
+            "title": self.habit_name.input,
+            "question": self.question.input,
             "unit": self.unit.input,
             "target": self.target.input,
-            "description": self.description_input,
+            "description": self.description.input,
             "priority": self.priority_item,
             "color": self.color_picker.color,
         }
@@ -468,7 +471,7 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
 
         super().__init__(self.shield)
         self.setObjectName("AddDailyHabitModal")
-        self.shield.setAttribute(Qt.WA_DeleteOnClose)
+        self.shield.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.date = date
         self.habit_details = habit_details
         self.habit_object = habit_object
@@ -484,7 +487,7 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
         layout.setSpacing(AddDailyHabitModal.CONTENT_SPACING)
 
         title_exit_layout = QHBoxLayout()
-        create_task_lbl = QLabel(self.date.toString("ddd d"), self)
+        create_task_lbl = QLabel(text=self.date.toString("ddd d"), parent=self)
         create_task_lbl.setObjectName("TitleLabel")
         title_exit_layout.addWidget(create_task_lbl)
         title_exit_layout.addStretch(AddDailyHabitModal.STRETCH_SIZE)
@@ -497,13 +500,16 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
         layout.addLayout(title_exit_layout)
 
         value_input_unit_layout = QHBoxLayout()
-        self.question = QLabel(str(self.question), self)
+        self.question = QLabel(text=str(self.question), parent=self)
+
         layout.addWidget(self.question)
-        self.value_input = QLineEdit(self)
-        self.value_input.setMaxLength(50) #TODO change to apropriate amount
+        self.value_input = QLineEdit(parent=self,
+                                     placeholderText="e.g. 15",
+                                     maxLength=25
+                                    )
         value_input_unit_layout.addWidget(self.value_input)
 
-        self.unit = QLabel(str(self.unit), self)
+        self.unit = QLabel(text=str(self.unit), parent=self)
         self.unit.setFixedWidth(170)
         self.unit.setObjectName("TitleLabel")
         value_input_unit_layout.addWidget(self.unit)
@@ -513,17 +519,17 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
         # If daily_habit_details is not provided, open modal in create mode;
         # otherwise, open in edit mode.
         if not self.daily_habit_details:
-            self.save_btn = PushButton("Save", self)
+            self.save_btn = PushButton(text="Save", parent=self)
             self.save_btn.setObjectName("SaveButton")
             self.save_btn.clicked.connect(self.onSaveClicked)
             layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignRight)
         else:
             buttons_layout = QHBoxLayout()
-            self.save_btn = PushButton("Save", self)
+            self.save_btn = PushButton(text="Save", parent=self)
             self.save_btn.setObjectName("SaveButton")
             self.save_btn.clicked.connect(self.onSaveClicked)
 
-            self.delete_btn = PushButton("Delete", self)
+            self.delete_btn = PushButton(text="Delete", parent=self)
             self.delete_btn.setObjectName("DeleteButton")
             self.delete_btn.clicked.connect(self.onDeleteClicked)
             buttons_layout.addWidget(self.delete_btn)

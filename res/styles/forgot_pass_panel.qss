@@ -17,9 +17,22 @@ QLabel#TitleLabel {
     color: #ffffff;
 }
 
-QLabel#FieldLabel {
-    font-size: 13px;
+FormRow > QLabel{
+    font-size: 14px;
     color: #ffffff;
+}
+
+FormRow > QLineEdit {
+    background-color: #2e2f35;
+    border-radius: 8px;
+    border: 1px solid #58595d;
+    padding: 8px;
+    font-size: 14px;
+    color: #dfe0e2;
+}
+
+FormRow > QLineEdit:focus {
+    border: 1px solid #7bb0f5;
 }
 
 ClickableLabel {
@@ -34,19 +47,6 @@ ClickableLabel:hover {
 QLabel#DividerLabel {
     font-size: 13px;
     color: #93959c;
-}
-
-QLineEdit {
-    background-color: #2e2f35;
-    border-radius: 8px;
-    border: 1px solid #58595d;
-    padding: 8px;
-    font-size: 13px;
-    color: #dfe0e2;
-}
-
-QLineEdit:focus {
-    border: 1px solid #7bb0f5;
 }
 
 QFrame > PushButton {

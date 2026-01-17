@@ -1,4 +1,4 @@
-from widgets import PasswordField, ClickableLabel, PushButton, FieldStyleManager
+from widgets import ClickableLabel, PushButton, FieldStyleManager, FormRow
 from form_processor import FormProcessor
 from notification_handler import NotificationHandler
 
@@ -11,22 +11,22 @@ from PySide6.QtCore import (
 from PySide6.QtWidgets import (
     QLabel,
     QFrame,
-    QLineEdit,
-    QVBoxLayout,
+    QVBoxLayout
 )
 
 
 class LoginPanel(QFrame, FieldStyleManager):
     """A UI panel that handles user authentication."""
-    forgot_password_clicked = Signal()
     signup_clicked = Signal()
     continue_clicked = Signal()
-    select_account_clicked = Signal()
     login_clicked = Signal(dict)
+    select_account_clicked = Signal()
+    forgot_password_clicked = Signal()
 
     STRETCH_SIZE = 1
     SPACING_SIZE = 10
     CONTENTS_MARGIN_SIZE = QMargins(50, 40, 50, 40)
+    REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -37,75 +37,65 @@ class LoginPanel(QFrame, FieldStyleManager):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(LoginPanel.CONTENTS_MARGIN_SIZE)
         layout.setSpacing(LoginPanel.SPACING_SIZE)
-        layout.setAlignment(Qt.AlignTop)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addStretch(LoginPanel.STRETCH_SIZE)
 
-        logo = QLabel(self)
+        logo = QLabel(parent=self)
         logo.setPixmap(QPixmap(":logos/logo.svg"))
-        logo.setAlignment(Qt.AlignCenter)
-        layout.addWidget(logo, alignment=Qt.AlignCenter)
+        layout.addWidget(logo, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(LoginPanel.STRETCH_SIZE)
 
-        title = QLabel("Login", self)
+        title = QLabel(text="Login", parent=self)
         title.setObjectName("TitleLabel")
-        title.setAlignment(Qt.AlignCenter)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
-        email_label = QLabel("Email", self)
-        email_label.setObjectName("FieldLabel")
-        layout.addWidget(email_label)
+        self.email = FormRow(label_text=f"Email{LoginPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="example@hotmail.com",
+                             input_max_length=254,
+                             parent=self)
+        layout.addWidget(self.email)
 
-        self.email_input = QLineEdit(self)
-        self.email_input.setMaxLength(254)
-        self.email_input.setObjectName("FieldLabel")
-        layout.addWidget(self.email_input)
+        self.password = FormRow(label_text=f"Password{LoginPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="********",
+                             input_max_length=50,
+                             is_pass_field=True,
+                             parent=self)
+        layout.addWidget(self.password)
 
-        password_label = QLabel("Password", self)
-        password_label.setObjectName("FieldLabel")
-        layout.addWidget(password_label)
-
-        self.password_input = PasswordField(self)
-        self.password_input.setObjectName("PasswordInput")
-        self.password_input.input.setMaxLength(50)
-        layout.addWidget(self.password_input)
-
-        forgot_label = ClickableLabel("Forgot your password?", self)
+        forgot_label = ClickableLabel(text="Forgot your password?", parent=self)
         forgot_label.clicked.connect(lambda: self.forgot_password_clicked.emit())
-        forgot_label.setAlignment(Qt.AlignRight)
-        layout.addWidget(forgot_label)
+        layout.addWidget(forgot_label, alignment=Qt.AlignmentFlag.AlignRight)
 
-        login_btn = PushButton("Login", self)
+        login_btn = PushButton(text="Login", parent=self)
         login_btn.clicked.connect(self.onLoginClicked)
         layout.addWidget(login_btn)
 
         # Visual divider
-        divider = QLabel("──────────  or continue offline  ──────────", self)
-        divider.setAlignment(Qt.AlignCenter)
+        divider = QLabel(text="──────────  or continue offline  ──────────", parent=self)
         divider.setObjectName("DividerLabel")
-        layout.addWidget(divider)
+        layout.addWidget(divider, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        self.cont_btn = PushButton("Continue without Account", self)
-        layout.addWidget(self.cont_btn)
-        self.cont_btn.clicked.connect(lambda: self.continue_clicked.emit())
+        self.continue_btn = PushButton(text="Continue without Account", parent=self)
+        self.continue_btn.clicked.connect(lambda: self.continue_clicked.emit())
+        layout.addWidget(self.continue_btn)
 
-        signup_label = ClickableLabel("Don't have an account? Sign up", self)
+        signup_label = ClickableLabel(text="Don't have an account? Sign up", parent=self)
         signup_label.clicked.connect(lambda: self.signup_clicked.emit())
-        signup_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(signup_label)
+        layout.addWidget(signup_label, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(LoginPanel.STRETCH_SIZE)
 
-        select_account_label = ClickableLabel("Choose an Account", self)
+        select_account_label = ClickableLabel(text="Choose an Account", parent=self)
         select_account_label.clicked.connect(lambda: self.select_account_clicked.emit())
-        select_account_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(select_account_label)
+        layout.addWidget(select_account_label, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(LoginPanel.STRETCH_SIZE)
 
 
     def onLoginClicked(self):
         """Checks the validation process before emitting the login signal."""
         field_map = {
-            "email": self.email_input,
-            "password": self.password_input.input
+            "email": self.email.input,
+            "password": self.password.password_field.input
         }
 
         # Step 1: Ensure fields aren't blank

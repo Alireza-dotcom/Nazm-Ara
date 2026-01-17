@@ -12,7 +12,6 @@ from PySide6.QtCore import (
 from PySide6.QtWidgets import (
     QLabel,
     QFrame,
-    QLineEdit,
     QVBoxLayout,
     QHBoxLayout,
 )
@@ -26,6 +25,7 @@ class OfflineUserPanel(QFrame, FieldStyleManager):
     STRETCH_SIZE = 1
     SPACING_SIZE = 13
     CONTENTS_MARGINS_SIZE = QMargins(50, 40, 50, 40)
+    REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -36,31 +36,29 @@ class OfflineUserPanel(QFrame, FieldStyleManager):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(OfflineUserPanel.CONTENTS_MARGINS_SIZE)
         layout.setSpacing(OfflineUserPanel.SPACING_SIZE)
-        layout.setAlignment(Qt.AlignTop)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addStretch(OfflineUserPanel.STRETCH_SIZE)
 
-        logo = QLabel(self)
+        logo = QLabel(parent=self)
         logo.setPixmap(QPixmap(":logos/logo.svg"))
-        logo.setAlignment(Qt.AlignCenter)
-        layout.addWidget(logo, alignment=Qt.AlignCenter)
+        layout.addWidget(logo, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(OfflineUserPanel.STRETCH_SIZE)
 
-        title = QLabel("Set Up Your Profile", self)
+        title = QLabel(text="Set Up Your Profile", parent=self)
         title.setObjectName("TitleLabel")
-        title.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title)
+        layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # first name field and label
-        self.first_name = FormRow(label_text="First Name",\
-                             object_name="FieldLabel",\
+        self.first_name = FormRow(label_text=f"First Name{OfflineUserPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="Mirza",
+                             input_max_length=30,
                              parent=self)
-        self.first_name.input.setMaxLength(30)
+        layout.addWidget(self.first_name)
 
-        # last name field and label
-        self.last_name = FormRow(label_text="Last Name",\
-                            object_name="FieldLabel",\
-                            parent=self)
-        self.last_name.input.setMaxLength(30)
+        self.last_name = FormRow(label_text=f"Last Name{OfflineUserPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="Amiri",
+                             input_max_length=30,
+                             parent=self)
+        layout.addWidget(self.last_name)
 
         # Horizontal layout to place First and Last name side-by-side
         name_layout = QHBoxLayout()
@@ -68,20 +66,18 @@ class OfflineUserPanel(QFrame, FieldStyleManager):
         name_layout.addWidget(self.last_name)
         layout.addLayout(name_layout)
 
-        display_name_label = QLabel("Display name", self)
-        display_name_label.setObjectName("FieldLabel")
-        layout.addWidget(display_name_label)
+        self.display_name = FormRow(label_text=f"Display name{OfflineUserPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="Mirza_koochak_khan",
+                             input_max_length=25,
+                             parent=self)
+        layout.addWidget(self.display_name)
 
-        self.display_name_input = QLineEdit(self)
-        self.display_name_input.setMaxLength(25)
-        layout.addWidget(self.display_name_input)
-
-        continue_btn = PushButton("Continue", self)
+        continue_btn = PushButton(text="Continue", parent=self)
         continue_btn.clicked.connect(self.onContinueClicked)
         layout.addWidget(continue_btn)
         layout.addStretch(OfflineUserPanel.STRETCH_SIZE)
 
-        back_to_login_btn = PushButton("Back to login", self)
+        back_to_login_btn = PushButton(text="Back to login", parent=self)
         back_to_login_btn.clicked.connect(lambda: self.back_to_login_clicked.emit())
         layout.addWidget(back_to_login_btn)
         layout.addStretch(OfflineUserPanel.STRETCH_SIZE)
@@ -92,7 +88,7 @@ class OfflineUserPanel(QFrame, FieldStyleManager):
         field_map = {
             "first_name": self.first_name.input,
             "last_name": self.last_name.input,
-            "nickname": self.display_name_input,
+            "nickname": self.display_name.input,
         }
 
         # Step 1: Ensure fields aren't blank

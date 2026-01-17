@@ -8,7 +8,7 @@ from PySide6.QtCore import (
     Qt,
     QMargins,
     QDate,
-    QPoint
+    QPoint,
 )
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
     QStackedWidget,
     QListWidget,
     QAbstractItemView,
-    QListWidgetItem
+    QListWidgetItem,
 )
 
 class NazmAra(QWidget):
@@ -62,6 +62,7 @@ class UserControlSidebar(QFrame):
         layout.setAlignment(Qt.AlignTop)
 
         self.profile_button = PushButton(self)
+        self.profile_button.clicked.connect(lambda: self.window().showSelectAccountPage())
         self.profile_button.setIcon(QIcon(":icons/profile.svg"))
         
         self.save_button = PushButton(self)

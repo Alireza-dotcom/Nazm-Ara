@@ -17,19 +17,18 @@ QLabel#TitleLabel {
     color: #ffffff;
 }
 
-#PasswordInput > QPushButton{
+PasswordField > QPushButton{
     background-color: #2e2f35;
     border: 1px solid #58595d;
     border-radius: 10;
 }
 
-#PasswordInput > QPushButton:checked {
+PasswordField > QPushButton:checked{
     background-color: #5865f2;
 }
 
-FormRow > QLabel,
-QLabel#FieldLabel {
-    font-size: 13px;
+FormRow > QLabel{
+    font-size: 14px;
     color: #ffffff;
 }
 
@@ -47,16 +46,18 @@ QLabel#DividerLabel {
     color: #93959c;
 }
 
-QLineEdit {
+FormRow > QLineEdit,
+PasswordField > QLineEdit {
     background-color: #2e2f35;
     border-radius: 8px;
     border: 1px solid #58595d;
     padding: 8px;
-    font-size: 13px;
+    font-size: 14px;
     color: #dfe0e2;
 }
 
-QLineEdit:focus {
+FormRow > QLineEdit:focus,
+PasswordField > QLineEdit:focus {
     border: 1px solid #7bb0f5;
 }
 

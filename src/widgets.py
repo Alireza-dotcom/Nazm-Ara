@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QCalendarWidget,
     QApplication,
     QFrame,
+    QListWidgetItem
 )
 from PySide6.QtGui import (
     QIcon,
@@ -62,12 +63,13 @@ class RadioButton(QPushButton):
             self.setCursor(Qt.PointingHandCursor)
 
 
+#TODO: fix all of the PushButton instances
 class PushButton(QPushButton):
     """QPushButton with a pointing hand cursor for better UX."""
-    def __init__(self, text="" , parent=None):
+    def __init__(self, text: str=None, parent: QWidget=None):
         super().__init__(text, parent)
 
-        self.setCursor(Qt.PointingHandCursor)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
 
 
 class PasswordField(QWidget):
@@ -78,16 +80,16 @@ class PasswordField(QWidget):
     PASS_VISIBILITY_BTN_SIZE = QSize(40, 40)
     CONTENTS_MARGINS_SIZE = QMargins(0, 0, 0, 0)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget):
         super().__init__(parent)
 
         self.eye_close_icon = QIcon(":icons/eye_close.svg")
         self.eye_open_icon  = QIcon(":icons/eye_open.svg")
 
-        self.input = QLineEdit(self)
-        self.input.setEchoMode(QLineEdit.Password)
+        self.input = QLineEdit(parent=self)
+        self.input.setEchoMode(QLineEdit.EchoMode.Password)
 
-        self.toggle_button = QPushButton(self)
+        self.toggle_button = QPushButton(parent=self)
         self.toggle_button.setIcon(self.eye_open_icon)
         self.toggle_button.setCheckable(True)
         self.toggle_button.setFixedSize(PasswordField.PASS_VISIBILITY_BTN_SIZE)
@@ -102,10 +104,10 @@ class PasswordField(QWidget):
 
     def togglePasswordVisibility(self):
         if self.toggle_button.isChecked():
-            self.input.setEchoMode(QLineEdit.Normal)
+            self.input.setEchoMode(QLineEdit.EchoMode.Normal)
             self.toggle_button.setIcon(self.eye_close_icon)
         else:
-            self.input.setEchoMode(QLineEdit.Password)
+            self.input.setEchoMode(QLineEdit.EchoMode.Password)
             self.toggle_button.setIcon(self.eye_open_icon)
 
 
@@ -113,23 +115,22 @@ class ClickableLabel(QLabel):
     """A QLabel that behaves like a button, emitting a clicked signal."""
     clicked = Signal()
 
-    def __init__(self, text="", parent=None):
+    def __init__(self, text: str, parent: QWidget):
         super().__init__(text, parent)
-        self.setCursor(Qt.PointingHandCursor)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
 
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self._mouse_pressed = True
+        self.mouse_pressed = True if event.button() == Qt.MouseButton.LeftButton else False
         super().mousePressEvent(event)
 
 
     def mouseReleaseEvent(self, event):
         """Emits clicked signal only if the mouse is released inside the label area."""
-        if self._mouse_pressed and event.button() == Qt.LeftButton:
+        if self.mouse_pressed:
             if self.rect().contains(event.position().toPoint()): # Released inside label
                 self.clicked.emit()
-        self._mouse_pressed = False
+        self.mouse_pressed = False
         super().mouseReleaseEvent(event)
 
 
@@ -137,30 +138,53 @@ class FormRow(QWidget):
     """Helper widget that groups a Label and a LineEdit vertically for forms."""
     CONTENTS_MARGINS_SIZE = QMargins(0, 0, 0, 0)
 
-    def __init__(self, label_text: str, object_name: str, parent=None):
+    def __init__(self, label_text: str, input_placeholder_text: str,
+                 parent: QWidget, input_max_length: int = None, is_pass_field: bool = False):
         super().__init__(parent)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(FormRow.CONTENTS_MARGINS_SIZE)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.main_layout.setContentsMargins(FormRow.CONTENTS_MARGINS_SIZE)
+
+        self.label_text = label_text
+        self.input_max_length = input_max_length
+        self.input_placeholder_text = input_placeholder_text
 
         self.label = QLabel(label_text, self)
-        self.input = QLineEdit(self)
-        # Applying object name to the widget for QSS targeting
-        self.setObjectName(object_name)
+        self.main_layout.addWidget(self.label)
 
-        layout.addWidget(self.label)
-        layout.addWidget(self.input)
+        if is_pass_field:
+            self.createPasswordField()
+            self.main_layout.addWidget(self.password_field)
+        else:
+            self.createNormalField()
+            self.main_layout.addWidget(self.input)
+
+
+    def createPasswordField(self):
+        self.password_field = PasswordField(self)
+        self.password_field.input.setPlaceholderText(self.input_placeholder_text)
+        if self.input_max_length:
+            self.password_field.input.setMaxLength(self.input_max_length)
+
+
+    def createNormalField(self):
+        self.input = QLineEdit(self)
+        self.input.setPlaceholderText(self.input_placeholder_text)
+        if self.input_max_length:
+            self.input.setMaxLength(self.input_max_length)
 
 
 class AccountListItemWidget(QWidget):
     """Custom widget for account selection list items, showing user info and account type."""
-    def __init__(self, account_row: dict, parent=None):
+    def __init__(self, widget_item: QListWidgetItem, parent: QWidget):
         super().__init__(parent)
 
         layout = QHBoxLayout(self)
         text_layout = QVBoxLayout()
+        self.account_details = widget_item.data(Qt.ItemDataRole.UserRole)
 
-        title_text = self.formatTitle(account_row)
-        subtitle_text = self.formatSubtitle(account_row)
+        title_text = self.formatTitle()
+        subtitle_text = self.formatSubtitle()
 
         self.title_label = QLabel(title_text, self)
         self.title_label.setObjectName("ItemTitle")
@@ -174,8 +198,8 @@ class AccountListItemWidget(QWidget):
         layout.addLayout(text_layout)
 
         # Logic to display "Online" vs "Offline" badge
-        acc_type_label_txt = "Online" if self.isOnlineAccount(account_row) else "Offline"
-        acc_type_label_obj_name = "onlineLabel" if self.isOnlineAccount(account_row) else "offlineLabel"
+        acc_type_label_txt = "Online" if self.isOnlineAccount() else "Offline"
+        acc_type_label_obj_name = "onlineLabel" if self.isOnlineAccount() else "offlineLabel"
 
         self.acc_type_lbl = QLabel(acc_type_label_txt, self)
         self.acc_type_lbl.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
@@ -185,30 +209,30 @@ class AccountListItemWidget(QWidget):
         layout.addWidget(self.acc_type_lbl)
 
 
-    def formatTitle(self, account_row: dict) -> str:
+    def formatTitle(self) -> str:
         """Returns nickname or a fallback ID-based string."""
-        nickname = account_row.get("nickname")
+        nickname = self.account_details.get("nickname")
         if nickname:
             return nickname
-        return f"Account #{account_row.get('id', '?')}"
+        return f"Account #{self.account_details.get('id', '?')}"
 
 
-    def formatSubtitle(self, account_row: dict) -> str:
+    def formatSubtitle(self) -> str:
         """Returns email or combined first/last name."""
-        email = account_row.get("email")
-        f_name = account_row.get("f_name")
-        l_name = account_row.get("l_name")
+        email = self.account_details.get("email")
+        f_name = self.account_details.get("f_name")
+        l_name = self.account_details.get("l_name")
         if email:
             return email
-        name_parts = [p for p in [f_name, l_name] if p]
+        name_parts = [part for part in [f_name, l_name] if part]
         if name_parts:
             return " ".join(name_parts)
-        return f"ID: {account_row.get('id', '?')}"
+        return f"ID: {self.account_details.get('id', '?')}"
 
 
-    def isOnlineAccount(self, account_row: dict) -> bool:
+    def isOnlineAccount(self) -> bool:
         """Determines if the account is online or offline."""
-        return account_row.get("user_id") is not None
+        return self.account_details.get("user_id") is not None
 
 
 class TaskListItemWidget(QWidget):
@@ -243,7 +267,7 @@ class TaskListItemWidget(QWidget):
         self.check_btn.clicked.connect(self.checkBtnClicked)
         self.check_btn.setFixedSize(25, 25)
 
-        self.title_label = QLabel(title_text, self)
+        self.title_label = QLabel(title_text, parent=self)
         self.title_label.setObjectName("TaskTitle")
 
         # Priority Badge
@@ -257,7 +281,7 @@ class TaskListItemWidget(QWidget):
         self.priority_type_lbl.setFixedSize(70, 30)
         self.priority_type_lbl.setMargin(5)
 
-        self.desc_label = QLabel(description_text, self)
+        self.desc_label = QLabel(description_text, parent=self)
         self.desc_label.setObjectName("TaskDesc")
 
         self.edit_btn = PushButton(self)

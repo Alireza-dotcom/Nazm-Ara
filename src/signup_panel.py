@@ -1,5 +1,4 @@
 from widgets import (
-    PasswordField,
     ClickableLabel,
     PushButton, FormRow,
     FieldStyleManager
@@ -16,7 +15,6 @@ from PySide6.QtCore import (
 from PySide6.QtWidgets import (
     QLabel,
     QFrame,
-    QLineEdit,
     QVBoxLayout,
     QHBoxLayout,
 )
@@ -30,6 +28,7 @@ class SignupPanel(QFrame, FieldStyleManager):
     STRETCH_SIZE = 1
     SPACING_SIZE = 10
     CONTENTS_MARGINS_SIZE = QMargins(50, 40, 50, 40)
+    REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -41,31 +40,30 @@ class SignupPanel(QFrame, FieldStyleManager):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(SignupPanel.CONTENTS_MARGINS_SIZE)
         layout.setSpacing(SignupPanel.SPACING_SIZE)
-        layout.setAlignment(Qt.AlignTop)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addStretch(SignupPanel.STRETCH_SIZE)
 
-        logo = QLabel(self)
+        logo = QLabel(parent=self)
         logo.setPixmap(QPixmap(":logos/logo.svg"))
-        logo.setAlignment(Qt.AlignCenter)
-        layout.addWidget(logo, alignment=Qt.AlignCenter)
+        layout.addWidget(logo, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(SignupPanel.STRETCH_SIZE)
 
-        title = QLabel("Create a new account", self)
+        title = QLabel(text="Create a new account", parent=self)
         title.setObjectName("TitleLabel")
-        title.setAlignment(Qt.AlignCenter)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
-        # first name field and label
-        self.first_name = FormRow(label_text="First Name",\
-                             object_name="FieldLabel",\
+        self.first_name = FormRow(label_text=f"First Name{SignupPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="Mirza",
+                             input_max_length=30,
                              parent=self)
-        self.first_name.input.setMaxLength(30)
+        layout.addWidget(self.first_name)
 
-        # last name field and label
-        self.last_name = FormRow(label_text="Last Name",\
-                            object_name="FieldLabel",\
-                            parent=self)
-        self.last_name.input.setMaxLength(30)
+        self.last_name = FormRow(label_text=f"Last Name{SignupPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="Amiri",
+                             input_max_length=30,
+                             parent=self)
+        layout.addWidget(self.last_name)
 
         # Horizontal layout to place First and Last name side-by-side
         name_layout = QHBoxLayout()
@@ -73,40 +71,33 @@ class SignupPanel(QFrame, FieldStyleManager):
         name_layout.addWidget(self.last_name)
         layout.addLayout(name_layout)
 
-        display_name_label = QLabel("Display name", self)
-        display_name_label.setObjectName("FieldLabel")
-        layout.addWidget(display_name_label)
+        self.display_name = FormRow(label_text=f"Display name{SignupPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="Mirza_koochak_khan",
+                             input_max_length=25,
+                             parent=self)
+        layout.addWidget(self.display_name)
 
-        self.display_name_input = QLineEdit(self)
-        self.display_name_input.setMaxLength(25)
-        layout.addWidget(self.display_name_input)
+        self.email = FormRow(label_text=f"Email{SignupPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="example@hotmail.com",
+                             input_max_length=254,
+                             parent=self)
+        layout.addWidget(self.email)
 
-        email_label = QLabel("Email", self)
-        email_label.setObjectName("FieldLabel")
-        layout.addWidget(email_label)
+        self.password = FormRow(label_text=f"Password{SignupPanel.REQUIRED_FIELD}",
+                             input_placeholder_text="********",
+                             input_max_length=50,
+                             is_pass_field=True,
+                             parent=self)
+        layout.addWidget(self.password)
 
-        self.email_input = QLineEdit(self)
-        self.email_input.setMaxLength(254)
-        self.email_input.setObjectName("FieldLabel")
-        layout.addWidget(self.email_input)
-
-        password_label = QLabel("Password", self)
-        password_label.setObjectName("FieldLabel")
-        layout.addWidget(password_label)
-
-        self.password_input = PasswordField(self)
-        self.password_input.input.setMaxLength(50)
-        self.password_input.setObjectName("PasswordInput")
-        layout.addWidget(self.password_input)
-
-        self.signup_btn = PushButton("Sign up", self)
+        self.signup_btn = PushButton(text="Sign up", parent=self)
         self.signup_btn.clicked.connect(self.onSignupClicked)
         layout.addWidget(self.signup_btn)
         layout.addStretch(SignupPanel.STRETCH_SIZE)
 
-        already_have_acc_label = ClickableLabel("Already have an account?", self)
+        already_have_acc_label = ClickableLabel(text="Already have an account?", parent=self)
         already_have_acc_label.clicked.connect(lambda: self.already_have_account_clicked.emit())
-        already_have_acc_label.setAlignment(Qt.AlignCenter)
+        already_have_acc_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(already_have_acc_label)
 
 
@@ -115,9 +106,9 @@ class SignupPanel(QFrame, FieldStyleManager):
         field_map = {
             "first_name": self.first_name.input,
             "last_name": self.last_name.input,
-            "nickname": self.display_name_input,
-            "email": self.email_input,
-            "password": self.password_input.input,
+            "nickname": self.display_name.input,
+            "email": self.email.input,
+            "password": self.password.password_field.input,
         }
 
         # Step 1: Ensure fields aren't blank

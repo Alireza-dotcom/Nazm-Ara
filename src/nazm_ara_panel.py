@@ -62,7 +62,7 @@ class UserControlSidebar(QFrame):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.profile_button = PushButton(parent=self)
-        self.profile_button.clicked.connect(lambda: self.window().showSelectAccountPage())
+        self.profile_button.clicked.connect(self.logOutOfAccount)
         self.profile_button.setIcon(QIcon(":icons/profile.svg"))
         
         self.save_button = PushButton(parent=self)
@@ -75,6 +75,12 @@ class UserControlSidebar(QFrame):
         layout.addStretch(UserControlSidebar.STRETCH_SIZE)
         layout.addWidget(self.save_button)
         layout.addWidget(self.settings_button)
+
+
+    def logOutOfAccount(self):
+        self.window().showSelectAccountPage()
+        RadioButton.resetRadioButtons()
+
 
 
 class MainSection(QFrame):

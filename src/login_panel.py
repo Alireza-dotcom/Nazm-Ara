@@ -1,6 +1,5 @@
 from widgets import ClickableLabel, PushButton, FieldStyleManager, FormRow
 from form_processor import FormProcessor
-from notification_handler import NotificationHandler
 
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import (
@@ -16,7 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class LoginPanel(QFrame, FieldStyleManager):
+class LoginPanel(QFrame):
     """A UI panel that handles user authentication."""
     signup_clicked = Signal()
     continue_clicked = Signal()
@@ -32,8 +31,7 @@ class LoginPanel(QFrame, FieldStyleManager):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setObjectName("LoginPanel")
-        self.form_processor = FormProcessor()
-        self.notification_handler = NotificationHandler(self)
+        self.form_processor = FormProcessor(parent=self)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(LoginPanel.CONTENTS_MARGIN_SIZE)
@@ -94,57 +92,13 @@ class LoginPanel(QFrame, FieldStyleManager):
 
     def onLoginClicked(self):
         """Checks the validation process before emitting the login signal."""
-        field_map = {
-            "email": self.email.input,
-            "password": self.password.password_field.input
-        }
+        field_map = [
+            {"field_name": "password", "field_input": self.password.pass_field.input, "field_object": self.password, "min_length": 8, "quality_check": False},
+            {"field_name": "email", "field_input": self.email.input, "field_object": self.email}
+        ]
 
-        # Step 1: Ensure fields aren't blank
-        if not self.handleEmptyValidation(field_map):
+        data = self.form_processor.authenticationValidator(field_map)
+        if not data:
             return
 
-        # Step 2: Ensure data format is correct
-        is_valid, data = self.handleFormatValidation(field_map)
-        if not is_valid:
-            return 
-
         self.login_clicked.emit(data)
-
-
-    def handleFormatValidation(self, field_map: dict):
-        """Checks formatting and displays notifications for invalid input."""
-        is_valid, result = self.form_processor.getValidationErrors(field_map)
-        
-        if not is_valid:
-            form_fields = list(field_map.values())
-            self.updateInvalidFieldStyle(result.get("invalid_widgets"), form_fields)
-            
-            # Show a toast notification with the specific error reasons
-            errors = "\n".join(result.get("errors"))
-            duration = max(4000, len(errors) * 50)
-            
-            self.notification_handler.showToast(
-                "bottom_right", "Validation Errors",
-                errors, "error", duration=duration
-            )
-            return False, None
-            
-        data = self.form_processor.getValidatedData(field_map)
-        return True, data
-
-
-    def handleEmptyValidation(self, field_map: dict):
-        """Checks for missing input and provides visual feedback."""
-        form_fields = list(field_map.values())
-        field_status = self.form_processor.findEmptyAndFilledFields(form_fields)
-        
-        # Update field UI styles based on whether they are empty or filled
-        self.updateEmptyFieldStyle(field_status)
-        
-        if field_status.get("empty"):
-            self.notification_handler.showToast(
-                "bottom_right", "Empty fields",
-                "Please fill in all required fields.", "error", duration=5000
-            )
-            return False
-        return True

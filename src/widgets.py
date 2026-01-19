@@ -15,13 +15,15 @@ from PySide6.QtGui import (
     QColor,
     QTextCharFormat,
     QBrush,
+    QRegularExpressionValidator
 )
 from PySide6.QtCore import (
     QSize,
     QMargins,
     Signal,
     Qt,
-    QDate
+    QDate,
+    QRegularExpression
 )
 
 
@@ -37,7 +39,7 @@ class RadioButton(QPushButton):
         super().__init__(text, parent)
         self.setCheckable(True)
         self.clicked.connect(self.handle_click)
-        self.update_style()
+        self.updateStyle()
 
     def mousePressEvent(self, event):
         # Prevents unchecking a button by clicking it again once active
@@ -49,18 +51,22 @@ class RadioButton(QPushButton):
         """Ensures only one option is active."""
         if RadioButton.active_button and RadioButton.active_button != self:
             RadioButton.active_button.setChecked(False)
-            RadioButton.active_button.update_style()
+            RadioButton.active_button.updateStyle()
 
         self.setChecked(True)
         RadioButton.active_button = self
-        self.update_style()
+        self.updateStyle()
 
-    def update_style(self):
+    def updateStyle(self):
         """Changes the cursor to indicate whether the button is interactable."""
         if self.isChecked():
             self.setCursor(Qt.CursorShape.ArrowCursor)
         else:
             self.setCursor(Qt.CursorShape.PointingHandCursor)
+    
+    @staticmethod
+    def resetRadioButtons():
+        RadioButton.active_button = None
 
 
 class PushButton(QPushButton):
@@ -138,7 +144,8 @@ class FormRow(QWidget):
     CONTENTS_MARGINS_SIZE = QMargins(0, 0, 0, 0)
 
     def __init__(self, label_text: str, input_placeholder_text: str,
-                 parent: QWidget, input_max_length: int = None, is_pass_field: bool = False):
+                 parent: QWidget, input_max_length: int = None,
+                 is_pass_field: bool = False, input_validator_regex: str = None):
         super().__init__(parent)
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -147,30 +154,66 @@ class FormRow(QWidget):
         self.label_text = label_text
         self.input_max_length = input_max_length
         self.input_placeholder_text = input_placeholder_text
+        self.input_validator_regex = input_validator_regex
+        self.error_message = ""
 
         self.label = QLabel(text=self.label_text, parent=self)
         self.main_layout.addWidget(self.label)
 
         if is_pass_field:
             self.createPasswordField()
-            self.main_layout.addWidget(self.password_field)
+            self.main_layout.addWidget(self.pass_field)
         else:
             self.createNormalField()
             self.main_layout.addWidget(self.input)
 
 
+    def setErrorMessage(self, error_message):
+        self.error_message = error_message
+
+
+    def updateError(self, input_field: QLineEdit, error_message: str):
+        ERROR_STYLE = "QLineEdit { border: 1px solid red; }"
+        DEFAULT_STYLE = ""
+
+        # if errors are similar return
+        if self.error_message == error_message:
+            return
+
+        # if an error label already exist remove it
+        if hasattr(self, "error_label"):
+            self.error_label.deleteLater()
+            del self.error_label
+
+        # if error_message is not empty(error occured)
+        if error_message: 
+            input_field.setStyleSheet(ERROR_STYLE)
+            self.error_label = QLabel(error_message, wordWrap=True, parent=self)
+            self.error_label.setObjectName("ErrorMessage")
+            self.main_layout.addWidget(self.error_label)
+        #otherwise remove error
+        else:
+            input_field.setStyleSheet(DEFAULT_STYLE)
+
+        self.setErrorMessage(error_message)
+
+
     def createPasswordField(self):
-        self.password_field = PasswordField(self)
-        self.password_field.input.setPlaceholderText(self.input_placeholder_text)
+        self.pass_field = PasswordField(self)
+        self.pass_field.input.setPlaceholderText(self.input_placeholder_text)
         if self.input_max_length:
-            self.password_field.input.setMaxLength(self.input_max_length)
+            self.pass_field.input.setMaxLength(self.input_max_length)
 
 
     def createNormalField(self):
         self.input = QLineEdit(self)
         self.input.setPlaceholderText(self.input_placeholder_text)
+
         if self.input_max_length:
             self.input.setMaxLength(self.input_max_length)
+
+        if self.input_validator_regex:
+            self.input.setValidator(QRegularExpressionValidator(QRegularExpression(self.input_validator_regex)))
 
 
 class AccountListItemWidget(QWidget):
@@ -464,7 +507,6 @@ class HabitListItemWidget(QWidget):
         self.edit_btn.clicked.connect(lambda: self.on_edit_button_clicked.emit(self, self.habit_details))
         self.edit_btn.setFixedSize(30, 30)
 
-        # layout.addLayout(desc_and_title_layout)
         self.layout.addWidget(self.title_label)
         self.layout.addWidget(self.priority_type_lbl)
         self.layout.addStretch(HabitListItemWidget.STRETCH_SIZE)
@@ -579,3 +621,7 @@ class ColorPicker(QFrame):
     def changeColor(self, color: str):
         self.color_main.setStyleSheet(f"background-color: {color};")
         self.color = color
+
+
+    def getColor(self):
+        return self.color

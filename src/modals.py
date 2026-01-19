@@ -8,21 +8,21 @@ from widgets import (
     HabitButton
 )
 from form_processor import FormProcessor
-from notification_handler import NotificationHandler
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
     QFrame,
-    QLineEdit,
     QComboBox,
     QWidget,
+    
 )
 
 from PySide6.QtCore import Qt, QRect, QEvent, Signal, QDate
 
-class AddTaskModal(QFrame, FieldStyleManager):
+
+class AddTaskModal(QFrame):
     add_task_clicked = Signal(dict)
     on_delete_clicked = Signal(object, str)
     on_update_clicked = Signal(object, dict, str)
@@ -44,8 +44,7 @@ class AddTaskModal(QFrame, FieldStyleManager):
         self.task_details = task_details
         self.task_object = task_object
 
-        self.form_processor = FormProcessor()
-        self.notification_handler = NotificationHandler(self)
+        self.form_processor = FormProcessor(parent=self)
 
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -129,7 +128,7 @@ class AddTaskModal(QFrame, FieldStyleManager):
 
     def eventFilter(self, obj, event):
         # Keeps the modal centered if the user resizes the main application window
-        if obj == self.main_win and event.type() == QEvent.Resize:
+        if obj == self.main_win and event.type() == QEvent.Type.Resize:
             self.applyResizeLogic()
         return super().eventFilter(obj, event)
 
@@ -146,7 +145,7 @@ class AddTaskModal(QFrame, FieldStyleManager):
         self.shield.setGeometry(self.main_win.rect())
         
         width = 400
-        height = 500
+        height = 400
 
         p_rect = self.shield.rect()
         
@@ -158,20 +157,15 @@ class AddTaskModal(QFrame, FieldStyleManager):
 
     def onSaveClicked(self):
         """Checks the validation process before emitting the (update or add) signal."""
-        field_map = {
-            "title": self.task_name.input,
-            "description": self.description.input,
-            "priority": self.priority_item
-        }
+        field_map = [
+            {"field_name": "title",       "field_input":  self.task_name.input,   "field_object": self.task_name,   "is_optional": False},
+            {"field_name": "description", "field_input":  self.description.input, "field_object": self.description, "is_optional": True },
+            {"field_name": "priority",    "field_object": self.priority_item},
+        ]
 
-        # Step 1: Ensure fields aren't blank
-        if not self.handleEmptyValidation(field_map.copy()):
+        data = self.form_processor.taskModalValidator(field_map)
+        if not data:
             return
-        
-        # Step 2: Ensure data format is correct
-        is_valid, data = self.handleFormatValidation(field_map)
-        if not is_valid:
-            return 
 
         # Emit appropriate signal based on whether we are updating an existing item or adding a new one
         if self.task_details:
@@ -183,47 +177,7 @@ class AddTaskModal(QFrame, FieldStyleManager):
         self.shield.close()
 
 
-    def handleEmptyValidation(self, field_map:dict):
-        """Checks for missing input and provides visual feedback."""
-        field_map.pop("priority")
-        form_fields = list(field_map.values())
-        field_status = self.form_processor.findEmptyAndFilledFields(form_fields)
-        
-        # Update field UI styles based on whether they are empty or filled
-        self.updateEmptyFieldStyle(field_status)
-        
-        if field_status.get("empty"):
-            self.notification_handler.showToast(
-                "bottom_right", "Empty fields",
-                "Please fill in all required fields.", "error", duration=5000
-            )
-            return False
-        return True
-
-
-    def handleFormatValidation(self, field_map: dict):
-        """Checks formatting and displays notifications for invalid input."""
-        is_valid, result = self.form_processor.getTaskModalsValidationErrors(field_map)
-        
-        if not is_valid:
-            form_fields = list(field_map.values())
-            self.updateInvalidFieldStyle(result.get("invalid_widgets"), form_fields)
-            
-            # Show a toast notification with the specific error reasons
-            errors = "\n".join(result.get("errors"))
-            duration = max(4000, len(errors) * 50)
-            
-            self.notification_handler.showToast(
-                "bottom_right", "Validation Errors",
-                errors, "error", duration=duration
-            )
-            return False, None
-            
-        data = self.form_processor.getValidatedTaskData(field_map)
-        return True, data
-
-
-class AddHabitModal(QFrame, FieldStyleManager):
+class AddHabitModal(QFrame):
     add_habit_clicked = Signal(dict)
     on_delete_clicked = Signal(object, str)
     on_update_clicked = Signal(object, dict, str)
@@ -244,8 +198,7 @@ class AddHabitModal(QFrame, FieldStyleManager):
         self.habit_details = habit_details
         self.habit_object = habit_object
 
-        self.form_processor = FormProcessor()
-        self.notification_handler = NotificationHandler(self)
+        self.form_processor = FormProcessor(parent=self)
 
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -278,13 +231,14 @@ class AddHabitModal(QFrame, FieldStyleManager):
 
         self.unit = FormRow(label_text=f"Unit{AddTaskModal.REQUIRED_FIELD}",
                              input_placeholder_text="e.g. page",
-                             input_max_length=30,
+                             input_max_length=25,
                              parent=self)
         layout.addWidget(self.unit)
 
         self.target = FormRow(label_text=f"Target{AddTaskModal.REQUIRED_FIELD}",
                              input_placeholder_text="e.g. 20",
                              input_max_length=30,
+                             input_validator_regex="^[\d]+$",
                              parent=self)
         layout.addWidget(self.target)
 
@@ -362,7 +316,7 @@ class AddHabitModal(QFrame, FieldStyleManager):
 
     def eventFilter(self, obj, event):
         # Keeps the modal centered if the user resizes the main application window
-        if obj == self.main_win and event.type() == QEvent.Resize:
+        if obj == self.main_win and event.type() == QEvent.Type.Resize:
             self.applyResizeLogic()
         return super().eventFilter(obj, event)
 
@@ -379,7 +333,7 @@ class AddHabitModal(QFrame, FieldStyleManager):
         self.shield.setGeometry(self.main_win.rect())
         
         width = 500
-        height = 750
+        height = 650
 
         p_rect = self.shield.rect()
         
@@ -391,24 +345,19 @@ class AddHabitModal(QFrame, FieldStyleManager):
 
     def onSaveClicked(self):
         """Checks the validation process before emitting the (update or add) signal."""
-        field_map = {
-            "title": self.habit_name.input,
-            "question": self.question.input,
-            "unit": self.unit.input,
-            "target": self.target.input,
-            "description": self.description.input,
-            "priority": self.priority_item,
-            "color": self.color_picker.color,
-        }
+        field_map = [
+            {"field_name": "title",       "field_input":  self.habit_name.input,  "field_object": self.habit_name, "is_optional": False},
+            {"field_name": "question",    "field_input":  self.question.input,    "field_object": self.question,   "is_optional": False},
+            {"field_name": "unit",        "field_input":  self.unit.input,        "field_object": self.unit,       "is_optional": False},
+            {"field_name": "target",      "field_input":  self.target.input,      "field_object": self.target,     "is_optional": False},
+            {"field_name": "description", "field_input":  self.description.input, "field_object": self.description,"is_optional": True },
+            {"field_name": "priority",    "field_object": self.priority_item},
+            {"field_name": "color",       "field_object": self.color_picker},
+        ]
 
-        # Step 1: Ensure fields aren't blank
-        if not self.handleEmptyValidation(field_map.copy()):
+        data = self.form_processor.habitModalValidator(field_map)
+        if not data:
             return
-        
-        # Step 2: Ensure data format is correct
-        is_valid, data = self.handleFormatValidation(field_map)
-        if not is_valid:
-            return 
 
         # Emit appropriate signal based on whether we are updating an existing item or adding a new one
         if self.habit_details:
@@ -420,50 +369,7 @@ class AddHabitModal(QFrame, FieldStyleManager):
         self.shield.close()
 
 
-    def handleEmptyValidation(self, field_map:dict):
-        """Checks for missing input and provides visual feedback."""
-        field_map.pop("priority")
-        field_map.pop("color")
-        field_map.pop("description")
-
-        form_fields = list(field_map.values())
-        field_status = self.form_processor.findEmptyAndFilledFields(form_fields)
-        
-        # Update field UI styles based on whether they are empty or filled
-        self.updateEmptyFieldStyle(field_status)
-        
-        if field_status.get("empty"):
-            self.notification_handler.showToast(
-                "bottom_right", "Empty fields",
-                "Please fill in all required fields.", "error", duration=5000
-            )
-            return False
-        return True
-
-
-    def handleFormatValidation(self, field_map: dict):
-        """Checks formatting and displays notifications for invalid input."""
-        is_valid, result = self.form_processor.getHabitModalsValidationErrors(field_map)
-        
-        if not is_valid:
-            form_fields = list(field_map.values())
-            self.updateInvalidFieldStyle(result.get("invalid_widgets"), form_fields)
-            
-            # Show a toast notification with the specific error reasons
-            errors = "\n".join(result.get("errors"))
-            duration = max(4000, len(errors) * 50)
-            
-            self.notification_handler.showToast(
-                "bottom_right", "Validation Errors",
-                errors, "error", duration=duration
-            )
-            return False, None
-            
-        data = self.form_processor.getValidatedHabitData(field_map)
-        return True, data
-
-
-class AddDailyHabitModal(QFrame, FieldStyleManager):
+class AddDailyHabitModal(QFrame):
     add_daily_habit_clicked = Signal(object, dict)
     on_delete_clicked = Signal(object, int)
     on_update_clicked = Signal(object, dict)
@@ -487,8 +393,7 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
         self.question = habit_details.get("question")
         self.unit = habit_details.get("unit")
 
-        self.form_processor = FormProcessor()
-        self.notification_handler = NotificationHandler(self)
+        self.form_processor = FormProcessor(parent=self)
 
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -508,19 +413,13 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
         layout.addLayout(title_exit_layout)
 
         value_input_unit_layout = QHBoxLayout()
-        self.question = QLabel(text=str(self.question), parent=self)
+        self.value = FormRow(label_text=str(self.question),
+                             input_placeholder_text=str(self.unit),
+                             input_max_length=25,
+                             input_validator_regex="^[\d]+$",
+                             parent=self)
+        value_input_unit_layout.addWidget(self.value)
 
-        layout.addWidget(self.question)
-        self.value_input = QLineEdit(parent=self,
-                                     placeholderText="e.g. 15",
-                                     maxLength=25
-                                    )
-        value_input_unit_layout.addWidget(self.value_input)
-
-        self.unit = QLabel(text=str(self.unit), parent=self)
-        self.unit.setFixedWidth(170)
-        self.unit.setObjectName("TitleLabel")
-        value_input_unit_layout.addWidget(self.unit)
 
         layout.addLayout(value_input_unit_layout)
         layout.addStretch(AddDailyHabitModal.STRETCH_SIZE)
@@ -561,7 +460,7 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
         self.shield.setGeometry(self.main_win.rect())
         
         width = 500
-        height = 300
+        height = 250
 
         p_rect = self.shield.rect()
         
@@ -573,16 +472,15 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
 
     def eventFilter(self, obj, event):
         # Keeps the modal centered if the user resizes the main application window
-        if obj == self.main_win and event.type() == QEvent.Resize:
+        if obj == self.main_win and event.type() == QEvent.Type.Resize:
             self.applyResizeLogic()
         return super().eventFilter(obj, event)
 
 
     def initialFields(self):
         """Populates value field with existing data when in edit mode."""
-        self.value_input.setText(str(self.daily_habit_details.get("value")))
-        self.question.setText(self.habit_details.get("question"))
-        self.unit.setText(str(self.habit_details.get("unit")))
+        self.value.input.setText(str(self.daily_habit_details.get("value")))
+        self.value.label.setText(str(self.habit_details.get("question")))
 
 
     def onDeleteClicked(self):
@@ -593,18 +491,13 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
 
     def onSaveClicked(self):
         """Checks the validation process before emitting the (update or add) signal."""
-        field_map = {
-            "value": self.value_input,
-        }
+        field_map = [
+            {"field_name": "value", "field_input": self.value.input, "field_object": self.value, "is_optional": False},
+        ]
 
-        # Step 1: Ensure fields aren't blank
-        if not self.handleEmptyValidation(field_map.copy()):
+        data = self.form_processor.dailyHabitModalValidator(field_map)
+        if not data:
             return
-        
-        # Step 2: Ensure data format is correct
-        is_valid, data = self.handleFormatValidation(field_map)
-        if not is_valid:
-            return 
 
         # add req field to change the database and buttons color
         data.update({"habit_id": self.habit_details.get("local_id"),
@@ -623,42 +516,3 @@ class AddDailyHabitModal(QFrame, FieldStyleManager):
             self.add_daily_habit_clicked.emit(self.habit_button, data)
 
         self.shield.close()
-
-
-    def handleEmptyValidation(self, field_map:dict):
-        """Checks for missing input and provides visual feedback."""
-        form_fields = list(field_map.values())
-        field_status = self.form_processor.findEmptyAndFilledFields(form_fields)
-        
-        # Update field UI styles based on whether they are empty or filled
-        self.updateEmptyFieldStyle(field_status)
-        
-        if field_status.get("empty"):
-            self.notification_handler.showToast(
-                "bottom_right", "Empty fields",
-                "Please fill in all required fields.", "error", duration=5000
-            )
-            return False
-        return True
-
-
-    def handleFormatValidation(self, field_map: dict):
-        """Checks formatting and displays notifications for invalid input."""
-        is_valid, result = self.form_processor.getHabitModalsValidationErrors(field_map)
-        
-        if not is_valid:
-            form_fields = list(field_map.values())
-            self.updateInvalidFieldStyle(result.get("invalid_widgets"), form_fields)
-            
-            # Show a toast notification with the specific error reasons
-            errors = "\n".join(result.get("errors"))
-            duration = max(4000, len(errors) * 50)
-            
-            self.notification_handler.showToast(
-                "bottom_right", "Validation Errors",
-                errors, "error", duration=duration
-            )
-            return False, None
-            
-        data = self.form_processor.getValidatedHabitData(field_map)
-        return True, data

@@ -61,3 +61,9 @@ QFrame > PushButton {
 QFrame > PushButton:hover {
     background-color: #4452bb;
 }
+
+QLabel#ErrorMessage {
+    color: #c70b0b;
+    font-weight: 650;
+    font-size: 16px;
+}

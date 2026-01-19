@@ -1,5 +1,4 @@
-from widgets import PushButton, FieldStyleManager
-from notification_handler import NotificationHandler
+from widgets import PushButton
 from form_processor import FormProcessor
 from widgets import FormRow
 
@@ -18,7 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class OfflineUserPanel(QFrame, FieldStyleManager):
+class OfflineUserPanel(QFrame):
     """Panel for creating a local offline profile."""
     back_to_login_clicked = Signal()
     continue_clicked = Signal(dict)
@@ -31,8 +30,7 @@ class OfflineUserPanel(QFrame, FieldStyleManager):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setObjectName("OfflineUserPanel")
-        self.form_processor = FormProcessor()
-        self.notification_handler = NotificationHandler(self)
+        self.form_processor = FormProcessor(parent=self)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(OfflineUserPanel.CONTENTS_MARGINS_SIZE)
@@ -52,12 +50,14 @@ class OfflineUserPanel(QFrame, FieldStyleManager):
         self.first_name = FormRow(label_text=f"First Name{OfflineUserPanel.REQUIRED_FIELD}",
                              input_placeholder_text="Mirza",
                              input_max_length=30,
+                             input_validator_regex="^[a-zA-Z\u0600-\u06FF\s']+$",
                              parent=self)
         layout.addWidget(self.first_name)
 
         self.last_name = FormRow(label_text=f"Last Name{OfflineUserPanel.REQUIRED_FIELD}",
                              input_placeholder_text="Amiri",
                              input_max_length=30,
+                             input_validator_regex="^[a-zA-Z\u0600-\u06FF\s']+$",
                              parent=self)
         layout.addWidget(self.last_name)
 
@@ -70,6 +70,7 @@ class OfflineUserPanel(QFrame, FieldStyleManager):
         self.display_name = FormRow(label_text=f"Display name{OfflineUserPanel.REQUIRED_FIELD}",
                              input_placeholder_text="Mirza_koochak_khan",
                              input_max_length=25,
+                             input_validator_regex="^[a-zA-Z\u0600-\u06FF0-9_']+$",
                              parent=self)
         layout.addWidget(self.display_name)
 
@@ -86,58 +87,14 @@ class OfflineUserPanel(QFrame, FieldStyleManager):
 
     def onContinueClicked(self):
         """Checks the validation process before emitting the create offline user signal."""
-        field_map = {
-            "first_name": self.first_name.input,
-            "last_name": self.last_name.input,
-            "nickname": self.display_name.input,
-        }
+        field_map = [
+            {"field_name": "first_name", "field_input": self.first_name.input,  "field_object": self.first_name,   "min_length": 3},
+            {"field_name": "last_name",  "field_input": self.last_name.input,   "field_object": self.last_name,    "min_length": 3},
+            {"field_name": "nickname",   "field_input": self.display_name.input,"field_object": self.display_name, "min_length": 3},
+        ]
 
-        # Step 1: Ensure fields aren't blank
-        if not self.handleEmptyValidation(field_map):
+        data = self.form_processor.authenticationValidator(field_map)
+        if not data:
             return
 
-        # Step 2: Ensure data format is correct
-        is_valid, data = self.handleFormatValidation(field_map)
-        if not is_valid:
-            return 
-
         self.continue_clicked.emit(data)
-
-
-    def handleFormatValidation(self, field_map: dict):
-        """Checks formatting and displays notifications for invalid input."""
-        is_valid, result = self.form_processor.getValidationErrors(field_map)
-
-        if not is_valid:
-            form_fields = list(field_map.values())
-            self.updateInvalidFieldStyle(result.get("invalid_widgets"), form_fields)
-
-            # Show a toast notification with the specific error reasons
-            errors = "\n".join(result.get("errors"))
-            duration = max(4000, len(errors) * 50)
-
-            self.notification_handler.showToast(
-                "bottom_right", "Validation Errors",
-                errors, "error", duration=duration
-            )
-            return False, None
-
-        data = self.form_processor.getValidatedData(field_map)
-        return True, data
-
-
-    def handleEmptyValidation(self, field_map: dict):
-        """Checks for missing input and provides visual feedback."""
-        form_fields = list(field_map.values())
-        field_status = self.form_processor.findEmptyAndFilledFields(form_fields)
-        
-        # Update field UI styles based on whether they are empty or filled
-        self.updateEmptyFieldStyle(field_status)
-        
-        if field_status.get("empty"):
-            self.notification_handler.showToast(
-                "bottom_right", "Empty fields",
-                "Please fill in all required fields.", "error", duration=5000
-            )
-            return False
-        return True

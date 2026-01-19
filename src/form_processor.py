@@ -1,254 +1,221 @@
+from PySide6.QtWidgets import QLineEdit, QWidget 
+from PySide6.QtCore import QObject
 from email_validator import validate_email, EmailNotValidError
 from zxcvbn import zxcvbn
-import re
 
-from PySide6.QtWidgets import QWidget
-
-
-class FormProcessor:
+class FormProcessor(QObject):
     """Handles data extraction and validation logic for all forms within the application."""
-
-    def findEmptyAndFilledFields(self, fields: list):
-        """Categorizes widgets into empty and filled lists for UI feedback."""
-        empty = []
-        for field in fields:
-            if not self.getFieldText(field):
-                empty.append(field)
-
-        filled = [field for field in fields if field not in empty]
-
-        return {
-            "empty": empty,
-            "filled": filled
-        }
+    def __init__(self,  parent: QWidget):
+        super().__init__(parent)
 
 
-    def getFieldText(self, field: QWidget):
-        return field.text().strip() if hasattr(field, "text") else str(field).strip()
+    def authenticationValidator(self, field_map: list):
+            data = {}
+            for field_details in field_map:
+                field_name = field_details.get("field_name")
+                if field_name in ["first_name", "last_name", "nickname"]:
+                    data[field_name] = self.validateName(field_details)
+                elif field_name == "email":
+                    data[field_name] = self.validateEmail(field_details)
+                elif field_name == "password":
+                    data[field_name] = self.validatePassword(field_details)
+
+            if None in data.values():
+                return False
+
+            return data
 
 
-    def validateName(self, name_field: QWidget):
-        """Validates first/last names allowing Latin and Persian characters."""
-        name = self.getFieldText(name_field)
-        # Normalize whitespace
-        clean_name = " ".join(name.split())
-
-        # Regex for English and Arabic/Persian scripts
-        pattern = r"^[a-zA-Z\u0600-\u06FF\s]+$"
-        if not re.match(pattern, clean_name):
+    def taskModalValidator(self, field_map: list):
+        data = {}
+        for field_details in field_map:
+            field_name = field_details.get("field_name")
+            if field_name in ["title", "description"]:
+                data[field_name] = self.validateModalGenericField(field_details)
+            elif field_name == "priority":
+                data[field_name] = self.validatePriority(field_details)
+        
+        if None in data.values():
             return False
 
-        return clean_name
+        return data
 
 
-    def validateNickname(self, nickname_field: QWidget):
-        """Validates nicknames allowing alphanumeric characters, Persian, and underscores."""
-        nickname = self.getFieldText(nickname_field)
+    def habitModalValidator(self, field_map: list):
+            data = {}
+            for field_details in field_map:
+                field_name = field_details.get("field_name")
+                if field_name in ["title", "question", "unit", "description"]:
+                    data[field_name] = self.validateModalGenericField(field_details)
+                elif field_name == "target":
+                    data[field_name] = self.validateTarget(field_details)
+                elif field_name == "priority":
+                    data[field_name] = self.validatePriority(field_details)
+                elif field_name == "color":
+                    data[field_name] = self.validateColor(field_details)
 
-        pattern = r"^[a-zA-Z\u0600-\u06FF0-9_]+$"
-        if not re.match(pattern, nickname):
-            return False
+            if None in data.values():
+                return False
 
-        return nickname
-
-
-    def validatePassword(self, password_field: QWidget):
-        """Assesses password strength using the zxcvbn library."""
-        password = self.getFieldText(password_field)
-        results = zxcvbn(password)
-
-        if results.get("score") < 3:
-            reason = results.get('feedback').get("warning") or "Password is too guessable."
-            return False, reason
-
-        return True, "Strong password."
+            return data
 
 
-    def validateEmailField(self, email_field):
-        """Validates email syntax and returns the normalized email string."""
-        email_text = self.getFieldText(email_field)
-        try:
-            emailinfo = validate_email(email_text, check_deliverability=False)
-            return emailinfo.normalized
-        except EmailNotValidError:
-            return False
+    def dailyHabitModalValidator(self, field_map: list):
+            data = {}
+            for field_details in field_map:
+                field_name = field_details.get("field_name")
+                if field_name == "value":
+                    data[field_name] = self.validateTarget(field_details)
+
+            if None in data.values():
+                return False
+
+            return data
 
 
-    def checkLength(self, field, min_len: int = 0, max_len: int = 255):
-        """Checks if the field text length is within the specified bounds."""
-        field_length = len(self.getFieldText(field))
-        return min_len <= field_length <= max_len
+    def validateModalGenericField(self, field_details: dict):
+        field_object = field_details.get("field_object")
+        is_optional = field_details.get("is_optional")
+        field_input = field_details.get("field_input")
 
+        if not is_optional:
+            if self.isFieldFilled(field_input):
+                text = self.getFieldText(field_input)
+                clean_text = " ".join(text.split())
 
-    def getValidationErrors(self, field_map: dict, is_signup: bool = False):
-        """
-        Performs validation for authentication forms (Login/Signup).
-        Returns a tuple of (is_valid, error_dictionary).
-        """
-        errors = []
-        invalid_widgets = []
-
-        for name, widget in field_map.items():
-            # Validation for First and Last Names
-            if name in ["first_name", "last_name"]:
-                if not self.checkLength(widget, min_len=3, max_len=50):
-                    errors.append(f"{name.replace('_', ' ')} must be at least 3 characters")
-                    invalid_widgets.append(widget)
-                elif not self.validateName(widget):
-                    errors.append(f"{name.replace('_', ' ')} format is invalid. Please use only English or Persian letters")
-                    invalid_widgets.append(widget)
-
-            # Validation for Nicknames
-            if name == "nickname":
-                if not self.checkLength(widget, min_len=3, max_len=255):
-                    errors.append("nickname must be at least 3 characters")
-                    invalid_widgets.append(field_map.get("nickname"))
-                elif not self.validateNickname(widget):
-                    errors.append("nickname format is invalid, Please use only English or Persian letters")
-                    invalid_widgets.append(widget)
-
-            # Validation for Passwords
-            elif name == "email":
-                if self.validateEmailField(widget) is False:
-                    errors.append("email format is invalid")
-                    invalid_widgets.append(widget)
-
-            # Validation for Passwords
-            elif name == "password":
-                if not self.checkLength(widget, min_len=8, max_len=50):
-                    errors.append("password must be at least 8 characters")
-                    invalid_widgets.append(widget)
-                elif is_signup:
-                    valid, reason = self.validatePassword(widget)
-                    if not valid:
-                        errors.append(reason)
-                        invalid_widgets.append(widget)
-
-        if errors:
-            return False, {"errors": errors, "invalid_widgets": invalid_widgets}
-        return True, None
-
-
-    def getValidatedData(self, field_map: dict):
-        """Retrieves and cleans data from fields after successful validation."""
-        validated = {}
-        for name, widget in field_map.items():
-            if name == "email":
-                validated[name] = self.validateEmailField(widget)
-            elif name in ["first_name", "last_name"]:
-                validated[name] = self.validateName(widget)
-            elif name == "nickname":
-                validated[name] = self.validateNickname(widget)
-            elif name == "password":
-                validated[name] = self.getFieldText(widget)
+                field_object.updateError(field_input, error_message="")
             else:
-                validated[name] = self.getFieldText(widget)
-        return validated
+                field_object.updateError(field_input, error_message="This can't be empty.")
+                return None
+        else:
+            text = self.getFieldText(field_input)
+            clean_text = " ".join(text.split())
+
+        return clean_text
 
 
-    def validateTaskAndHabitFields(self, task_name_field: QWidget):
-        """Validates task titles and descriptions allowing alphanumeric and Persian characters."""
-        task_name = self.getFieldText(task_name_field)
-        clean_task_name = " ".join(task_name.split())
-
-        pattern = r"^[a-zA-Z\d\u0600-\u06FF\s]+$"
-        if not re.match(pattern, clean_task_name):
-            return False
-
-        return clean_task_name
+    def isFieldFilled(self, field: QLineEdit):
+        return self.getFieldText(field)
 
 
-    def validatePriority(self, priority_field: QWidget):
-        """Maps priority string to its corresponding integer index."""
+    def getFieldText(self, field: QLineEdit):
+        return field.text().strip()
+
+
+    def validatePriority(self, field_details: dict):
+        priority_field = field_details.get("field_object")
+
         priority = priority_field.currentText()
         valid_priorities = ["Low", "Medium", "High"]
         if priority not in valid_priorities:
-            return False
+            return None
 
         return valid_priorities.index(priority)
 
 
-    def getValidatedTaskData(self, field_map: dict):
-        """Retrieves and cleans data from fields after successful validation."""
-        validated = {}
-        for name, widget in field_map.items():
-            if name in ["title", "description"]:
-                validated[name] = self.validateTaskAndHabitFields(widget)
-            elif name == "priority":
-                validated[name] = self.validatePriority(widget)
+    def validateColor(self, field_details: dict):
+        field_object = field_details.get("field_object")
+        return field_object.getColor()
+
+
+    def validateTarget(self, field_details: dict):
+        field_object = field_details.get("field_object")
+        is_optional = field_details.get("is_optional")
+        field_input = field_details.get("field_input")
+
+        if not is_optional:
+            if self.isFieldFilled(field_input):
+                target = int(self.getFieldText(field_input))
+                field_object.updateError(field_input, error_message="")
             else:
-                validated[name] = self.getFieldText(widget)
-        return validated
-
-
-    def getTaskModalsValidationErrors(self, field_map: dict):
-        """Validates inputs for task-related modal windows."""
-        errors = []
-        invalid_widgets = []
-
-        for name, widget in field_map.items():
-            if name in ["title", "description"]:
-                if not self.checkLength(widget, min_len=3, max_len=50):
-                    errors.append(f"{name} must be at least 3 characters")
-                    invalid_widgets.append(widget)
-                elif not self.validateTaskAndHabitFields(widget):
-                    errors.append(f"{name} format is invalid")
-                    invalid_widgets.append(widget)
-
-        if errors:
-            return False, {"errors": errors, "invalid_widgets": invalid_widgets}
-        return True, None
-
-    def validateTarget(self, target_field: QWidget):
-        """Validates target allowing numeric characters."""
-        target = self.getFieldText(target_field)
-
-        pattern = r"^[\d]+$"
-        if not re.match(pattern, target):
-            return False
+                field_object.updateError(field_input, error_message="This can't be empty.")
+                return None
+        else:
+            target = int(self.getFieldText(field_input))
 
         return target
 
 
-    def getValidatedHabitData(self, field_map: dict):
-        """Retrieves and cleans data from fields after successful validation."""
-        validated = {}
-        for name, widget in field_map.items():
-            if name in ["title", "description", "unit", "question"]:
-                validated[name] = self.validateTaskAndHabitFields(widget)
-            elif name == "target":
-                validated[name] = int(self.validateTarget(widget))
-            elif name == "color":
-                validated[name] = widget
-            elif name == "priority":
-                validated[name] = self.validatePriority(widget)
-            else:
-                validated[name] = self.getFieldText(widget)
-        return validated
+    def validateName(self, field_details: dict):
+        field_object = field_details.get("field_object")
+        field_input = field_details.get("field_input")
+        min_length = field_details.get("min_length")
+
+        if not self.isFieldFilled(field_input):
+            field_object.updateError(field_input, error_message="This can't be empty.")
+            return None
+
+        if not self.checkLength(min_length=min_length, field=field_input):
+            field_object.updateError(field_input, error_message=f"Must be atleast {min_length} character.")
+            return None
+
+        text = self.getFieldText(field_input)
+        clean_text = " ".join(text.split())
+
+        field_object.updateError(field_input, error_message="")
+
+        return clean_text
 
 
-    def getHabitModalsValidationErrors(self, field_map: dict):
-        """Validates inputs for task-related modal windows."""
-        errors = []
-        invalid_widgets = []
+    def checkLength(self, min_length: int, field: QLineEdit):
+            field_length = len(self.getFieldText(field))
+            return min_length <= field_length
 
-        for name, widget in field_map.items():
-            if name in ["title", "description", "unit", "question"]:
-                if not self.checkLength(widget, min_len=3, max_len=50):
-                    errors.append(f"{name} must be at least 3 characters")
-                    invalid_widgets.append(widget)
-                elif not self.validateTaskAndHabitFields(widget):
-                    errors.append(f"{name} format is invalid")
-                    invalid_widgets.append(widget)
-            elif name == "target":
-                if not self.validateTarget(widget):
-                    errors.append(f"{name} format is invalid")
-                    invalid_widgets.append(widget)
-            elif name == "value":
-                if not self.validateTarget(widget):
-                    errors.append(f"{name} format is invalid")
-                    invalid_widgets.append(widget)
 
-        if errors:
-            return False, {"errors": errors, "invalid_widgets": invalid_widgets}
-        return True, None
+    def validateEmail(self, field_details: dict):
+        field_input = field_details.get("field_input")
+        field_object = field_details.get("field_object")
+
+        if not self.isFieldFilled(field_input):
+            field_object.updateError(field_input, error_message="This can't be empty.")
+            return None
+
+        email_text = self.getFieldText(field=field_input)
+        try:
+            emailinfo = validate_email(email_text, check_deliverability=False)
+            field_object.updateError(field_input, error_message="")
+            return emailinfo.normalized
+        except EmailNotValidError:
+            field_object.updateError(field_input, error_message="Email format is not valid")
+            return None
+
+
+    def validatePassword(self, field_details: dict):
+        field_object = field_details.get("field_object")
+        field_input = field_details.get("field_input")
+        min_length = field_details.get("min_length")
+        quality_check = field_details.get("quality_check")
+
+        if not self.isFieldFilled(field_input):
+            field_object.updateError(field_input, error_message="This can't be empty.")
+            return None
+
+        if not self.checkLength(min_length=min_length, field=field_input):
+            field_object.updateError(field_input, error_message=f"Must be atleast {min_length} character.")
+            return None
+
+        password = self.getFieldText(field_input)
+
+        if quality_check:
+            results = zxcvbn(password)
+
+            if results.get("score") < 3:
+                reason = results.get('feedback').get("warning") or "Password is too guessable."
+                field_object.updateError(field_input, error_message=reason)
+                return None
+
+        field_object.updateError(field_input, error_message="")
+        return password
+
+
+    def forgotPasswordValidator(self, field_map: list):
+            data = {}
+            for field_details in field_map:
+                field_name = field_details.get("field_name")
+                if field_name == "email":
+                    data[field_name] = self.validateEmail(field_details)
+
+            if None in data.values():
+                return False
+
+            return data

@@ -437,3 +437,9 @@ HabitButton#LesserCyanColor {
     border-radius: 10px;
     background-color: #55bdbd;
 }
+
+QLabel#ErrorMessage {
+    color: #c70b0b;
+    font-weight: 650;
+    font-size: 16px;
+}

@@ -1,6 +1,5 @@
 from widgets import (
     PushButton,
-    FieldStyleManager,
     ColorPicker,
     FormRow,
     TaskListItemWidget,
@@ -21,8 +20,50 @@ from PySide6.QtWidgets import (
 
 from PySide6.QtCore import Qt, QRect, QEvent, Signal, QDate
 
+class BaseModal(QFrame):
+    def __init__(self, parent: QWidget, width: int, height: int):
+        # The 'shield' acts as a semi-transparent overlay covering the parent window
+        # to block interactions and serve as a background for the modal.
+        self.main_win = parent.window()
+        self.shield = QFrame(self.main_win)
+        self.shield.setObjectName("shield")
+        self.shield.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
-class AddTaskModal(QFrame):
+        super().__init__(self.shield)
+        self.width = width
+        self.height = height
+
+        # Listen to Main Window for Resizing
+        # Installs an event filter so this widget can react when the main window is resized
+        self.main_win.installEventFilter(self)
+
+        self.shield.show()
+        self.applyResizeLogic()
+
+
+    def eventFilter(self, obj, event):
+        # Keeps the modal centered if the user resizes the main application window
+        if obj == self.main_win and event.type() == QEvent.Type.Resize:
+            self.applyResizeLogic()
+        return super().eventFilter(obj, event)
+
+
+    def applyResizeLogic(self):
+        """Re-calculates position to keep the modal centered within the parent window."""
+        self.shield.setGeometry(self.main_win.rect())
+        
+        width = self.width
+        height = self.height
+
+        p_rect = self.shield.rect()
+        
+        x = (p_rect.width() - width) // 2
+        y = (p_rect.height() - height) // 2
+        
+        self.setGeometry(QRect(int(x), int(y), int(width), int(height)))
+
+
+class AddTaskModal(BaseModal):
     add_task_clicked = Signal(dict)
     on_delete_clicked = Signal(object, str)
     on_update_clicked = Signal(object, dict, str)
@@ -31,19 +72,12 @@ class AddTaskModal(QFrame):
     MEDIUM_INDEX = 1
     REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
-    def __init__(self, parent: QWidget, task_object: TaskListItemWidget, task_details: dict = None):
-        # The 'shield' acts as a semi-transparent overlay covering the parent window
-        # to block interactions and serve as a background for the modal.
-        self.main_win = parent.window()
-        self.shield = QFrame(self.main_win)
-        self.shield.setObjectName("shield")
-
-        super().__init__(self.shield)
+    def __init__(self, parent: QWidget, task_object: TaskListItemWidget,
+                 task_details: dict = None, width: int = 400, height: int = 400):
+        super().__init__(parent=parent, width=width, height=height)
         self.setObjectName("AddTaskModal")
-        self.shield.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.task_details = task_details
         self.task_object = task_object
-
         self.form_processor = FormProcessor(parent=self)
 
         layout = QVBoxLayout(self)
@@ -58,7 +92,7 @@ class AddTaskModal(QFrame):
         close_btn = PushButton(parent=self)
         close_btn.setObjectName("CloseButton")
         close_btn.setIcon(QIcon(":icons/cross.svg"))
-        close_btn.clicked.connect(self.shield.close)
+        close_btn.clicked.connect(lambda: self.shield.close())
         title_exit_layout.addWidget(close_btn)
         layout.addLayout(title_exit_layout)
 
@@ -105,14 +139,6 @@ class AddTaskModal(QFrame):
             layout.addLayout(buttons_layout)
             self.initialFields()
 
-        # Listen to Main Window for Resizing
-        # Installs an event filter so this widget can react when the main window is resized
-        self.main_win.installEventFilter(self)
-        
-        self.shield.show()
-        self.show()
-        self.applyResizeLogic()
-
 
     def initialFields(self):
         """Populates fields with existing data when in edit mode."""
@@ -126,33 +152,11 @@ class AddTaskModal(QFrame):
         self.shield.close()
 
 
-    def eventFilter(self, obj, event):
-        # Keeps the modal centered if the user resizes the main application window
-        if obj == self.main_win and event.type() == QEvent.Type.Resize:
-            self.applyResizeLogic()
-        return super().eventFilter(obj, event)
-
-
     def addPriorityItems(self):
         """Adds priority items into QComboBox"""
         items = ["Low", "Medium", "High"]
         for item in items:
             self.priority_item.addItem(item)
-
-
-    def applyResizeLogic(self):
-        """Re-calculates position to keep the modal centered within the parent window."""
-        self.shield.setGeometry(self.main_win.rect())
-        
-        width = 400
-        height = 400
-
-        p_rect = self.shield.rect()
-        
-        x = (p_rect.width() - width) // 2
-        y = (p_rect.height() - height) // 2
-        
-        self.setGeometry(QRect(int(x), int(y), int(width), int(height)))
 
 
     def onSaveClicked(self):
@@ -177,7 +181,7 @@ class AddTaskModal(QFrame):
         self.shield.close()
 
 
-class AddHabitModal(QFrame):
+class AddHabitModal(BaseModal):
     add_habit_clicked = Signal(dict)
     on_delete_clicked = Signal(object, str)
     on_update_clicked = Signal(object, dict, str)
@@ -187,17 +191,12 @@ class AddHabitModal(QFrame):
     CONTENT_SPACING = 5
     REQUIRED_FIELD = "<span style='color: red; font-size: 15px'>*</span>"
 
-    def __init__(self, parent: QWidget, habit_object: HabitListItemWidget, habit_details: dict = None):
-        self.main_win = parent.window()
-        self.shield = QFrame(self.main_win)
-        self.shield.setObjectName("shield")
-
-        super().__init__(self.shield)
+    def __init__(self, parent: QWidget, habit_object: HabitListItemWidget,
+                 habit_details: dict = None, width: int = 500, height: int = 650):
+        super().__init__(parent=parent, width=width, height=height)
         self.setObjectName("AddHabitModal")
-        self.shield.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.habit_details = habit_details
         self.habit_object = habit_object
-
         self.form_processor = FormProcessor(parent=self)
 
         layout = QVBoxLayout(self)
@@ -213,7 +212,8 @@ class AddHabitModal(QFrame):
         close_btn = PushButton(parent=self)
         close_btn.setObjectName("CloseButton")
         close_btn.setIcon(QIcon(":icons/cross.svg"))
-        close_btn.clicked.connect(self.shield.close)
+        close_btn.clicked.connect(lambda: self.shield.close())
+
         title_exit_layout.addWidget(close_btn)
         layout.addLayout(title_exit_layout)
 
@@ -289,13 +289,13 @@ class AddHabitModal(QFrame):
             layout.addLayout(buttons_layout)
             self.initialFields()
 
-        # Listen to Main Window for Resizing
-        # Installs an event filter so this widget can react when the main window is resized
-        self.main_win.installEventFilter(self)
-        
-        self.shield.show()
-        self.show()
-        self.applyResizeLogic()
+
+
+    def addPriorityItems(self):
+        """Adds priority items into QComboBox"""
+        items = ["Low", "Medium", "High"]
+        for item in items:
+            self.priority_item.addItem(item)
 
 
     def initialFields(self):
@@ -312,35 +312,6 @@ class AddHabitModal(QFrame):
     def onDeleteClicked(self):
         self.on_delete_clicked.emit(self.habit_object, self.habit_details.get("local_id"))
         self.shield.close()
-
-
-    def eventFilter(self, obj, event):
-        # Keeps the modal centered if the user resizes the main application window
-        if obj == self.main_win and event.type() == QEvent.Type.Resize:
-            self.applyResizeLogic()
-        return super().eventFilter(obj, event)
-
-
-    def addPriorityItems(self):
-        """Adds priority items into QComboBox"""
-        items = ["Low", "Medium", "High"]
-        for item in items:
-            self.priority_item.addItem(item)
-
-
-    def applyResizeLogic(self):
-        """Re-calculates position to keep the modal centered within the parent window."""
-        self.shield.setGeometry(self.main_win.rect())
-        
-        width = 500
-        height = 650
-
-        p_rect = self.shield.rect()
-        
-        x = (p_rect.width() - width) // 2
-        y = (p_rect.height() - height) // 2
-        
-        self.setGeometry(QRect(int(x), int(y), int(width), int(height)))
 
 
     def onSaveClicked(self):
@@ -369,7 +340,7 @@ class AddHabitModal(QFrame):
         self.shield.close()
 
 
-class AddDailyHabitModal(QFrame):
+class AddDailyHabitModal(BaseModal):
     add_daily_habit_clicked = Signal(object, dict)
     on_delete_clicked = Signal(object, int)
     on_update_clicked = Signal(object, dict)
@@ -378,21 +349,16 @@ class AddDailyHabitModal(QFrame):
     MEDIUM_INDEX = 1
     CONTENT_SPACING = 20
 
-    def __init__(self, parent: QWidget, date: QDate ,habit_button: HabitButton, habit_details: dict, daily_habit_details: dict = None):
-        self.main_win = parent.window()
-        self.shield = QFrame(self.main_win)
-        self.shield.setObjectName("shield")
-
-        super().__init__(self.shield)
+    def __init__(self, parent: QWidget, date: QDate ,habit_button: HabitButton,
+                 habit_details: dict, daily_habit_details: dict = None, width=500, height=250):
+        super().__init__(parent=parent, width=width, height=height)
         self.setObjectName("AddDailyHabitModal")
-        self.shield.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.date = date
         self.habit_details = habit_details
         self.habit_button = habit_button
         self.daily_habit_details = daily_habit_details
         self.question = habit_details.get("question")
         self.unit = habit_details.get("unit")
-
         self.form_processor = FormProcessor(parent=self)
 
         layout = QVBoxLayout(self)
@@ -408,7 +374,7 @@ class AddDailyHabitModal(QFrame):
         close_btn = PushButton(parent=self)
         close_btn.setObjectName("CloseButton")
         close_btn.setIcon(QIcon(":icons/cross.svg"))
-        close_btn.clicked.connect(self.shield.close)
+        close_btn.clicked.connect(lambda: self.shield.close())
         title_exit_layout.addWidget(close_btn)
         layout.addLayout(title_exit_layout)
 
@@ -445,36 +411,6 @@ class AddDailyHabitModal(QFrame):
 
             layout.addLayout(buttons_layout)
             self.initialFields()
-
-        # Listen to Main Window for Resizing
-        # Installs an event filter so this widget can react when the main window is resized
-        self.main_win.installEventFilter(self)
-        
-        self.shield.show()
-        self.show()
-        self.applyResizeLogic()
-
-
-    def applyResizeLogic(self):
-        """Re-calculates position to keep the modal centered within the parent window."""
-        self.shield.setGeometry(self.main_win.rect())
-        
-        width = 500
-        height = 250
-
-        p_rect = self.shield.rect()
-        
-        x = (p_rect.width() - width) // 2
-        y = (p_rect.height() - height) // 2
-        
-        self.setGeometry(QRect(int(x), int(y), int(width), int(height)))
-
-
-    def eventFilter(self, obj, event):
-        # Keeps the modal centered if the user resizes the main application window
-        if obj == self.main_win and event.type() == QEvent.Type.Resize:
-            self.applyResizeLogic()
-        return super().eventFilter(obj, event)
 
 
     def initialFields(self):

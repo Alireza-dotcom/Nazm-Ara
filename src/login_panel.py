@@ -1,4 +1,4 @@
-from widgets import ClickableLabel, PushButton, FieldStyleManager, FormRow
+from widgets import ClickableLabel, PushButton, FormRow
 from form_processor import FormProcessor
 
 from PySide6.QtGui import QPixmap

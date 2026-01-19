@@ -428,28 +428,6 @@ class TaskCalendar(QCalendarWidget):
         self.hide()
 
 
-class FieldStyleManager:
-    """Mix-in class to handle error highlighting on form fields."""
-    ERROR_STYLE = "QLineEdit { border: 1px solid red; }"
-    DEFAULT_STYLE = ""
-
-    def updateEmptyFieldStyle(self, fields: dict):
-        """Highlights empty fields and resets filled ones."""
-        for field in fields.get("empty"):
-            field.setStyleSheet(FieldStyleManager.ERROR_STYLE)
-        
-        for field in fields.get("filled"):
-            field.setStyleSheet(FieldStyleManager.DEFAULT_STYLE)
-
-    def updateInvalidFieldStyle(self, invalid_fields, all_fields):
-        """Highlights specific invalid fields based on validation logic."""
-        for field in all_fields:
-            if field in invalid_fields:
-                field.setStyleSheet(FieldStyleManager.ERROR_STYLE)
-            else:
-                field.setStyleSheet(FieldStyleManager.DEFAULT_STYLE)
-
-
 class NoTabApplication(QApplication):
     """
     A custom QApplication that disables Tab-key focus navigation 

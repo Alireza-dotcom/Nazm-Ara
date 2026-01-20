@@ -12,6 +12,8 @@
     <file>styles/signup_panel.qss</file>
     <file>styles/offline_acc_panel.qss</file>
     <file>styles/nazm_ara_panel.qss</file>
+    <file>styles/task_widget.qss</file>
+    <file>styles/habit_widget.qss</file>
     <file>icons/profile.svg</file>
     <file>icons/settings.svg</file>
     <file>icons/upload.svg</file>

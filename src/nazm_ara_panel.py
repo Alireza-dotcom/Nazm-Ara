@@ -98,7 +98,7 @@ class MainSection(QFrame):
     Uses a QStackedWidget to transition between the Welcome screen, Task list, and Habit list.
     """
     CONTENTS_MARGINS_SIZE = QMargins(0, 0, 0, 0)
-    TODO_PAGE_INDEX  = 1
+    TASK_PAGE_INDEX  = 1
     HABIT_PAGE_INDEX = 2
 
     def __init__(self, parent: QWidget, account_details: dict):
@@ -134,9 +134,21 @@ class MainSection(QFrame):
         self.pages.addWidget(self.welcome_page)
         self.pages.addWidget(self.task_page)
         self.pages.addWidget(self.habit_page)
-        
+
         self.layout.addWidget(self.pages)
 
         # Page Switching Logic
-        self.task_list_btn.clicked.connect(lambda: self.pages.setCurrentIndex(MainSection.TODO_PAGE_INDEX))
-        self.habit_list_btn.clicked.connect(lambda: self.pages.setCurrentIndex(MainSection.HABIT_PAGE_INDEX))
+        self.task_list_btn.clicked.connect(self.displayTaskList)
+        self.habit_list_btn.clicked.connect(self.displayHabitList)
+
+
+    def displayTaskList(self):
+        main_window = self.window()
+        main_window.style_sheet_handler.setResourceQssPath(":/styles/task_widget.qss")
+        self.pages.setCurrentIndex(MainSection.TASK_PAGE_INDEX)
+
+
+    def displayHabitList(self):
+        main_window = self.window()
+        main_window.style_sheet_handler.setResourceQssPath(":/styles/habit_widget.qss")
+        self.pages.setCurrentIndex(MainSection.HABIT_PAGE_INDEX)

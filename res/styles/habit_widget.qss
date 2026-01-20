@@ -1,0 +1,379 @@
+
+* {
+    font-family: "Nunito", "Vazirmatn";
+}
+
+QMainWindow#MainWindow {
+    background-color: #1c1c1c;
+}
+
+/* side bar */
+QFrame#Sidebar {
+    background-color: #2e2f35;
+}
+
+QFrame#Sidebar > PushButton {
+    background-color: #323339;
+    border: 1px solid #1c1c1c;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+QFrame#Sidebar > PushButton:hover {
+    background-color: #4452bb;
+}
+
+/* upper frame */
+QFrame#MainSection > #UpperFrame {
+    background-color: #323339;
+}
+
+RadioButton {
+    background-color: #323339;
+    border: 1px solid #1c1c1c;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+RadioButton:checked {
+    background-color: #1c1c1c;
+}
+
+/* add habit and daily habit modals */
+QFrame#AddHabitModal,
+QFrame#AddDailyHabitModal{
+    background-color: #323339;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+#shield {
+    background-color: rgba(0, 0, 0, 100);
+}
+
+FormRow > QLabel {
+    font-size: 13px;
+    color: #ffffff;
+}
+
+FormRow > QLineEdit{
+    background-color: #323339;
+    border-radius: 8px;
+    border: 1px solid #58595d;
+    padding: 8px;
+    font-size: 14px;
+    color: #dfe0e2;
+}
+
+FormRow > QLineEdit:focus {
+    border: 1px solid #7bb0f5;
+}
+
+QFrame#AddHabitModal > QLabel#TitleLabel,
+QFrame#AddDailyHabitModal > QLabel#TitleLabel {
+    font-size: 25px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+QFrame#AddHabitModal > PushButton#CloseButton,
+QFrame#AddDailyHabitModal > PushButton#CloseButton {
+    background-color: #323339;
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 10px;
+} 
+
+QFrame#AddHabitModal > QComboBox {
+    background-color: #323339;
+    border: 1px solid #58595d;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 18px;
+    color: #ffffff;
+    selection-background-color: #2b75d6;
+    selection-color: #ffffff;
+}
+
+QFrame#AddHabitModal > QComboBox:focus {
+    border: 1px solid #7bb0f5;
+}
+
+/* drop down icon square */
+QFrame#AddHabitModal > QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 30px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    background-color: #3a3b41;
+}
+
+/* arrow icon */
+QFrame#AddHabitModal > QComboBox::down-arrow {
+    image: url(:/icons/arrow_down.svg);
+    width: 15px;
+    height: 15px;
+}
+
+QFrame#AddHabitFrame >  PushButton#AddHabitBtn,
+QFrame#AddHabitModal > PushButton#SaveButton,
+QFrame#AddDailyHabitModal > PushButton#SaveButton {
+    background-color: #5865f2;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 5px 15px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+QFrame#AddHabitFrame >  PushButton#AddHabitBtn:hover,
+QFrame#AddHabitModal > PushButton#SaveButton:hover,
+QFrame#AddDailyHabitModal > PushButton#SaveButton:hover {
+    background-color: #4452bb;
+}
+
+QLabel#Low,
+QLabel#Medium,
+QLabel#High {
+    border-radius: 5px;
+    font: 15px;
+}
+
+QLabel#Low{
+    color: #4caf50;
+    background-color: #263925;
+}
+
+QLabel#Medium {
+    color: #ffab40;
+    background-color: #3d2b16;
+}
+
+QLabel#High{
+    color: #ff5252;
+    background-color: #3d1d1d;
+}
+
+QListView {
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+QListView::item {
+    border: 1px solid #58595d;
+    background: #232428;
+    border-radius: 5px;
+    margin: 2px;
+}
+
+QListView::item:hover {
+    background-color: #36373d;
+}
+
+QLabel#HabitTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: transparent;
+    width: 8px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical {
+    background: #bdc3c7;
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #95a5a6;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+    height: 0px;
+}
+
+PushButton#EditButton {
+    background-color: transparent;
+    border-radius: 5px;
+}
+
+PushButton#EditButton:hover {
+    border: 1px solid #ffffff;
+}
+
+QFrame#AddHabitModal > PushButton#DeleteButton,
+QFrame#AddDailyHabitModal > PushButton#DeleteButton {
+    background-color: #e53232;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 5px 15px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+QFrame#AddHabitModal > PushButton#DeleteButton:hover,
+QFrame#AddDailyHabitModal > PushButton#DeleteButton:hover {
+    background-color: #b62828;
+}
+
+QLabel#WelcomePage {
+    font-size: 25px;
+    font-weight: 600;
+}
+
+QFrame#AddHabitFrame > QLabel#HabitLabel,
+QFrame#AddHabitFrame > QLabel#DateLabel {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+QFrame#ColorPicker {
+    border-radius: 8px;
+    border: 1px solid #58595d;
+}
+
+QFrame#ColorPicker > PushButton{
+    border-radius: 13px;
+    width: 26px;
+    height: 26px;
+}
+
+QFrame#ColorPicker > QPushButton#MainColor {
+    border-radius: 5px;
+    width: 30px;
+    height: 30px;
+    background-color: blue;
+}
+
+QFrame#ColorPicker > PushButton#BlueColor {
+    background-color: blue;
+}
+
+QFrame#ColorPicker > PushButton#RedColor {
+    background-color: red;
+}
+
+QFrame#ColorPicker > PushButton#GreenColor {
+    background-color: green;
+}
+
+QFrame#ColorPicker > PushButton#YellowColor {
+    background-color: yellow;
+}
+
+QFrame#ColorPicker > PushButton#OrangeColor {
+    background-color: orange;
+}
+
+QFrame#ColorPicker > PushButton#CyanColor {
+    background-color: cyan;
+}
+
+HabitButton#HabitButton {
+    border: 1px solid #58595d;
+    border-radius: 10px;
+}
+
+HabitButton#BlueColor {
+    border-radius: 10px;
+    background-color: blue;
+}
+
+HabitButton#RedColor {
+    border-radius: 10px;
+    background-color: red;
+}
+
+HabitButton#GreenColor {
+    border-radius: 10px;
+    background-color: green;
+}
+
+HabitButton#YellowColor {
+    border-radius: 10px;
+    background-color: yellow;
+}
+
+HabitButton#OrangeColor {
+    border-radius: 10px;
+    background-color: orange;
+}
+
+HabitButton#CyanColor {
+    border-radius: 10px;
+    background-color: cyan;
+}
+
+HabitButton#LesserBlueColor {
+    border-radius: 10px;
+    background-color: #4242a2;
+}
+
+HabitButton#LesserRedColor {
+    border-radius: 10px;
+    background-color: #f78181;
+}
+
+HabitButton#LesserGreenColor {
+    border-radius: 10px;
+    background-color: #5fbf5f
+}
+
+HabitButton#LesserYellowColor {
+    border-radius: 10px;
+    background-color: #fcfc6e;
+}
+
+HabitButton#LesserOrangeColor {
+    border-radius: 10px;
+    background-color: #f7ca78;
+}
+
+HabitButton#LesserCyanColor {
+    border-radius: 10px;
+    background-color: #55bdbd;
+}
+
+QLabel#ErrorMessage {
+    color: #c70b0b;
+    font-weight: 650;
+    font-size: 16px;
+}
+
+AccountDetailsFrame {
+    background-color: #323339;
+    border: 1px solid #58595d;
+    border-radius: 10px;
+}
+
+AccountDetailsFrame > QLabel {
+    font-size: 18px;
+    color: #ffffff;
+}
+
+AccountDetailsFrame > QLabel#Label {
+    color: #e0e0e0;
+}
+
+AccountDetailsFrame > PushButton {
+    background-color: #e53232;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 5px 15px;
+    font-size: 16px;
+    font-weight: 500;
+}

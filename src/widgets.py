@@ -467,7 +467,7 @@ class HabitListItemWidget(QWidget):
         title_text = self.habit_details.get("title")
 
         self.title_label = QLabel(text=title_text, parent=self)
-        self.title_label.setObjectName("TaskTitle")
+        self.title_label.setObjectName("HabitTitle")
 
         # Priority Badge
         task_prio = self.habit_details.get("priority")

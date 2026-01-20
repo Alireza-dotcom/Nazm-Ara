@@ -1,0 +1,324 @@
+* {
+    font-family: "Nunito", "Vazirmatn";
+}
+
+QMainWindow#MainWindow {
+    background-color: #1c1c1c;
+}
+
+/* side bar */
+QFrame#Sidebar {
+    background-color: #2e2f35;
+}
+
+QFrame#Sidebar > PushButton {
+    background-color: #323339;
+    border: 1px solid #1c1c1c;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+QFrame#Sidebar > PushButton:hover {
+    background-color: #4452bb;
+}
+
+/* upper frame */
+QFrame#MainSection > #UpperFrame {
+    background-color: #323339;
+}
+
+RadioButton {
+    background-color: #323339;
+    border: 1px solid #1c1c1c;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+RadioButton:checked {
+    background-color: #1c1c1c;
+}
+
+/* add task frame */
+QFrame#AddTaskFrame > PushButton {
+    background-color: #1c1c1c;
+    border: 1px solid #323339;
+    border-radius: 4px;
+    font-size: 16px;
+    padding: 6px;
+}
+
+QFrame#AddTaskFrame > PushButton:hover {
+    background-color: #58595d;
+}
+
+QFrame#AddTaskFrame > QLabel {
+    font-size: 18px;
+}
+
+/* add task modal */
+QFrame#AddTaskModal {
+    background-color: #323339;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+#shield {
+    background-color: rgba(0, 0, 0, 100);
+}
+
+FormRow > QLineEdit{
+    background-color: #323339;
+    border-radius: 8px;
+    border: 1px solid #58595d;
+    padding: 8px;
+    font-size: 14px;
+    color: #dfe0e2;
+}
+
+FormRow > QLineEdit:focus{
+    border: 1px solid #7bb0f5;
+}
+
+QFrame#AddTaskModal > QLabel#TitleLabel {
+    font-size: 25px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+FormRow > QLabel{
+    font-size: 14px;
+    color: #ffffff;
+}
+
+QFrame#AddTaskModal > PushButton#CloseButton {
+    background-color: #323339;
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 10px;
+} 
+
+QFrame#AddTaskModal > QComboBox {
+    background-color: #323339;
+    border: 1px solid #58595d;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 18px;
+    color: #ffffff;
+    selection-background-color: #2b75d6;
+    selection-color: #ffffff;
+}
+
+QFrame#AddTaskModal > QComboBox:focus {
+    border: 1px solid #7bb0f5;
+}
+
+/* drop down icon square */
+QFrame#AddTaskModal > QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 30px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    background-color: #3a3b41;
+}
+
+/* arrow icon */
+QFrame#AddTaskModal > QComboBox::down-arrow {
+    image: url(:/icons/arrow_down.svg);
+    width: 15px;
+    height: 15px;
+}
+
+QFrame#AddTaskFrame > PushButton#AddTaskBtn,
+QFrame#AddTaskModal > PushButton#SaveButton {
+    background-color: #5865f2;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 5px 15px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+QFrame#AddTaskFrame > PushButton#AddTaskBtn:hover,
+QFrame#AddTaskModal > PushButton#SaveButton:hover {
+    background-color: #4452bb;
+}
+
+QFrame#AddTaskModal > PushButton#DeleteButton {
+    background-color: #e53232;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 5px 15px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+QFrame#AddTaskModal > PushButton#DeleteButton:hover {
+    background-color: #b62828;
+}
+
+/* task section */
+PushButton#TaskButton {
+    background-color: transparent;
+    border: 2px solid #ffffff;;
+    border-radius: 5px;
+}
+
+PushButton#TaskButton:checked {
+    background-color: #ffffff;
+}
+
+QLabel#Low,
+QLabel#Medium,
+QLabel#High {
+    border-radius: 5px;
+    font: 15px;
+}
+
+QLabel#Low{
+    color: #4caf50;
+    background-color: #263925;
+}
+
+QLabel#Medium {
+    color: #ffab40;
+    background-color: #3d2b16;
+}
+
+QLabel#High{
+    color: #ff5252;
+    background-color: #3d1d1d;
+}
+
+QListView {
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+QListView::item {
+    border: 1px solid #58595d;
+    background: #232428;
+    border-radius: 5px;
+    margin: 2px;
+}
+
+QListView::item:hover {
+    background-color: #36373d;
+}
+
+QLabel#TaskTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+QLabel#TaskDesc {
+    font-size: 15px;
+    color: #ffffff;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: transparent;
+    width: 8px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical {
+    background: #bdc3c7;
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #95a5a6;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+    height: 0px;
+}
+
+PushButton#EditButton {
+    background-color: transparent;
+    border-radius: 5px;
+}
+
+PushButton#EditButton:hover {
+    border: 1px solid #ffffff;
+}
+
+/* Month & year navigation bar background */
+QCalendarWidget QWidget#qt_calendar_navigationbar {
+    background-color: #323339;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+/* Month / Year text widgets */
+QCalendarWidget QToolButton {
+    background-color: transparent;
+    color: #ffffff;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+/* navigation bar hover */
+QCalendarWidget QToolButton:hover {
+    background-color: #232428;
+}
+
+/* reset item view */
+QCalendarWidget QAbstractItemView {
+    selection-background-color: transparent;
+    outline: none;
+}
+
+/* Selected day */
+QCalendarWidget QAbstractItemView:item:selected {
+    background-color: #5865f2;
+    border-radius: 5px;
+}
+
+QLabel#WelcomePage {
+    font-size: 25px;
+    font-weight: 600;
+}
+
+QLabel#ErrorMessage {
+    color: #c70b0b;
+    font-weight: 650;
+    font-size: 16px;
+}
+
+AccountDetailsFrame {
+    background-color: #323339;
+    border: 1px solid #58595d;
+    border-radius: 10px;
+}
+
+AccountDetailsFrame > QLabel {
+    font-size: 18px;
+    color: #ffffff;
+}
+
+AccountDetailsFrame > QLabel#Label {
+    color: #e0e0e0;
+}
+
+AccountDetailsFrame > PushButton {
+    background-color: #e53232;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 5px 15px;
+    font-size: 16px;
+    font-weight: 500;
+}

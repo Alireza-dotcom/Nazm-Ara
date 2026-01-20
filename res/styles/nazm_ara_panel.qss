@@ -443,3 +443,27 @@ QLabel#ErrorMessage {
     font-weight: 650;
     font-size: 16px;
 }
+
+AccountDetailsFrame {
+    background-color: #323339;
+    border: 1px solid #58595d;
+    border-radius: 10px;
+}
+
+AccountDetailsFrame > QLabel {
+    font-size: 18px;
+    color: #ffffff;
+}
+
+AccountDetailsFrame > QLabel#Label {
+    color: #e0e0e0;
+}
+
+AccountDetailsFrame > PushButton {
+    background-color: #e53232;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 5px 15px;
+    font-size: 16px;
+    font-weight: 500;
+}

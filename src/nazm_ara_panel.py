@@ -1,10 +1,14 @@
-from widgets import PushButton, RadioButton
+from widgets import (PushButton,
+                     RadioButton,
+                     AccountDetailsFrame
+)
 from habbit_list import HabitWidget
 from task_list import TaskWidget
 
 from PySide6.QtCore import (
     Qt,
-    QMargins
+    QMargins,
+    QPoint
 )
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -32,8 +36,8 @@ class NazmAra(QWidget):
         self.main_layout.setSpacing(NazmAra.SPACING_SIZE)
 
         # Component Initialization
-        self.sidebar = UserControlSidebar()
-        self.content_area = MainSection(self, self.account_details)
+        self.sidebar = UserControlSidebar(account_details=self.account_details, parent=self)
+        self.content_area = MainSection(account_details=self.account_details, parent=self)
         self.content_area.setObjectName("MainSection")
 
         self.main_layout.addWidget(self.sidebar)
@@ -45,35 +49,47 @@ class UserControlSidebar(QFrame):
     STRETCH_SIZE = 1
     CONTENTS_MARGINS_SIZE = QMargins(10, 10, 10, 10)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget, account_details: dict):
         super().__init__(parent)
         self.setFixedWidth(60)
         self.setObjectName("Sidebar")
+        self.account_details = account_details
+        self.online_user = self.account_details.get("user_id")
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(UserControlSidebar.CONTENTS_MARGINS_SIZE)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
+        self.profile_details_Frame = AccountDetailsFrame(parent=self, account_details=account_details)
+        self.profile_details_Frame.logout_btn.clicked.connect(self.logOutOfAccount)
         self.profile_button = PushButton(parent=self)
-        self.profile_button.clicked.connect(self.logOutOfAccount)
+        self.profile_button.clicked.connect(self.showAccountDetails)
         self.profile_button.setIcon(QIcon(":icons/profile.svg"))
-        
-        self.save_button = PushButton(parent=self)
-        self.save_button.setIcon(QIcon(":icons/upload.svg"))
+        layout.addWidget(self.profile_button)
+
+        if self.online_user:
+            self.save_button = PushButton(parent=self)
+            self.save_button.setIcon(QIcon(":icons/upload.svg"))
+            layout.addWidget(self.save_button)
         
         self.settings_button = PushButton(parent=self)
         self.settings_button.setIcon(QIcon(":icons/settings.svg"))
-
-        layout.addWidget(self.profile_button)
         layout.addStretch(UserControlSidebar.STRETCH_SIZE)
-        layout.addWidget(self.save_button)
         layout.addWidget(self.settings_button)
+
+
+    def showAccountDetails(self):
+        button_pos = self.profile_button.mapToGlobal(QPoint(0, 0))
+        print(button_pos)
+        frame_pos = button_pos + QPoint(0, self.profile_button.height())
+        
+        self.profile_details_Frame.move(frame_pos)
+        self.profile_details_Frame.show()
 
 
     def logOutOfAccount(self):
         self.window().showSelectAccountPage()
         RadioButton.resetRadioButtons()
-
 
 
 class MainSection(QFrame):

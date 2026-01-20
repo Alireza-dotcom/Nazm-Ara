@@ -8,7 +8,8 @@ from PySide6.QtWidgets import (
     QCalendarWidget,
     QApplication,
     QFrame,
-    QListWidgetItem
+    QListWidgetItem,
+    QSpacerItem
 )
 from PySide6.QtGui import (
     QIcon,
@@ -603,3 +604,46 @@ class ColorPicker(QFrame):
 
     def getColor(self):
         return self.color
+
+
+class AccountDetailsFrame(QFrame):
+    def __init__(self, parent: QWidget, account_details: dict):
+        super().__init__(parent=parent)
+        self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
+
+        first_name_text = account_details.get("f_name")
+        last_name_text   = account_details.get("l_name")
+        nickname_text   = account_details.get("nickname")
+
+        layout = QVBoxLayout(self)
+
+        f_name_layout = QHBoxLayout()
+        f_name_label   = QLabel(text="First name :", parent=self)
+        f_name_label.setObjectName("Label")
+        f_name_text_label = QLabel(text=first_name_text, parent=self)
+        f_name_layout.addWidget(f_name_label)
+        f_name_layout.addWidget(f_name_text_label, alignment=Qt.AlignmentFlag.AlignRight)
+        layout.addLayout(f_name_layout)
+
+        l_name_layout = QHBoxLayout()
+        l_name_label   = QLabel(text="Last name :", parent=self)
+        l_name_text_label = QLabel(text=last_name_text, parent=self)
+        l_name_layout.addWidget(l_name_label)
+        l_name_label.setObjectName("Label")
+        l_name_layout.addWidget(l_name_text_label, alignment=Qt.AlignmentFlag.AlignRight)
+        layout.addLayout(l_name_layout)
+
+        nickname_layout = QHBoxLayout()
+        nickname_label = QLabel(text="nickname  :", parent=self)
+        nickname_label.setObjectName("Label")
+        nickname_text_label = QLabel(text=nickname_text, parent=self)
+        nickname_layout.addWidget(nickname_label)
+        nickname_layout.addWidget(nickname_text_label, alignment=Qt.AlignmentFlag.AlignRight)
+        layout.addLayout(nickname_layout)
+
+        layout.addSpacerItem(QSpacerItem(20, 20))
+        self.logout_btn = PushButton("Logout", parent=self)
+        self.logout_btn.setFixedSize(90, 30)
+        self.logout_btn.clicked.connect(lambda: self.hide())
+        layout.addWidget(self.logout_btn, alignment=Qt.AlignmentFlag.AlignCenter)

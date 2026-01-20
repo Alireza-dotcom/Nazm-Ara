@@ -237,9 +237,7 @@ class HabitWidget(QWidget):
             )
 
 
-    #FIXME add delete dailyhabit functionality
     def deleteDailyHabit(self, habit_button_object: HabitButton, id: int):
-        print(habit_button_object)
         if self.database.deleteDailyHabit(id):
             habit_button_object.setObjName("HabitButton")
             habit_button_object.daily_habit_details = {}

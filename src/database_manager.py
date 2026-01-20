@@ -389,3 +389,16 @@ class DatabaseManager:
         except sqlite3.Error as e:
             print(f"Error deleting daily habit: {e}")
             return None
+
+    def deleteDailyHabit(self, daily_habit_id: int) -> bool:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE daily_habits SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP, needs_sync = 1
+                    WHERE local_id = ?
+                """, (daily_habit_id,))
+                return True
+        except sqlite3.Error as e:
+            print(f"Error deleting daily habit: {e}")
+            return False

@@ -231,7 +231,7 @@ class AddHabitModal(BaseModal):
 
         self.unit = FormRow(label_text=f"Unit{AddTaskModal.REQUIRED_FIELD}",
                              input_placeholder_text="e.g. page",
-                             input_max_length=25,
+                             input_max_length=15,
                              parent=self)
         layout.addWidget(self.unit)
 
@@ -381,7 +381,7 @@ class AddDailyHabitModal(BaseModal):
         value_input_unit_layout = QHBoxLayout()
         self.value = FormRow(label_text=str(self.question),
                              input_placeholder_text=str(self.unit),
-                             input_max_length=25,
+                             input_max_length=15,
                              input_validator_regex="^[\d]+$",
                              parent=self)
         value_input_unit_layout.addWidget(self.value)

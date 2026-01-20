@@ -229,10 +229,10 @@ class AccountListItemWidget(QWidget):
         title_text = self.formatTitle()
         subtitle_text = self.formatSubtitle()
 
-        self.title_label = QLabel(text=title_text, parent=self)
+        self.title_label = QLabel(text=title_text, wordWrap=True, parent=self)
         self.title_label.setObjectName("ItemTitle")
 
-        self.sub_label = QLabel(text=subtitle_text, parent=self)
+        self.sub_label = QLabel(text=subtitle_text, wordWrap=True ,parent=self)
         self.sub_label.setObjectName("ItemSub")
 
         text_layout.addWidget(self.title_label)

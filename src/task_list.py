@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
 )
 
+
 class TaskWidget(QWidget):
     """task management view."""
     STRETCH_SIZE = 1

@@ -2,7 +2,6 @@ from widgets import PushButton, HabitListItemWidget, HabitButton
 from modals import AddHabitModal, AddDailyHabitModal
 from notification_handler import NotificationHandler
 from database_manager import DatabaseManager
-
 from PySide6.QtCore import (
     Qt,
     QDate
@@ -17,6 +16,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QListWidgetItem
 )
+
 
 class HabitWidget(QWidget):
     """habit management view."""

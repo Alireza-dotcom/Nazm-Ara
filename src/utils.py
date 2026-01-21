@@ -1,5 +1,6 @@
 from PySide6.QtGui import QFontDatabase
 
+
 def loadFont(font_path: str):
     """
     Registers a custom font file with the application's font database.

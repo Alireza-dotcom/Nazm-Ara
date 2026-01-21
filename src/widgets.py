@@ -9,14 +9,17 @@ from PySide6.QtWidgets import (
     QApplication,
     QFrame,
     QListWidgetItem,
-    QSpacerItem
+    QSpacerItem,
+    QSizePolicy
 )
+from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtGui import (
     QIcon,
     QColor,
     QTextCharFormat,
     QBrush,
-    QRegularExpressionValidator
+    QRegularExpressionValidator,
+    QPainter
 )
 from PySide6.QtCore import (
     QSize,
@@ -24,7 +27,8 @@ from PySide6.QtCore import (
     Signal,
     Qt,
     QDate,
-    QRegularExpression
+    QRegularExpression,
+    QRectF
 )
 
 
@@ -647,3 +651,38 @@ class AccountDetailsFrame(QFrame):
         self.logout_btn.setFixedSize(90, 30)
         self.logout_btn.clicked.connect(lambda: self.hide())
         layout.addWidget(self.logout_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+
+class ScalableSvgWidget(QSvgWidget):
+    def __init__(self, svg_path: str, parent: QWidget):
+        super().__init__(svg_path, parent)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        
+    def paintEvent(self, event):
+        """Override paint event to maintain aspect ratio"""
+        if self.renderer().isValid():
+            painter = QPainter(self)
+            renderer = self.renderer()
+            
+            # Calculate scaled size preserving aspect ratio
+            svg_size = renderer.defaultSize()
+            widget_size = self.size()
+            
+            # Scale to fit
+            svg_aspect = svg_size.width() / svg_size.height()
+            widget_aspect = widget_size.width() / widget_size.height()
+            
+            if svg_aspect > widget_aspect:
+                width = widget_size.width()
+                height = width / svg_aspect
+            else:
+                height = widget_size.height()
+                width = height * svg_aspect
+            
+            # Center the image
+            x = (widget_size.width() - width) / 2
+            y = (widget_size.height() - height) / 2
+            
+            renderer.render(painter, QRectF(x, y, width, height))
+
+            painter.end()

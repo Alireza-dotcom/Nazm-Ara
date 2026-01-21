@@ -14,11 +14,10 @@ from PySide6.QtWidgets import (
     QLabel,
     QFrame,
     QComboBox,
-    QWidget,
-    
+    QWidget
 )
-
 from PySide6.QtCore import Qt, QRect, QEvent, Signal, QDate
+
 
 class BaseModal(QFrame):
     def __init__(self, parent: QWidget, width: int, height: int):

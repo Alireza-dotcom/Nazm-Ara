@@ -8,9 +8,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QWidget
 )
-from PySide6.QtGui import QPixmap
-
-from widgets import ClickableLabel, AccountListItemWidget
+from widgets import ClickableLabel, AccountListItemWidget, ScalableSvgWidget
 from database_manager import DatabaseManager
 
 
@@ -33,8 +31,7 @@ class SelectAccountPanel(QFrame):
         layout.setSpacing(SelectAccountPanel.SPACING_SIZE)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        logo = QLabel(parent=self)
-        logo.setPixmap(QPixmap(":logos/logo.svg"))
+        logo = ScalableSvgWidget(svg_path=":logos/logo.svg", parent=self)
         layout.addWidget(logo, alignment=Qt.AlignmentFlag.AlignCenter)
 
         title = QLabel(text="Select an Account", parent=self)

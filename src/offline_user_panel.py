@@ -1,12 +1,10 @@
 from widgets import PushButton
 from form_processor import FormProcessor
-from widgets import FormRow
-
-from PySide6.QtGui import QPixmap
+from widgets import FormRow, ScalableSvgWidget
 from PySide6.QtCore import (
     Qt,
     Signal,
-    QMargins,
+    QMargins
 )
 from PySide6.QtWidgets import (
     QLabel,
@@ -38,8 +36,7 @@ class OfflineUserPanel(QFrame):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addStretch(OfflineUserPanel.STRETCH_SIZE)
 
-        logo = QLabel(parent=self)
-        logo.setPixmap(QPixmap(":logos/logo.svg"))
+        logo = ScalableSvgWidget(svg_path=":logos/logo.svg", parent=self)
         layout.addWidget(logo, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(OfflineUserPanel.STRETCH_SIZE)
 

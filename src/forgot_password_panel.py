@@ -1,7 +1,10 @@
-from widgets import ClickableLabel, PushButton, FormRow
+from widgets import (
+    ClickableLabel,
+    PushButton,
+    FormRow,
+    ScalableSvgWidget
+)
 from form_processor import FormProcessor
-
-from PySide6.QtGui import QPixmap
 from PySide6.QtCore import (
     Qt,
     Signal,
@@ -38,8 +41,7 @@ class ForgotPasswordPanel(QFrame):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addStretch(ForgotPasswordPanel.STRETCH_SIZE)
 
-        logo = QLabel(parent=self)
-        logo.setPixmap(QPixmap(":logos/logo.svg"))
+        logo = ScalableSvgWidget(svg_path=":logos/logo.svg", parent=self)
         layout.addWidget(logo, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(ForgotPasswordPanel.STRETCH_SIZE)
 

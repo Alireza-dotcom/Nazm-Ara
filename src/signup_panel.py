@@ -2,14 +2,13 @@ from widgets import (
     ClickableLabel,
     PushButton,
     FormRow,
+    ScalableSvgWidget
 )
 from form_processor import FormProcessor
-
-from PySide6.QtGui import QPixmap
 from PySide6.QtCore import (
     Qt,
     Signal,
-    QMargins,
+    QMargins
 )
 from PySide6.QtWidgets import (
     QLabel,
@@ -42,9 +41,7 @@ class SignupPanel(QFrame):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addStretch(SignupPanel.STRETCH_SIZE)
 
-        # FIXME logo stretch base on size
-        logo = QLabel(parent=self)
-        logo.setPixmap(QPixmap(":logos/logo.svg"))
+        logo = ScalableSvgWidget(svg_path=":logos/logo.svg", parent=self)
         layout.addWidget(logo, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(SignupPanel.STRETCH_SIZE)
 

@@ -3,6 +3,7 @@ from PySide6.QtCore import QObject
 from email_validator import validate_email, EmailNotValidError
 from zxcvbn import zxcvbn
 
+
 class FormProcessor(QObject):
     """Handles data extraction and validation logic for all forms within the application."""
     def __init__(self,  parent: QWidget):

@@ -1,6 +1,5 @@
 from widgets import ClickableLabel, PushButton, FormRow
 from form_processor import FormProcessor
-
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import (
     Qt,

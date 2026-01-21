@@ -1,10 +1,10 @@
-from widgets import (PushButton,
-                     RadioButton,
-                     AccountDetailsFrame
+from widgets import (
+    PushButton,
+    RadioButton,
+    AccountDetailsFrame
 )
 from habbit_list import HabitWidget
 from task_list import TaskWidget
-
 from PySide6.QtCore import (
     Qt,
     QMargins,

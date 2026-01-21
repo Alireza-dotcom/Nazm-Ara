@@ -15,10 +15,11 @@ from PySide6.QtWidgets import (
     QWidget,
     QStackedWidget,
     QMainWindow,
-    QHBoxLayout,
+    QHBoxLayout
 )
 from PySide6.QtCore import Qt
 import resources_rc
+
 
 class MainWindow(QMainWindow):
     def __init__(self):

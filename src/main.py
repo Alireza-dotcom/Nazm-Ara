@@ -11,6 +11,7 @@ from style_sheet_handler import StyleSheetHandler
 from forgot_password_panel import ForgotPasswordPanel
 from notification_handler import NotificationHandler
 
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QWidget,
     QStackedWidget,
@@ -196,6 +197,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = NoTabApplication([])
+    app.setWindowIcon(QIcon(":logos/logo.svg"))
     app.setApplicationName("Nazm Ara")
     app.styleHints().setColorScheme(Qt.ColorScheme.Dark)
     window = MainWindow()

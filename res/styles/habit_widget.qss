@@ -237,11 +237,6 @@ QFrame#AddDailyHabitModal > PushButton#DeleteButton:hover {
     background-color: #b62828;
 }
 
-QLabel#WelcomePage {
-    font-size: 25px;
-    font-weight: 600;
-}
-
 QFrame#AddHabitFrame > QLabel#HabitLabel,
 QFrame#AddHabitFrame > QLabel#DateLabel {
     font-size: 18px;
@@ -259,35 +254,64 @@ QFrame#ColorPicker > PushButton{
     height: 26px;
 }
 
-QFrame#ColorPicker > QPushButton#MainColor {
+QFrame#ColorPicker > QPushButton#MainColorBlue,
+QFrame#ColorPicker > QPushButton#MainColorRed,
+QFrame#ColorPicker > QPushButton#MainColorGreen,
+QFrame#ColorPicker > QPushButton#MainColorYellow,
+QFrame#ColorPicker > QPushButton#MainColorPurple,
+QFrame#ColorPicker > QPushButton#MainColorCyan,
+QFrame#ColorPicker > QPushButton#MainColorBlue {
     border-radius: 5px;
     width: 30px;
     height: 30px;
-    background-color: blue;
+}
+
+QFrame#ColorPicker > QPushButton#MainColorBlue {
+    background-color: #0E34A7;
+}
+
+QFrame#ColorPicker > QPushButton#MainColorRed {
+    background-color: #8B1E3F;
+}
+
+QFrame#ColorPicker > QPushButton#MainColorGreen {
+    background-color: #006633;
+}
+
+QFrame#ColorPicker > QPushButton#MainColorYellow {
+    background-color: #FFCC00;
+}
+
+QFrame#ColorPicker > QPushButton#MainColorPurple {
+    background-color: #621b94;
+}
+
+QFrame#ColorPicker > QPushButton#MainColorCyan {
+    background-color: #009999;
 }
 
 QFrame#ColorPicker > PushButton#BlueColor {
-    background-color: blue;
+    background-color: #0E34A7;
 }
 
 QFrame#ColorPicker > PushButton#RedColor {
-    background-color: red;
+    background-color: #8B1E3F;
 }
 
 QFrame#ColorPicker > PushButton#GreenColor {
-    background-color: green;
+    background-color: #006633;
 }
 
 QFrame#ColorPicker > PushButton#YellowColor {
-    background-color: yellow;
+    background-color: #FFCC00;
 }
 
-QFrame#ColorPicker > PushButton#OrangeColor {
-    background-color: orange;
+QFrame#ColorPicker > PushButton#PurpleColor {
+    background-color: #621b94;
 }
 
 QFrame#ColorPicker > PushButton#CyanColor {
-    background-color: cyan;
+    background-color: #009999;
 }
 
 HabitButton#HabitButton {
@@ -297,62 +321,62 @@ HabitButton#HabitButton {
 
 HabitButton#BlueColor {
     border-radius: 10px;
-    background-color: blue;
+    background-color: #0E34A7;
 }
 
 HabitButton#RedColor {
     border-radius: 10px;
-    background-color: red;
+    background-color: #8B1E3F;
 }
 
 HabitButton#GreenColor {
     border-radius: 10px;
-    background-color: green;
+    background-color: #006633;
 }
 
 HabitButton#YellowColor {
     border-radius: 10px;
-    background-color: yellow;
+    background-color: #FFCC00;
 }
 
-HabitButton#OrangeColor {
+HabitButton#PurpleColor {
     border-radius: 10px;
-    background-color: orange;
+    background-color: #621b94;
 }
 
 HabitButton#CyanColor {
     border-radius: 10px;
-    background-color: cyan;
+    background-color: #009999;
 }
 
 HabitButton#LesserBlueColor {
     border-radius: 10px;
-    background-color: #4242a2;
+    background-color: #3A4F7A;
 }
 
 HabitButton#LesserRedColor {
     border-radius: 10px;
-    background-color: #f78181;
+    background-color: #8B354F;
 }
 
 HabitButton#LesserGreenColor {
     border-radius: 10px;
-    background-color: #5fbf5f
+    background-color: #4a8c6b;
 }
 
 HabitButton#LesserYellowColor {
     border-radius: 10px;
-    background-color: #fcfc6e;
+    background-color: #e1c360;
 }
 
-HabitButton#LesserOrangeColor {
+HabitButton#LesserPurpleColor {
     border-radius: 10px;
-    background-color: #f7ca78;
+    background-color: #9d64c5;
 }
 
 HabitButton#LesserCyanColor {
     border-radius: 10px;
-    background-color: #55bdbd;
+    background-color: #5ccbcb;
 }
 
 QLabel#ErrorMessage {
@@ -383,4 +407,50 @@ AccountDetailsFrame > PushButton {
     padding: 5px 15px;
     font-size: 16px;
     font-weight: 500;
+}
+
+/* Month & year navigation bar background */
+QCalendarWidget QWidget#qt_calendar_navigationbar {
+    background-color: #323339;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+/* Month / Year text widgets */
+QCalendarWidget QToolButton {
+    background-color: transparent;
+    color: #ffffff;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+/* navigation bar hover */
+QCalendarWidget QToolButton:hover {
+    background-color: #232428;
+}
+
+QCalendarWidget QAbstractItemView:item:disabled {
+    background-color: #272727;
+    color: #777777;
+}
+
+
+HabitDetailsWidget > QFrame {
+    background-color: #323339;
+    border-radius: 10px;
+}
+
+HabitDetailsWidget > QFrame > QLabel {
+    font-size: 20px;
+    color: #ffffff;
+}
+
+
+PushButton#BackButton {
+    background-color: #1c1c1c;
+    border: 1px solid #323339;
+    border-radius: 4px;
+    font-size: 16px;
+    padding: 6px;
 }

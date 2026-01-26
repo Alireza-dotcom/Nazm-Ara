@@ -100,6 +100,7 @@ class MainSection(QFrame):
     CONTENTS_MARGINS_SIZE = QMargins(0, 0, 0, 0)
     TASK_PAGE_INDEX  = 1
     HABIT_PAGE_INDEX = 2
+    HABIT_DETAILS_PAGE_INDEX = 3
 
     def __init__(self, parent: QWidget, account_details: dict):
         super().__init__(parent)
@@ -121,7 +122,8 @@ class MainSection(QFrame):
         upper_layout.addWidget(self.habit_list_btn)
         self.layout.addWidget(self.upper_frame)
 
-        self.pages = QStackedWidget()
+        self.pages = QStackedWidget(parent=self)
+        self.pages.currentChanged.connect(self.removeHabitDetailsPageOnExit)
 
         self.welcome_page = QLabel(text=f"Hay {account_details.get("f_name")}!\nChoose a path to get started.",
                                    parent=self, alignment=Qt.AlignmentFlag.AlignCenter
@@ -140,6 +142,13 @@ class MainSection(QFrame):
         # Page Switching Logic
         self.task_list_btn.clicked.connect(self.displayTaskList)
         self.habit_list_btn.clicked.connect(self.displayHabitList)
+
+
+    def removeHabitDetailsPageOnExit(self):
+        if self.pages.count() == 4 and \
+        not self.pages.currentIndex() == MainSection.HABIT_DETAILS_PAGE_INDEX:
+            self.pages.widget(MainSection.HABIT_DETAILS_PAGE_INDEX).deleteLater()
+            self.habit_page.resetHabits()
 
 
     def displayTaskList(self):

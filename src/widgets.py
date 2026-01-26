@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QListWidgetItem,
     QSpacerItem,
-    QSizePolicy
+    QSizePolicy,
 )
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtGui import (
@@ -19,7 +19,7 @@ from PySide6.QtGui import (
     QTextCharFormat,
     QBrush,
     QRegularExpressionValidator,
-    QPainter
+    QPainter,
 )
 from PySide6.QtCore import (
     QSize,
@@ -566,7 +566,7 @@ class ColorPicker(QFrame):
         self.color = "blue"
 
         self.color_main = QPushButton(parent=self)
-        self.color_main.setObjectName("MainColor")
+        self.color_main.setObjectName("MainColorBlue")
         self.main_layout.addWidget(self.color_main)
         self.main_layout.addStretch(1)
 
@@ -590,10 +590,10 @@ class ColorPicker(QFrame):
         self.yellow_color.clicked.connect(lambda: self.changeColor("yellow"))
         self.main_layout.addWidget(self.yellow_color)
 
-        self.orange_color = PushButton(parent=self)
-        self.orange_color.setObjectName("OrangeColor")
-        self.orange_color.clicked.connect(lambda: self.changeColor("orange"))
-        self.main_layout.addWidget(self.orange_color)
+        self.purple_color = PushButton(parent=self)
+        self.purple_color.setObjectName("PurpleColor")
+        self.purple_color.clicked.connect(lambda: self.changeColor("purple"))
+        self.main_layout.addWidget(self.purple_color)
 
         self.cyan_color = PushButton(parent=self)
         self.cyan_color.setObjectName("CyanColor")
@@ -602,7 +602,8 @@ class ColorPicker(QFrame):
 
 
     def changeColor(self, color: str):
-        self.color_main.setStyleSheet(f"background-color: {color};")
+        self.color_main.setObjectName(f"MainColor{color.title()}")
+        self.window().style_sheet_handler.updateStylesheet()
         self.color = color
 
 
@@ -686,3 +687,79 @@ class ScalableSvgWidget(QSvgWidget):
             renderer.render(painter, QRectF(x, y, width, height))
 
             painter.end()
+
+
+class HabitDetailsCalendar(QCalendarWidget):
+    habit_already_exist_signal = Signal(object, dict)
+    habit_doesnt_exist_signal = Signal(object)
+
+    def __init__(self, habit_details: dict, daily_habits_map: dict, parent: QWidget):
+        super().__init__(parent)
+        self.setVerticalHeaderFormat(QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader)
+        self.setGridVisible(True)
+        self.setMaximumDate(QDate.currentDate())
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        self.habit_details = habit_details
+        self.daily_habits_map = daily_habits_map
+        self.daily_habit_format = QTextCharFormat()
+        self.daily_habit_format.setFontItalic(True)
+        self.normal_format = QTextCharFormat()
+
+        self.clicked.connect(self.daySelected)
+        self.initHabitsDetailColor()
+
+
+    def applyColorToTextFormat(self, value: int):
+        habit_color = self.habit_details.get("color")
+        habit_target = self.habit_details.get("target")
+
+        color_name = f"{habit_color.title()}Color" if value >= habit_target else f"Lesser{habit_color.title()}Color"
+
+        color_map = {
+            "BlueColor":         QBrush(QColor("#0E34A7")),
+            "RedColor":          QBrush(QColor("#8B1E3F")),
+            "GreenColor":        QBrush(QColor("#006633")),
+            "YellowColor":       QBrush(QColor("#FFCC00")),
+            "PurpleColor":       QBrush(QColor("#621b94")),
+            "CyanColor":         QBrush(QColor("#009999")),
+            "LesserBlueColor":   QBrush(QColor("#3A4F7A")),
+            "LesserRedColor":    QBrush(QColor("#8B354F")),
+            "LesserGreenColor":  QBrush(QColor("#4a8c6b")),
+            "LesserYellowColor": QBrush(QColor("#e1c360")),
+            "LesserPurpleColor": QBrush(QColor("#9d64c5")),
+            "LesserCyanColor":   QBrush(QColor("#5ccbcb")),
+        }
+        self.daily_habit_format.setBackground(color_map.get(color_name))
+
+
+    def initHabitsDetailColor(self):
+        for details in self.daily_habits_map.values():
+            date = QDate().fromString(details.get("date"), Qt.DateFormat.ISODate)
+            value = details.get("value")
+
+            self.applyColorToTextFormat(value=value)
+            self.setDateTextFormat(date, self.daily_habit_format)
+
+
+    def daySelected(self, clicked_date:QDate):
+        selected_date_details = self.daily_habits_map.get(clicked_date)
+        if selected_date_details:
+            self.habit_already_exist_signal.emit(clicked_date,  selected_date_details)
+        else:
+            self.habit_doesnt_exist_signal.emit(clicked_date)
+
+
+    def colorDay(self, date: QDate, value: int):
+        iso_date_format= QDate.fromString(date, Qt.DateFormat.ISODate)
+
+        self.applyColorToTextFormat(value=value)
+        self.setDateTextFormat(iso_date_format, self.daily_habit_format)
+
+
+    def clearColorDay(self, date: QDate):
+        self.setDateTextFormat(date, self.normal_format)
+
+
+    def updateDailyHabitMap(self, daily_habit_map: dict):
+        self.daily_habits_map = daily_habit_map

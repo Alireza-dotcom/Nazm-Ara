@@ -390,6 +390,7 @@ class DatabaseManager:
             print(f"Error deleting daily habit: {e}")
             return None
 
+
     def deleteDailyHabit(self, daily_habit_id: int) -> bool:
         try:
             with self.getConnection() as conn:
@@ -402,3 +403,17 @@ class DatabaseManager:
         except sqlite3.Error as e:
             print(f"Error deleting daily habit: {e}")
             return False
+
+
+    def getAllDailyHabits(self, habit_id: str) -> Optional[List]:
+        try:
+            with self.getConnection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT * FROM daily_habits WHERE habit_id = ? AND deleted_at IS NULL
+                """, (habit_id,))
+                rows = cursor.fetchall()
+                return [dict(row) for row in rows]
+        except sqlite3.Error as e:
+            print(f"Error fetching habits: {e}")
+            return None

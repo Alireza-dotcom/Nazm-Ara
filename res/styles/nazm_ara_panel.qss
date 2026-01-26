@@ -66,3 +66,8 @@ AccountDetailsFrame > PushButton {
     font-size: 16px;
     font-weight: 500;
 }
+
+QLabel#WelcomePage {
+    font-size: 25px;
+    font-weight: 600;
+}

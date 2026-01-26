@@ -1,7 +1,12 @@
-from widgets import PushButton, HabitListItemWidget, HabitButton
-from modals import AddHabitModal, AddDailyHabitModal
+from widgets import (
+    PushButton,
+    HabitListItemWidget,
+    HabitButton,
+)
+from modals import AddHabitModal, AddDailyHabitModalHabitWidget
 from notification_handler import NotificationHandler
 from database_manager import DatabaseManager
+from habit_details_widget import HabitDetailsWidget
 from PySide6.QtCore import (
     Qt,
     QDate
@@ -61,6 +66,7 @@ class HabitWidget(QWidget):
         self.list_widget.horizontalScrollBar()
         self.list_widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.list_widget.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.list_widget.itemClicked.connect(self.displayHabitDetails)
         self.main_layout.addWidget(self.list_widget)
 
         # Initial data load
@@ -205,10 +211,39 @@ class HabitWidget(QWidget):
                 "A temporary error occurred. Please try again.", "error", duration=4000
             )
 
+
+    def displayHabitDetails(self, item: QListWidgetItem):
+        habit_widget  = self.list_widget.itemWidget(item)
+        main_widget   = self.parent().parent()
+        habit_details =  habit_widget.habit_details
+        habit_id = habit_details.get("local_id")
+        daily_habit_details_list = self.database.getAllDailyHabits(habit_id)
+
+        if daily_habit_details_list is not None:
+            habit_details_widget = HabitDetailsWidget(habit_details=habit_details,
+                                                    daily_habits=daily_habit_details_list,
+                                                    parent=self
+                                                    )
+            habit_details_widget.back_btn.clicked.connect(
+                lambda: main_widget.pages.setCurrentIndex(main_widget.HABIT_PAGE_INDEX)
+            )
+            main_widget.pages.addWidget(habit_details_widget)
+            main_widget.pages.setCurrentIndex(main_widget.HABIT_DETAILS_PAGE_INDEX)
+        else:
+            self.notification_handler.showToast(
+                "bottom_right", "Couldn't Create Task",
+                "A temporary error occurred. Please try again.", "error", duration=4000
+            )
+
+
+    def resetHabits(self):
+        self.list_widget.clear()
+        self.loadHabits()
+
     # ==================== DAILY HABITS ====================
 
     def showDailyHabitModal(self, habit_button_object: HabitButton, date: QDate, habit_details: dict, daily_habit_details: dict):
-        self.modal = AddDailyHabitModal(self, date, habit_button_object, habit_details, daily_habit_details)
+        self.modal = AddDailyHabitModalHabitWidget(self, date, habit_button_object, habit_details, daily_habit_details)
         if not daily_habit_details:
             self.modal.add_daily_habit_clicked.connect(self.createDailyHabit)
         else:

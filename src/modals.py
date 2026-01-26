@@ -339,7 +339,7 @@ class AddHabitModal(BaseModal):
         self.shield.close()
 
 
-class AddDailyHabitModal(BaseModal):
+class AddDailyHabitModalHabitWidget(BaseModal):
     add_daily_habit_clicked = Signal(object, dict)
     on_delete_clicked = Signal(object, int)
     on_update_clicked = Signal(object, dict)
@@ -362,13 +362,13 @@ class AddDailyHabitModal(BaseModal):
 
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        layout.setSpacing(AddDailyHabitModal.CONTENT_SPACING)
+        layout.setSpacing(AddDailyHabitModalHabitWidget.CONTENT_SPACING)
 
         title_exit_layout = QHBoxLayout()
         create_task_lbl = QLabel(text=self.date.toString("ddd d"), parent=self)
         create_task_lbl.setObjectName("TitleLabel")
         title_exit_layout.addWidget(create_task_lbl)
-        title_exit_layout.addStretch(AddDailyHabitModal.STRETCH_SIZE)
+        title_exit_layout.addStretch(AddDailyHabitModalHabitWidget.STRETCH_SIZE)
 
         close_btn = PushButton(parent=self)
         close_btn.setObjectName("CloseButton")
@@ -387,7 +387,7 @@ class AddDailyHabitModal(BaseModal):
 
 
         layout.addLayout(value_input_unit_layout)
-        layout.addStretch(AddDailyHabitModal.STRETCH_SIZE)
+        layout.addStretch(AddDailyHabitModalHabitWidget.STRETCH_SIZE)
         # If daily_habit_details is not provided, open modal in create mode;
         # otherwise, open in edit mode.
         if not self.daily_habit_details:
@@ -405,7 +405,7 @@ class AddDailyHabitModal(BaseModal):
             self.delete_btn.setObjectName("DeleteButton")
             self.delete_btn.clicked.connect(self.onDeleteClicked)
             buttons_layout.addWidget(self.delete_btn)
-            buttons_layout.addStretch(AddHabitModal.STRETCH_SIZE)
+            buttons_layout.addStretch(AddDailyHabitModalHabitWidget.STRETCH_SIZE)
             buttons_layout.addWidget(self.save_btn)
 
             layout.addLayout(buttons_layout)
@@ -449,5 +449,118 @@ class AddDailyHabitModal(BaseModal):
             self.on_update_clicked.emit(self.habit_button, data)
         else:
             self.add_daily_habit_clicked.emit(self.habit_button, data)
+
+        self.shield.close()
+
+
+class AddDailyHabitModalHabitDetailsWidget(BaseModal):
+    add_daily_habit_clicked = Signal(object, dict)
+    on_delete_clicked = Signal(object, int)
+    on_update_clicked = Signal(object, dict)
+
+    STRETCH_SIZE = 1
+    MEDIUM_INDEX = 1
+    CONTENT_SPACING = 20
+
+    def __init__(self, parent: QWidget, date: QDate ,habit_details: dict,
+                 daily_habit_details: dict = None, width=500, height=250):
+        super().__init__(parent=parent, width=width, height=height)
+        self.setObjectName("AddDailyHabitModal")
+        self.date = date
+        self.habit_details = habit_details
+        self.daily_habit_details = daily_habit_details
+        self.question = habit_details.get("question")
+        self.unit = habit_details.get("unit")
+        self.form_processor = FormProcessor(parent=self)
+
+        layout = QVBoxLayout(self)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        layout.setSpacing(AddDailyHabitModalHabitDetailsWidget.CONTENT_SPACING)
+
+        title_exit_layout = QHBoxLayout()
+        create_task_lbl = QLabel(text=self.date.toString("ddd d"), parent=self)
+        create_task_lbl.setObjectName("TitleLabel")
+        title_exit_layout.addWidget(create_task_lbl)
+        title_exit_layout.addStretch(AddDailyHabitModalHabitDetailsWidget.STRETCH_SIZE)
+
+        close_btn = PushButton(parent=self)
+        close_btn.setObjectName("CloseButton")
+        close_btn.setIcon(QIcon(":icons/cross.svg"))
+        close_btn.clicked.connect(lambda: self.shield.close())
+        title_exit_layout.addWidget(close_btn)
+        layout.addLayout(title_exit_layout)
+
+        value_input_unit_layout = QHBoxLayout()
+        self.value = FormRow(label_text=str(self.question),
+                             input_placeholder_text=str(self.unit),
+                             input_max_length=15,
+                             input_validator_regex="^[\d]+$",
+                             parent=self)
+        value_input_unit_layout.addWidget(self.value)
+
+
+        layout.addLayout(value_input_unit_layout)
+        layout.addStretch(AddDailyHabitModalHabitDetailsWidget.STRETCH_SIZE)
+        # If daily_habit_details is not provided, open modal in create mode;
+        # otherwise, open in edit mode.
+        if not self.daily_habit_details:
+            self.save_btn = PushButton(text="Save", parent=self)
+            self.save_btn.setObjectName("SaveButton")
+            self.save_btn.clicked.connect(self.onSaveClicked)
+            layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignRight)
+        else:
+            buttons_layout = QHBoxLayout()
+            self.save_btn = PushButton(text="Save", parent=self)
+            self.save_btn.setObjectName("SaveButton")
+            self.save_btn.clicked.connect(self.onSaveClicked)
+
+            self.delete_btn = PushButton(text="Delete", parent=self)
+            self.delete_btn.setObjectName("DeleteButton")
+            self.delete_btn.clicked.connect(self.onDeleteClicked)
+            buttons_layout.addWidget(self.delete_btn)
+            buttons_layout.addStretch(AddDailyHabitModalHabitDetailsWidget.STRETCH_SIZE)
+            buttons_layout.addWidget(self.save_btn)
+
+            layout.addLayout(buttons_layout)
+            self.initialFields()
+
+
+    def initialFields(self):
+        """Populates value field with existing data when in edit mode."""
+        self.value.input.setText(str(self.daily_habit_details.get("value")))
+        self.value.label.setText(str(self.habit_details.get("question")))
+
+
+    def onDeleteClicked(self):
+        id =  self.daily_habit_details.get("local_id")
+        self.on_delete_clicked.emit(self.date, id)
+        self.shield.close()
+
+
+    def onSaveClicked(self):
+        """Checks the validation process before emitting the (update or add) signal."""
+        field_map = [
+            {"field_name": "value", "field_input": self.value.input, "field_object": self.value, "is_optional": False},
+        ]
+
+        data = self.form_processor.dailyHabitModalValidator(field_map)
+        if not data:
+            return
+
+        # add req field to change the database and buttons color
+        data.update({"habit_id": self.habit_details.get("local_id"),
+                        "user_id": self.habit_details.get("user_id"),
+                        "date": self.date.toString(Qt.DateFormat.ISODate),
+                        "color": self.habit_details.get("color"),
+                        "target": self.habit_details.get("target"),
+                        "value": int(data.get("value")),
+                        })
+
+        # Emit appropriate signal based on whether we are updating an existing item or adding a new one
+        if self.daily_habit_details:
+            data.update({"local_id": self.daily_habit_details["local_id"]})
+            self.on_update_clicked.emit(self.date, data)
+        else:
+            self.add_daily_habit_clicked.emit(self.date, data)
 
         self.shield.close()

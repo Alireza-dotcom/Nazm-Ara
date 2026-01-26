@@ -295,11 +295,6 @@ QCalendarWidget QAbstractItemView:item:selected {
     border-radius: 5px;
 }
 
-QLabel#WelcomePage {
-    font-size: 25px;
-    font-weight: 600;
-}
-
 QLabel#ErrorMessage {
     color: #c70b0b;
     font-weight: 650;

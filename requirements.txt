@@ -1,11 +1,17 @@
+colorama==0.4.6
 dnspython==2.8.0
 email-validator==2.3.0
 idna==3.11
+numpy==2.4.1
 packaging==25.0
+pandas==3.0.0
 pyqt-toast-notification @ git+https://github.com/HH03e1N/pyqttoast@a78d521882e7f419384fee17a12fbd5e86608cc6
+pyqtgraph==0.14.0
 PySide6==6.10.1
 PySide6_Addons==6.10.1
 PySide6_Essentials==6.10.1
+python-dateutil==2.9.0.post0
 QtPy==2.4.3
 shiboken6==6.10.1
+six==1.17.0
 zxcvbn-python==4.4.24

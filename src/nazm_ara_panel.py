@@ -135,7 +135,7 @@ class UserControlSidebar(QFrame):
                 file_path += ".json"
 
             user_id = self.account_details.get("id")
-            if not self.database.exportUserData(output_file=file_path, user_id=user_id):
+            if self.database.exportUserData(output_file=file_path, user_id=user_id):
                 self.notification_handler.showToast(
                     "bottom_right", "Export successful",
                     "Your data has been exported successfully", "success", duration=4000

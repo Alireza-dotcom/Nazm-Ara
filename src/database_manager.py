@@ -3,6 +3,8 @@ from contextlib import contextmanager
 from typing import List, Dict, Optional
 from datetime import datetime
 import uuid
+import pandas as pd
+import json
 
 
 class DatabaseManager:
@@ -370,7 +372,6 @@ class DatabaseManager:
         try:
             with self.getConnection() as conn:
                 cursor = conn.cursor()
-                print(value, daily_habit_id)
                 cursor.execute(f""" UPDATE daily_habits SET updated_at = CURRENT_TIMESTAMP, needs_sync = 1, value = ? WHERE local_id = ?""",(value, daily_habit_id))
                 return True
         except sqlite3.Error as e:
@@ -416,4 +417,119 @@ class DatabaseManager:
                 return [dict(row) for row in rows]
         except sqlite3.Error as e:
             print(f"Error fetching habits: {e}")
+            return None
+
+
+    def exportUserData(self, user_id: int, output_file: str):
+        try:
+            with self.getConnection() as conn:
+                tables = ['tags', 'tasks', 'habits', 'daily_habits']
+                user_backup = {}
+
+                for table in tables:
+                    # Query only data for this specific user
+                    query = f"SELECT * FROM {table} WHERE user_id = {user_id}"
+                    df = pd.read_sql_query(query, conn)
+
+                    # Convert to dictionary format for JSON
+                    user_backup[table] = df.to_dict(orient='records')
+
+                with open(output_file, "w") as file:
+                    json.dump(user_backup, file, indent=4)
+
+                return True
+        except sqlite3.Error as e:
+            print(f"Error fetching data: {e}")
+            return None
+
+
+    def importUserData(self, json_file: str, new_user_id: int):
+        try:
+            with self.getConnection() as conn:
+
+                with open(json_file, 'r') as file:
+                    data = json.load(file)
+
+                # Dictionaries to store mapping of { 'old_uuid': 'new_uuid' }
+                tag_id_map = {}
+                habit_id_map = {}
+
+                # --- PROCESS TAGS ---
+                if 'tags' in data and data['tags']:
+                    df_tags = pd.DataFrame(data['tags'])
+                    for old_id in df_tags['local_id'].unique():
+                        tag_id_map[old_id] = str(uuid.uuid4())
+                    
+                    df_tags['local_id'] = df_tags['local_id'].map(tag_id_map)
+                    df_tags['user_id'] = new_user_id
+                    df_tags = df_tags.fillna({'deleted_at': None, 'server_id': 0})
+                    
+                    df_tags.to_sql('tags', conn, if_exists='append', index=False)
+                    print("Tags imported.")
+
+                # --- PROCESS HABITS ---
+                if 'habits' in data and data['habits']:
+                    df_habits = pd.DataFrame(data['habits'])
+                    for old_id in df_habits['local_id'].unique():
+                        habit_id_map[old_id] = str(uuid.uuid4())
+                        
+                    df_habits['local_id'] = df_habits['local_id'].map(habit_id_map)
+                    df_habits['user_id'] = new_user_id
+                    
+                    # Map foreign key: tag_id
+                    if 'tag_id' in df_habits.columns:
+                        df_habits['tag_id'] = df_habits['tag_id'].map(tag_id_map)
+                        
+                    df_habits = df_habits.fillna({
+                        'description': '', 
+                        'tag_id': None, 
+                        'server_id': 0,
+                        'deleted_at': None
+                    })
+                    df_habits.to_sql('habits', conn, if_exists='append', index=False)
+                    print("Habits imported.")
+
+                # --- PROCESS TASKS ---
+                if 'tasks' in data and data['tasks']:
+                    df_tasks = pd.DataFrame(data['tasks'])
+                    df_tasks['local_id'] = [str(uuid.uuid4()) for _ in range(len(df_tasks))]
+                    df_tasks['user_id'] = new_user_id
+                    
+                    # Map foreign key: tag_id
+                    if 'tag_id' in df_tasks.columns:
+                        df_tasks['tag_id'] = df_tasks['tag_id'].map(tag_id_map)
+                        
+                    df_tasks = df_tasks.fillna({
+                        'description': '', 
+                        'tag_id': None, 
+                        'server_id': 0, 
+                        'date_time': '',
+                        'deleted_at': None
+                    })
+                    df_tasks.to_sql('tasks', conn, if_exists='append', index=False)
+                    print("Tasks imported.")
+
+                # --- PROCESS DAILY HABITS ---
+                if 'daily_habits' in data and data['daily_habits']:
+                    df_daily = pd.DataFrame(data['daily_habits'])
+                    
+                    # Map foreign key: habit_id
+                    df_daily['habit_id'] = df_daily['habit_id'].map(habit_id_map)
+                    df_daily['user_id'] = new_user_id
+                    
+                    # Remove old auto-increment integer ID
+                    if 'local_id' in df_daily.columns:
+                        df_daily = df_daily.drop(columns=['local_id'])
+                        
+                    # Clean up any orphaned rows that lost their parent habit
+                    df_daily = df_daily.dropna(subset=['habit_id'])
+                    
+                    df_daily = df_daily.fillna({'value': 0, 'server_id': 0, 'deleted_at': None})
+                    df_daily.to_sql('daily_habits', conn, if_exists='append', index=False)
+                    print("Daily Habits imported.")
+
+                return True
+
+        except sqlite3.Error as e:
+            print(f"Error adding data: {e}")
             return None

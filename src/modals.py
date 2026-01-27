@@ -564,3 +564,49 @@ class AddDailyHabitModalHabitDetailsWidget(BaseModal):
             self.add_daily_habit_clicked.emit(self.date, data)
 
         self.shield.close()
+
+
+class SettingsModal(BaseModal):
+    STRETCH_SIZE = 1
+    MEDIUM_INDEX = 1
+
+    def __init__(self, parent: QWidget, width: int = 400, height: int = 400):
+        super().__init__(parent=parent, width=width, height=height)
+        self.setObjectName("SettingsModal")
+        self.form_processor = FormProcessor(parent=self)
+        # self.user_details = user_details
+
+        layout = QVBoxLayout(self)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        title_exit_layout = QHBoxLayout()
+
+        create_task_lbl = QLabel(text="Settings", parent=self)
+        create_task_lbl.setObjectName("TitleLabel")
+        title_exit_layout.addWidget(create_task_lbl)
+        title_exit_layout.addStretch(AddDailyHabitModalHabitDetailsWidget.STRETCH_SIZE)
+
+        close_btn = PushButton(parent=self)
+        close_btn.setObjectName("CloseButton")
+        close_btn.setIcon(QIcon(":icons/cross.svg"))
+        close_btn.clicked.connect(lambda: self.shield.close())
+        title_exit_layout.addWidget(close_btn)
+        layout.addLayout(title_exit_layout)
+        layout.addStretch(SettingsModal.STRETCH_SIZE)
+
+        export_layout = QHBoxLayout()
+        export_label = QLabel(text="Export:", parent=self)
+        self.export_btn = PushButton("Export Data", parent=self)
+        export_layout.addWidget(export_label)
+        export_layout.addWidget(self.export_btn)
+
+        import_layout = QHBoxLayout()
+        import_label = QLabel(text="import:", parent=self)
+        self.import_btn = PushButton("Import Data", parent=self)
+        import_layout.addWidget(import_label)
+        import_layout.addWidget(self.import_btn)
+
+        layout.addLayout(export_layout)
+        layout.addLayout(import_layout)
+        layout.addStretch(SettingsModal.STRETCH_SIZE)
+

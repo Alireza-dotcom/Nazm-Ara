@@ -1,3 +1,6 @@
+from modals import SettingsModal
+from database_manager import DatabaseManager
+from notification_handler import NotificationHandler
 from widgets import (
     PushButton,
     RadioButton,
@@ -8,7 +11,8 @@ from task_list import TaskWidget
 from PySide6.QtCore import (
     Qt,
     QMargins,
-    QPoint
+    QPoint,
+    Signal
 )
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -17,7 +21,8 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QWidget,
     QLabel,
-    QStackedWidget
+    QStackedWidget,
+    QFileDialog
 )
 
 class NazmAra(QWidget):
@@ -37,6 +42,7 @@ class NazmAra(QWidget):
 
         # Component Initialization
         self.sidebar = UserControlSidebar(account_details=self.account_details, parent=self)
+        self.sidebar.data_imported_signal.connect(self.dataImported)
         self.content_area = MainSection(account_details=self.account_details, parent=self)
         self.content_area.setObjectName("MainSection")
 
@@ -44,8 +50,14 @@ class NazmAra(QWidget):
         self.main_layout.addWidget(self.content_area, NazmAra.SPACING_SIZE)
 
 
+    def dataImported(self):
+        self.content_area.task_page.loadTasks()
+        self.content_area.habit_page.loadHabits()
+
+
 class UserControlSidebar(QFrame):
     """Vertical navigation bar for global actions like Profile, Cloud Sync, and Settings."""
+    data_imported_signal = Signal()
     STRETCH_SIZE = 1
     CONTENTS_MARGINS_SIZE = QMargins(10, 10, 10, 10)
 
@@ -55,6 +67,8 @@ class UserControlSidebar(QFrame):
         self.setObjectName("Sidebar")
         self.account_details = account_details
         self.online_user = self.account_details.get("user_id")
+        self.database = DatabaseManager()
+        self.notification_handler = NotificationHandler()
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(UserControlSidebar.CONTENTS_MARGINS_SIZE)
@@ -74,13 +88,67 @@ class UserControlSidebar(QFrame):
         
         self.settings_button = PushButton(parent=self)
         self.settings_button.setIcon(QIcon(":icons/settings.svg"))
+        self.settings_button.clicked.connect(self.displaySettingsModal)
         layout.addStretch(UserControlSidebar.STRETCH_SIZE)
         layout.addWidget(self.settings_button)
 
 
+    def displaySettingsModal(self):
+        self.modal = SettingsModal(self)
+        self.modal.export_btn.clicked.connect(self.exportData)
+        self.modal.import_btn.clicked.connect(self.importData)
+
+
+    def importData(self):
+        file_path, _ = QFileDialog.getOpenFileName(
+            parent=self,
+            caption="Open file",
+            dir="",
+            filter="JSON Files (*.json);;All Files (*)",
+        )
+
+        if file_path:
+            user_id = self.account_details.get("id")
+            if self.database.importUserData(json_file=file_path, new_user_id=user_id):
+                self.data_imported_signal.emit()
+                self.notification_handler.showToast(
+                    "bottom_right", "Import successful",
+                    "Your data has been imported successfully", "success", duration=4000
+                )
+            else:
+                self.notification_handler.showToast(
+                    "bottom_right", "Couldn't import data",
+                    "A temporary error occurred. Please try again.", "error", duration=4000
+                )
+
+
+    def exportData(self):
+        file_path, _ = QFileDialog.getSaveFileName(
+            parent=self,
+            caption="Save JSON file",
+            dir="data.json",
+            filter="JSON Files (*.json)"
+        )
+
+        if file_path:
+            if not file_path.lower().endswith(".json"):
+                file_path += ".json"
+
+            user_id = self.account_details.get("id")
+            if not self.database.exportUserData(output_file=file_path, user_id=user_id):
+                self.notification_handler.showToast(
+                    "bottom_right", "Export successful",
+                    "Your data has been exported successfully", "success", duration=4000
+                )
+            else:
+                self.notification_handler.showToast(
+                    "bottom_right", "Couldn't export data",
+                    "A temporary error occurred. Please try again.", "error", duration=4000
+                )
+
+
     def showAccountDetails(self):
         button_pos = self.profile_button.mapToGlobal(QPoint(0, 0))
-        print(button_pos)
         frame_pos = button_pos + QPoint(0, self.profile_button.height())
         
         self.profile_details_Frame.move(frame_pos)

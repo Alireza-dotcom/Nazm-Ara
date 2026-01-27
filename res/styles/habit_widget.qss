@@ -454,3 +454,36 @@ PushButton#BackButton {
     font-size: 16px;
     padding: 6px;
 }
+
+SettingsModal > QLabel {
+    font-size: 18px;
+    color: #ffffff;
+}
+
+SettingsModal {
+    background-color: #323339;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+QFrame#SettingsModal > PushButton#CloseButton {
+    background-color: #323339;
+    border: 1px solid #323339;
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 10px;
+} 
+
+SettingsModal > PushButton {
+    background-color: #323339;
+    border: 1px solid #1c1c1c;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+SettingsModal > PushButton:hover {
+    background-color: #1c1c1c;
+}
